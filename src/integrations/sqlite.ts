@@ -31,6 +31,72 @@ export const initSQLite = async () => {
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS groups (
+          id TEXT PRIMARY KEY, name TEXT NOT NULL, member_count INTEGER DEFAULT 2, user_id TEXT NOT NULL,
+          sync_status TEXT DEFAULT 'pending', is_deleted INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS group_expenses (
+          id TEXT PRIMARY KEY, group_id TEXT NOT NULL, title TEXT NOT NULL, category TEXT, amount INTEGER NOT NULL,
+          paid_by TEXT NOT NULL, paid_by_member_id TEXT, user_id TEXT NOT NULL, notes TEXT, 
+          split_type TEXT DEFAULT 'equal', idempotency_key TEXT UNIQUE,
+          sync_status TEXT DEFAULT 'pending', is_deleted INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, is_latest INTEGER DEFAULT 1, version INTEGER
+        );
+
+        CREATE TABLE IF NOT EXISTS expense_splits (
+          id TEXT PRIMARY KEY, expense_id TEXT NOT NULL, group_id TEXT NOT NULL, member_id TEXT NOT NULL,
+          user_id TEXT, share_amount INTEGER NOT NULL, sync_status TEXT DEFAULT 'pending', 
+          is_deleted INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS group_members (
+          id TEXT PRIMARY KEY, group_id TEXT NOT NULL, user_id TEXT, name TEXT NOT NULL,
+          role TEXT DEFAULT 'member', upi_id TEXT, sync_status TEXT DEFAULT 'pending',
+          is_deleted INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS savings_goals (
+          id TEXT PRIMARY KEY, user_id TEXT NOT NULL, goal_name TEXT NOT NULL, target_amount INTEGER NOT NULL,
+          saved_amount INTEGER DEFAULT 0, idempotency_key TEXT UNIQUE,
+          sync_status TEXT DEFAULT 'pending', is_deleted INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, is_latest INTEGER DEFAULT 1, version INTEGER
+        );
+
+        CREATE TABLE IF NOT EXISTS emis (
+          id TEXT PRIMARY KEY, user_id TEXT NOT NULL, name TEXT NOT NULL, amount INTEGER NOT NULL,
+          emi_day INTEGER, loan_details TEXT, idempotency_key TEXT UNIQUE,
+          sync_status TEXT DEFAULT 'pending', is_deleted INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, is_latest INTEGER DEFAULT 1, version INTEGER,
+          emi_name TEXT 
+        );
+
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id TEXT PRIMARY KEY, user_id TEXT NOT NULL, name TEXT NOT NULL, amount INTEGER NOT NULL,
+          category TEXT, billing_cycle TEXT, idempotency_key TEXT UNIQUE,
+          sync_status TEXT DEFAULT 'pending', is_deleted INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, is_latest INTEGER DEFAULT 1, version INTEGER
+        );
+
+        CREATE TABLE IF NOT EXISTS salaries (
+          id TEXT PRIMARY KEY, user_id TEXT NOT NULL, amount INTEGER NOT NULL, month_year TEXT NOT NULL,
+          idempotency_key TEXT UNIQUE, sync_status TEXT DEFAULT 'pending', is_deleted INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          is_latest INTEGER DEFAULT 1, version INTEGER,
+          UNIQUE(user_id, month_year)
+        );
+
+        CREATE TABLE IF NOT EXISTS budgets (
+          id TEXT PRIMARY KEY, user_id TEXT NOT NULL, monthly_budget INTEGER NOT NULL, month_year TEXT NOT NULL,
+          idempotency_key TEXT UNIQUE, sync_status TEXT DEFAULT 'pending', is_deleted INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          is_latest INTEGER DEFAULT 1, version INTEGER,
+          UNIQUE(user_id, month_year)
+        );
+
         CREATE TABLE IF NOT EXISTS sync_queue (
           id TEXT PRIMARY KEY, table_name TEXT NOT NULL, operation TEXT NOT NULL, payload TEXT NOT NULL,
           idempotency_key TEXT UNIQUE NOT NULL, status TEXT DEFAULT 'pending', retry_count INTEGER DEFAULT 0,
@@ -42,8 +108,20 @@ export const initSQLite = async () => {
           value TEXT NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS settlement_intents (
+          id TEXT PRIMARY KEY, group_id TEXT NOT NULL, sender_id TEXT NOT NULL, receiver_id TEXT NOT NULL,
+          amount INTEGER NOT NULL, currency TEXT DEFAULT 'INR', status TEXT DEFAULT 'created',
+          payment_method TEXT DEFAULT 'upi', metadata TEXT, idempotency_key TEXT UNIQUE,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
         CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id) WHERE is_deleted = 0;
+        CREATE INDEX IF NOT EXISTS idx_groups_user ON groups(user_id) WHERE is_deleted = 0;
+        CREATE INDEX IF NOT EXISTS idx_group_expenses_group ON group_expenses(group_id) WHERE is_deleted = 0;
+        CREATE INDEX IF NOT EXISTS idx_expense_splits_group ON expense_splits(group_id) WHERE is_deleted = 0;
+        CREATE INDEX IF NOT EXISTS idx_group_members_group ON group_members(group_id) WHERE is_deleted = 0;
         CREATE INDEX IF NOT EXISTS idx_sync_queue_status ON sync_queue(status, next_retry_at);
+        CREATE INDEX IF NOT EXISTS idx_settlement_intents_status ON settlement_intents(status);
       `;
       await db.execute(createTables);
 

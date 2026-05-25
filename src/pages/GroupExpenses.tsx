@@ -407,8 +407,9 @@ const GroupExpenses = () => {
     queryFn: async () => {
       // 🛡️ OFFLINE-FIRST: Route through universal SDK
       // Pass true to includeDeleted to allow rendering of historical (archived) actors.
-      // 🚀 BUG_FIX: Set forceCloud=true for members to ensure join-discovery on Android.
-      return await fetchLocalOrCloud("group_members", selectedGroupId, "", "name ASC", "group_id", true, isAndroid);
+      // 🚀 BUG_FIX: Set forceCloud=true for members to ensure join-discovery on Android, 
+      // but ONLY when online to prevent offline hydration failure.
+      return await fetchLocalOrCloud("group_members", selectedGroupId, "", "name ASC", "group_id", true, isAndroid && navigator.onLine);
     },
   });
 
