@@ -137,7 +137,7 @@ const MemoizedExpenseRow = React.memo(({ exp, isAdmin, currentUserId, members, t
 
 const GroupExpenses = () => {
   const navigate = useNavigate();
-  const { user, isAuthReady } = useAuth();
+  const { user, session, isAuthReady } = useAuth();
   const { language, t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -813,23 +813,38 @@ const GroupExpenses = () => {
     if (isAutoSaving) return false;
     
     // 🔒 PHASE 1: HARD AUTH & STATE GUARD
-    let { data: { session } } = await supabase.auth.getSession();
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    const isOnline = typeof navigator !== "undefined" && navigator.onLine;
+    let activeSession = session;
+    let activeAuthUser = user;
 
-    // Prevent anonymous inserts during hydration race
-    if (authError || !authUser || !session?.access_token) {
-      console.warn("⚠️ [AUTH_SYNC] Session stale or missing. Forcing refresh...");
-      const refreshed = await supabase.auth.refreshSession();
-      session = refreshed.data.session;
-      // authUser is updated via session.user if needed, but let's keep it simple for now
+    if (isOnline) {
+      // 🌐 LIVE VERIFICATION (Online Only)
+      try {
+        const { data: { session: freshSession } } = await supabase.auth.getSession();
+        const { data: { user: freshUser }, error: authError } = await supabase.auth.getUser();
+
+        if (freshSession) activeSession = freshSession;
+        if (freshUser) activeAuthUser = freshUser;
+
+        if (authError || !freshUser || !freshSession?.access_token) {
+          console.warn("⚠️ [AUTH_SYNC] Session stale or missing. Forcing refresh...");
+          const refreshed = await supabase.auth.refreshSession();
+          if (refreshed.data.session) {
+            activeSession = refreshed.data.session;
+            activeAuthUser = refreshed.data.session.user;
+          }
+        }
+      } catch (err) {
+        console.warn("⚠️ [AUTH_SYNC] Online verification failed, falling back to cached session:", err);
+      }
     }
 
-    if (!session || !session.access_token || !authUser || authUser.role !== 'authenticated' || !user?.id || !selectedGroupId || !payerId) {
+    if (!activeSession || !activeSession.access_token || !activeAuthUser || activeAuthUser.role !== 'authenticated' || !user?.id || !selectedGroupId || !payerId) {
       console.error("🚨 [AUTH_RACE_FAILURE] Blocked insert due to missing required state or session:", {
         stateUserId: user?.id,
-        authUserId: authUser?.id,
-        role: authUser?.role,
-        hasToken: !!session?.access_token,
+        authUserId: activeAuthUser?.id,
+        role: activeAuthUser?.role,
+        hasToken: !!activeSession?.access_token,
         selectedGroupId,
         payerId
       });
