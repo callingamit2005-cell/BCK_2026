@@ -53,6 +53,7 @@ import TripAdvisor from "@/components/groups/TripAdvisor";
 import SettlementSummary from "@/features/split-expense/SettlementSummary";
 import ExportMenu from "@/components/dashboard/ExportMenu";
 import GroupHeaderSection from "@/components/group-expenses/GroupHeaderSection";
+import MemberSection from "@/components/group-expenses/MemberSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -63,7 +64,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription 
 } from "@/components/ui/dialog";
 import { 
-  Trash2, ArrowRight, Clock, Users, Map, Mic, MicOff, Share2, 
+  Trash2, ArrowRight, Clock, Users, Map, Mic, MicOff, 
   LayoutGrid, ReceiptIndianRupee, AlertTriangle, Loader2, WifiOff, Sparkles, Pencil, CheckCircle2 
 } from "lucide-react";
 
@@ -1382,6 +1383,51 @@ const GroupExpenses = () => {
     } catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); } finally { setIsAddingMember(false); }
   };
 
+  const handleDeleteMember = useCallback(async (member: any) => {
+    if (!window.confirm(t("delete_member_confirm", `Are you sure you want to remove ${member.name}?`))) return;
+
+    console.log("🚨 REMOVE_MEMBER_START", {
+      memberId: member.id,
+      groupId: selectedGroupId
+    });
+
+    try {
+      const { data, error } = await supabase.rpc('archive_group_member_atomic', { p_member_id: member.id });
+
+      console.log("🚨 REMOVE_MEMBER_RESPONSE", { data, error });
+
+      if (error) {
+        console.error("❌ REMOVE_MEMBER_ERROR", error);
+        toast({ title: "Failed to remove member", description: error.message, variant: "destructive" });
+        return;
+      }
+
+      const result = data as any;
+      if (result && result.success === false) {
+         console.error("❌ REMOVE_MEMBER_BUSINESS_LOGIC_ERROR", result);
+         toast({ title: "Cannot remove member", description: result.reason || "Validation failed.", variant: "destructive" });
+         return;
+      }
+
+      // 🛡️ [ANDROID_FIX] Reflect removal in SQLite immediately
+      if (isAndroid) {
+        const db = getDB();
+        if (db) {
+          // 🚀 BUG_FIX: Perform soft-delete instead of permanent DELETE
+          // This ensures the member row stays in the local database but with is_deleted=1,
+          // allowing the UI to render the "(Departed)" label consistently with Web.
+          await db.run(`UPDATE group_members SET is_deleted = 1, sync_status = 'completed' WHERE id = ?`, [member.id]);
+        }
+      }
+
+      toast({ title: "Success", description: result?.message || "Member safely removed." });
+      await refetchMembers();
+    } catch (err: any) {
+      console.error("❌ REMOVE_EXCEPTION", err);
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  }, [selectedGroupId, isAndroid, toast, refetchMembers, t, supabase]);
+
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     const groupName = newGroupName.trim();
@@ -1684,86 +1730,21 @@ const GroupExpenses = () => {
                 {/* LEFT: Members & Debts */}
                 <div className="space-y-6">
                   {/* Members Card */}
-                  <Card className={cardStyle}>
-                    <CardHeader className="bg-slate-50 py-4 border-b border-slate-100">
-                      <CardTitle className="text-base font-black flex items-center gap-2 text-slate-800">
-                        <Users className="h-5 w-5 text-purple-600" /> {t("members")} ({activeMembers.length})
-                      </CardTitle>
-                    </CardHeader>                    <CardContent className="pt-5 space-y-4">
-                      {isAdmin && (
-                        <div className="flex gap-2">
-                          <Input placeholder="Name" value={memberName} onChange={e => setMemberName(e.target.value)} className={cn("h-11 rounded-xl", inputClass)} />
-                          <Button type="button" onClick={handleAddMember} disabled={!memberName.trim() || isAddingMember} className={cn("h-11 px-5 rounded-xl font-bold", gradientClass)}>
-                            {isAddingMember ? <Loader2 className="animate-spin h-4 w-4" /> : t("add")}
-                          </Button>
-                        </div>
-                      )}
-                      <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                        {members.map((m: any) => (
-                          <div key={m.id} className={cn("flex justify-between items-center p-3 rounded-xl border shadow-sm transition-colors", m.is_deleted ? "bg-slate-50 border-slate-200 opacity-60" : "bg-white border-slate-100 hover:border-purple-200")}>
-                            <span className="text-sm font-bold text-slate-700">
-                              {m.name} {m.role === 'admin' && '👑'} {m.is_deleted && <span className="ml-2 text-xs text-slate-400 font-normal italic">(Departed)</span>}
-                            </span>
-                            {isAdmin && m.role !== 'admin' && !m.is_deleted && (
-                              <Trash2
-                                className="h-4 w-4 text-slate-300 hover:text-red-500 cursor-pointer"
-                                onClick={async () => {
-                                  if (!window.confirm(`Are you sure you want to remove ${m.name}?`)) return;
-
-                                  console.log("🚨 REMOVE_MEMBER_START", {
-                                    memberId: m.id,
-                                    groupId: selectedGroupId
-                                  });
-
-                                  try {
-                                    const { data, error } = await supabase.rpc('archive_group_member_atomic', { p_member_id: m.id });
-
-                                    console.log("🚨 REMOVE_MEMBER_RESPONSE", { data, error });
-
-                                    if (error) {
-                                      console.error("❌ REMOVE_MEMBER_ERROR", error);
-                                      toast({ title: "Failed to remove member", description: error.message, variant: "destructive" });
-                                      return;
-                                    }
-
-                                    const result = data as any;
-                                    if (result && result.success === false) {
-                                       console.error("❌ REMOVE_MEMBER_BUSINESS_LOGIC_ERROR", result);
-                                       toast({ title: "Cannot remove member", description: result.reason || "Validation failed.", variant: "destructive" });
-                                       return;
-                                    }
-
-                                    // 🛡️ [ANDROID_FIX] Reflect removal in SQLite immediately
-                                    if (isAndroid) {
-                                      const db = getDB();
-                                      if (db) {
-                                        // 🚀 BUG_FIX: Perform soft-delete instead of permanent DELETE
-                                        // This ensures the member row stays in the local database but with is_deleted=1,
-                                        // allowing the UI to render the "(Departed)" label consistently with Web.
-                                        await db.run(`UPDATE group_members SET is_deleted = 1, sync_status = 'completed' WHERE id = ?`, [m.id]);
-                                      }
-                                    }
-
-                                    toast({ title: "Success", description: result?.message || "Member safely removed." });
-                                    await refetchMembers();
-                                  } catch (err: any) {
-                                    console.error("❌ REMOVE_EXCEPTION", err);
-                                    toast({ title: "Error", description: err.message, variant: "destructive" });
-                                  }
-                                }}
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {isAdmin && (
-                        <Button onClick={handleInviteShare} className="w-full flex items-center justify-center gap-2 h-12 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border border-[#25D366]/30 rounded-xl font-bold transition-all mt-2">
-                          <Share2 className="h-4 w-4" /> {t("invite_whatsapp")}
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
+                  <MemberSection
+                    t={t}
+                    members={members}
+                    activeMembers={activeMembers}
+                    isAdmin={isAdmin}
+                    memberName={memberName}
+                    setMemberName={setMemberName}
+                    handleAddMember={handleAddMember}
+                    isAddingMember={isAddingMember}
+                    onDeleteMember={handleDeleteMember}
+                    handleInviteShare={handleInviteShare}
+                    cardStyle={cardStyle}
+                    inputClass={inputClass}
+                    gradientClass={gradientClass}
+                  />
 
                   {/* Debts Card */}
                   <Card className={cardStyle}>
