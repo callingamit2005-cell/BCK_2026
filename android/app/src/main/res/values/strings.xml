@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BachatKaro</string>
+    <string name="title_activity_main">BachatKaro</string>
+    <string name="package_name">com.bachatkaro.app</string>
+    <string name="custom_url_scheme">com.bachatkaro.app</string>
+</resources>

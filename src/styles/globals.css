@@ -1,0 +1,51 @@
+import Hero from "@/components/landing/Hero";
+import Features from "@/components/landing/Features";
+import FAQ from "@/components/landing/FAQ";
+import BlogGrid from "@/components/landing/BlogGrid";
+import Navbar from "@/components/Navbar";
+import StatsBar from "@/components/StatsBar";
+import AdPlaceholder from "@/components/AdPlaceholder";
+import Footer from "@/components/layout/Footer";
+
+const Index = () => {
+  return (
+    <div className="dark">
+      {/* Background ab Deep Purple-Black hai (#0A0A12 se thoda purple tint) */}
+      <div className="min-h-screen bg-[#0D0B14] text-white selection:bg-pink-500/30 overflow-x-hidden relative font-sans">
+        
+        {/* Neon Purple Glow Effect - Isse background mein chamak aayegi */}
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-full h-[600px] bg-[#7C3AED]/20 blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-0 w-[400px] h-[400px] bg-[#EC4899]/10 blur-[100px] pointer-events-none" />
+
+        {/* Background Grid Pattern */}
+        <div className="absolute inset-0 grid-pattern opacity-10 pointer-events-none" />
+
+        <Navbar />
+        
+        <main className="relative z-10">
+          <Hero />
+          
+          <div className="max-w-4xl mx-auto px-6 py-4">
+            <AdPlaceholder />
+          </div>
+
+          <StatsBar />
+
+          <Features />
+
+          <BlogGrid />
+
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            <AdPlaceholder />
+          </div>
+
+          <FAQ />
+        </main>
+
+        <Footer />
+      </div>
+    </div>
+  );
+};
+
+export default Index;

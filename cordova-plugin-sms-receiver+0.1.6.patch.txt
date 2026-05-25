@@ -1,0 +1,13 @@
+diff --git a/src/android/SmsReceiverPlugin.java b/src/android/SmsReceiverPlugin.java
+index 5f3a8b7..8c2e4d9 100644
+--- a/src/android/SmsReceiverPlugin.java
++++ b/src/android/SmsReceiverPlugin.java
+@@ -5,7 +5,7 @@ import org.apache.cordova.CallbackContext;
+ import org.apache.cordova.CordovaPlugin;
+ import org.json.JSONArray;
+ import org.json.JSONException;
+-import android.support.v4.app.ActivityCompat;
++import androidx.core.app.ActivityCompat;
+ import android.Manifest;
+ 
+ public class SmsReceiverPlugin extends CordovaPlugin {

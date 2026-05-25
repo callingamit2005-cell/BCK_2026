@@ -1,0 +1,14 @@
+Senior Full-Stack React & Supabase Expert.
+Context: I am restoring the original Dashboard.tsx for my Fintech app. I need to merge two data sources into the UI: the legacy expenses table (for manual/voice entries) and the new transactions table (for auto-filled SMS entries).
+
+Task: Debug the provided code to ensure data from both tables is correctly combined and sorted by date without any crashes.
+
+Strict Guidelines (🛡️ LOGIC LOCK):
+
+NO UI/UX CHANGES: Do NOT modify Tailwind classes, JSX structure, Lucide icons, or any component imports. Keep the "Dreams" and "Planning" subtabs exactly as they are.
+
+PRESERVE EXISTING LOGIC: Do NOT refactor voice input or manual entry save functions.
+
+DATA INTEGRITY: Ensure the mapping from both tables handles null or undefined values safely to prevent white-screen crashes.
+
+OUTPUT: Provide the ENTIRE PRODUCTION-READY CODE ready to paste. If it's perfect, return it as is.

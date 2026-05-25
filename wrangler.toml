@@ -1,0 +1,6 @@
+name = "voice-parser"
+main = "src/voice/worker/index.js"
+compatibility_date = "2026-02-27"
+
+[ai]
+binding = "AI"

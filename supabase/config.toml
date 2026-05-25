@@ -1,0 +1,40 @@
+project_id = "cbagjjhzsaxrzmulacxf"
+[functions.direct-reset-password]
+enabled = true
+verify_jwt = true
+import_map = "./functions/direct-reset-password/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/direct-reset-password/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/direct-reset-password/*.html" ]
+
+[functions.send-welcome-email]
+enabled = true
+verify_jwt = false
+import_map = "./functions/send-welcome-email/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/send-welcome-email/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/send-welcome-email/*.html" ]
+
+[functions.create-razorpay-order]
+enabled = true
+verify_jwt = false
+import_map = "./functions/create-razorpay-order/deno.json"
+entrypoint = "./functions/create-razorpay-order/index.ts"
+
+[functions.verify-razorpay-payment]
+enabled = true
+verify_jwt = false
+import_map = "./functions/verify-razorpay-payment/deno.json"
+entrypoint = "./functions/verify-razorpay-payment/index.ts"
+
+[functions.process-waitlist]
+enabled = true
+verify_jwt = false
+import_map = "./functions/process-waitlist/deno.json"
+entrypoint = "./functions/process-waitlist/index.ts"

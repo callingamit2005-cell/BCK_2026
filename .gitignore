@@ -1,0 +1,101 @@
+# =========================
+# 🔒 DEPENDENCIES
+# =========================
+node_modules/
+.pnp
+.pnp.js
+
+# =========================
+# 🏗 BUILD OUTPUTS
+# =========================
+dist/
+dist-ssr/
+build/
+.next/
+out/
+.cache/
+coverage/
+*.tsbuildinfo
+
+# =========================
+# 🔐 ENVIRONMENT VARIABLES (CRITICAL)
+# =========================
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# =========================
+# 📦 SUPABASE / BACKEND
+# =========================
+.supabase/
+.supabase/functions/.env
+.supabase/.temp
+
+# =========================
+# 🚀 DEPLOYMENT (VERCEL / NETLIFY)
+# =========================
+.vercel/
+.netlify/
+
+# =========================
+# 📱 MOBILE BUILD (CAPACITOR / ANDROID / IOS)
+# =========================
+android/build/
+android/app/build/
+ios/build/
+ios/DerivedData/
+
+# =========================
+# 📄 LOG FILES
+# =========================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# 💻 SYSTEM FILES
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# =========================
+# 🧠 IDE / EDITOR
+# =========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# =========================
+# 🗂 TEMP FILES
+# =========================
+tmp/
+.temp/
+
+# =========================
+# 🔑 SECURITY (EXTRA SAFE)
+# =========================
+*.pem
+*.key
+*.crt
+*.p12
+
+# =========================
+# 📦 PACKAGE MANAGERS
+# =========================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# =========================
+# 📦 MISC
+# =========================
+*.local

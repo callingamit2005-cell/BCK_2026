@@ -1,0 +1,170 @@
+✦ Based on a comprehensive architectural analysis of the BachatKaro-V6-SMS Implementation codebase, here is the
+  structured production-level documentation.
+
+  ---
+
+  1. Overview
+  BachatKaro is an enterprise-grade personal and group financial management application. It utilizes a Mobile-First
+  Unified Engine built with React (Vite), TypeScript, and Tailwind CSS, deployed as a native Android application via
+  Capacitor. The backend is powered by Supabase, providing real-time data synchronization and secure authentication. The
+  system's core value proposition is "Frictionless Accounting" through AI voice parsing and automatic SMS transaction
+  detection.
+
+  ---
+
+  2. Feature List (Detailed)
+
+  💰 Daily Expense Tracking
+   * Purpose: To capture every rupee spent or received by the user.
+   * Interaction: Users enter data via manual forms, a "Smart Universal Input," or via background SMS detection.
+   * Location: src/pages/Dashboard.tsx, src/pages/AddExpense.tsx.
+
+  🎙️ AI Voice Input System
+   * Purpose: Natural language processing to convert speech (e.g., "500 for Dinner") into structured data.
+   * Interaction: A mic button triggers speech-to-text; the transcript is processed by useSmartParser and
+     useDashboardAIVoice.
+   * Location: src/components/SmartUniversalInput.tsx, src/pages/GroupExpenses.tsx.
+
+  📱 SMS Automatic Detection
+   * Purpose: Zero-touch expense recording by intercepting bank transaction SMS.
+   * Interaction: Background listener parses incoming SMS for amounts, merchants, and transaction types.
+   * Location: src/hooks/useSmsAutoFill.ts, src/components/TransactionAutoDetector.tsx.
+
+  👥 Group Expense (Split System)
+   * Purpose: Shared ledgers for trips or roommates with complex split logic.
+   * Interaction: Features "Bill Roulette," "Smart Settlement," and automated debt simplification.
+   * Location: src/pages/GroupExpenses.tsx, src/integrations/supabase/groupService.ts.
+
+  🗓️ Planning & Debt Module (EMI)
+   * Purpose: Management of monthly salaries, budgets, and long-term loans (EMIs).
+   * Interaction: Stepper-based budget setting and interest-aware loan tracking (Reducing vs. Flat rates).
+   * Location: src/pages/Dashboard.tsx (Planning Tab), src/components/EMILoanDetailsBlock.tsx.
+
+  🔮 Future Wealth Predictor
+   * Purpose: AI-driven projection of savings over time based on current habits.
+   * Location: src/components/dashboard/FutureWealthPredictor.tsx.
+
+  ✈️ Advanced Trip Planner V2
+   * Purpose: Collaborative trip budgeting and itinerary generation.
+   * Location: src/pages/AdvancedTripPlannerV2.tsx.
+
+  ---
+
+  3. User Flow (Step-by-Step)
+
+  A. Onboarding & Setup
+   1. Auth: User registers/logs in via Supabase Auth (src/pages/Auth.tsx).
+   2. Setup Wizard: Forced flow if has_completed_setup is false. User enters base salary and monthly budget goal
+      (src/pages/SetupWizard.tsx).
+   3. Dashboard: Landing on the "Daily Tracker" view.
+
+  B. Expense Entry Lifecycle
+   * Manual: User types amount/category → supabase.from('expenses').insert().
+   * Voice: User speaks → SpeechRecognition → SmartParser (Regex/AI) → Auto-insertion into DB.
+   * SMS: SMS arrives → SmsBridge catches it → useSmsAutoFill parses it → DB Insertion → Toast Notification.
+
+  C. Group Management
+   1. Create Group: User initializes a group and invites members via WhatsApp links.
+   2. Spend: Any member adds a bill (Manual/Voice).
+   3. Split: System calculates debts using computeBalances and simplifyDebts logic.
+   4. Settle: Members mark debts as paid, clearing the ledger.
+
+  D. Data Sync
+   * Online: Real-time updates via @tanstack/react-query and Supabase listeners.
+   * Offline: UI displays an "Offline Mode Active" banner (GroupExpenses.tsx); however, local-first persistence (SQLite)
+     is NOT IMPLEMENTED (relies on browser/Capacitor caching).
+
+  ---
+
+  4. SMS Engine Flow (CRITICAL)
+
+  The SMS Engine is a background service running specifically on Android.
+
+   1. Detection: Uses registerPlugin('SmsBridge') to hook into native Android SMS intents.
+   2. Buffering: Implements a Multipart SMS Buffer (1500ms window) to handle long messages split into chunks.
+   3. Filtering:
+       * Ignore: Messages containing "failed", "declined", or "unsuccessful".
+       * Type Detection: Regex checks for debited|spent|paid (Expense) or credited|received (Income).
+   4. Parsing:
+       * Amount: Extracts numbers following Rs., INR, or ₹.
+       * Merchant: Uses regex to find text following to, at, vpa:, or info:.
+       * Mode: Detects UPI, Card, ATM, or Bank.
+   5. Storage: Directly inserts into the transactions table in Supabase.
+   6. UX: Dispatches a global transaction-updated event to refresh the UI and shows a success toast.
+
+  ---
+
+  5. Data Architecture
+
+  Database (Supabase / Postgres)
+   * profiles: User metadata and setup status.
+   * transactions: Automatic SMS-detected records.
+   * expenses: Manually entered or voice-entered records.
+   * groups / group_members: Relational mapping for shared ledgers.
+   * group_expenses / expense_splits: Split-specific transaction data.
+   * budgets / salaries: Financial targets indexed by month_year.
+   * emis: Loan principal, interest, and tenure stored as JSON in loan_details.
+
+  Storage Flow
+  Component → React Query (Mutation) → Supabase Client → Postgres DB → Real-time Broadcast → All Connected Clients.
+
+  ---
+
+  6. Subscription Logic
+
+   * Model: "Freemium" model in Beta phase.
+   * Free Tier: 30-day "Premium Trial" starts from user.created_at.
+   * Premium Trial (30 Days):
+       * Enforced in GroupExpenses.tsx via isVoicePremiumActive.
+       * Gated Features: Editing or Deleting bills via voice commands requires an active premium status.
+   * Status: Currently, most UI components are labeled "Premium" but remain accessible during the beta period to drive
+     user engagement.
+
+  ---
+
+  7. Edge Cases & Risks
+
+   * SMS Parsing Failures: Non-standard SMS formats from regional banks may fail to parse merchant names, defaulting to
+     the Sender ID.
+   * Multipart SMS Race Conditions: If a chunk arrives after the 1500ms timeout, it may result in a partial or failed
+     entry.
+   * Duplicate Voice Entries: Handled via lastProcessedText Ref, but rapid-fire speech can still cause collisions.
+   * Sync Conflicts: Without a robust offline SQLite sync, data entered while offline may be lost if the tab is closed
+     before reconnection.
+   * Permission Denial: SMS engine fails silently if the user denies READ_SMS permission on Android.
+
+  ---
+
+  8. Android Architecture
+
+   * Bridge: Capacitor acts as the bridge between the React SPA and the Android OS.
+   * Custom Plugins:
+       * SmsBridge: For native SMS interception.
+       * SpeechRecognition: For native mic access.
+   * Build: The Vite dist folder is copied to the Android assets directory.
+   * Platform Specifics: Capacitor.getPlatform() === 'android' check is used to initialize the SMS listener only on
+     supported devices.
+
+  ---
+
+  9. Security & Privacy
+
+   * SMS Privacy: The app includes a "Safety & Privacy" disclaimer explicitly stating it does not access bank accounts
+     directly, only read-only SMS notifications.
+   * Data Isolation: Row Level Security (RLS) in Supabase ensures user_id filtering on all tables.
+   * Consent: Users are prompted for SMS and Mic permissions at the OS level during the first feature interaction.
+
+  ---
+
+  10. Missing / Not Implemented Features
+
+   * Full Offline Sync: No local SQLite persistence for fully offline accounting.
+   * iOS SMS Support: SMS detection is unavailable on iOS due to Apple's sandbox restrictions (Not possible in current
+     architecture).
+   * Auto-Categorization AI: Currently uses simple regex; advanced "Intelligence Engine" for category learning is
+     documented in docs/ but limited in code implementation (category: 'Others' is common default).
+   * Payment Gateway Integration: "Upgrade Now" buttons show a toast "Redirecting to Payment..." but do not yet lead to
+     a live Razorpay/Stripe checkout.
+
+                                                                                                        ? for shortcuts
+─────────────────────────────────────────

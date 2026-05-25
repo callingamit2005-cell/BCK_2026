@@ -1,0 +1,137 @@
+/* src/styles/globals.css */
+
+/* Tailwind base layers (if using Tailwind) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Ensure images and media are responsive */
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Default focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid #4f46e5; /* indigo-600 */
+  outline-offset: 2px;
+}
+
+/* Card base styling – enhances existing Tailwind cards */
+.card {
+  @apply bg-white rounded-lg shadow p-4;
+  /* Fallback for browsers without @apply support */
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1rem;
+}
+
+/* Mobile-first responsive enhancements */
+
+/* Stack cards vertically on small screens (already default) */
+@media (max-width: 640px) {
+  /* Ensure cards have proper spacing */
+  .card {
+    margin-bottom: 1rem;
+  }
+
+  /* Full-width buttons on mobile */
+  button.w-full-sm\:w-auto {
+    width: 100%;
+  }
+
+  /* Override any inline styles that might cause horizontal overflow */
+  .container,
+  .grid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Ensure text doesn't overflow */
+  h1, h2, h3, p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Table responsiveness (if any) */
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Subtle visual hierarchy improvements */
+.text-subtle {
+  @apply text-gray-500 text-sm italic;
+}
+
+/* Soft shadows and borders for depth */
+.card-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+}
+
+/* Consistent spacing for form elements (fallback) */
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+/* Custom scrollbar (optional, for better UX) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Cross-browser fallbacks for flex gap (older browsers) */
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-4 {
+  gap: 1rem;
+}
+/* etc. – these are already provided by Tailwind, but we can ensure */
+
+/* Print styles (optional) */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background-color: white;
+    color: black;
+  }
+}
