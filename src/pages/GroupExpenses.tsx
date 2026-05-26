@@ -31,7 +31,7 @@
 
 /**
  * GroupExpenses.tsx - BachatKaro Enterprise Edition
- * UI: Ultra-Clean High Contrast Mode with Signature Purple/Pink Gradients.
+ * UI: Monochrome Premium Edition (AMOLED Black + Soft Whites)
  * 🚀 ROCKET FIX: Zero-Delay Instant Auto-Save. Bypasses React state lags.
  * 🛡️ LOGIC LOCK: Native + Web Compatible, DB Constraints Safe.
  * 🔒 LOOP KILLER: lastProcessedText memory lock implemented.
@@ -113,22 +113,22 @@ const MemoizedExpenseRow = React.memo(({ exp, isAdmin, currentUserId, members, t
   const payerName = members.find((m: any) => m.id === exp.paid_by_member_id)?.name || exp.paid_by;
 
   return (
-    <div key={exp.id} className="p-4 bg-white rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm hover:border-purple-200 transition-colors">
+    <div key={exp.id} className="p-4 bg-surface rounded-2xl border border-white/5 flex items-center justify-between shadow-sm hover:border-white/10 transition-colors">
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-          <ReceiptIndianRupee className="h-4 w-4 text-slate-400" />
+        <div className="p-2.5 bg-white/5 rounded-xl border border-white/5">
+          <ReceiptIndianRupee className="h-4 w-4 text-white/40" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-slate-800 truncate">{exp.title}</p>
-          <p className="text-[10px] text-slate-400 font-medium mt-0.5">{t("paid_by")} {payerName} • {new Date(exp.created_at).toLocaleDateString()}</p>
+          <p className="text-sm font-bold text-white truncate">{exp.title}</p>
+          <p className="text-[10px] text-white/40 font-medium mt-0.5">{t("paid_by")} {payerName} • {new Date(exp.created_at).toLocaleDateString()}</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <span className="font-black text-slate-900 text-lg font-mono">{formatCurrency(Number(exp.amount))}</span>
+        <span className="font-black text-white text-lg font-mono">{formatCurrency(Number(exp.amount))}</span>
         {(isAdmin || exp.user_id === currentUserId) && (
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(exp)} className="h-8 w-8 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg"><Pencil className="h-3.5 w-3.5" /></Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(exp.id)} className="h-8 w-8 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg"><Trash2 className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => onEdit(exp)} className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><Pencil className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => onDelete(exp.id)} className="h-8 w-8 text-white/40 hover:text-rose-500 hover:bg-white/5 rounded-lg"><Trash2 className="h-3.5 w-3.5" /></Button>
           </div>
         )}
       </div>
@@ -146,6 +146,7 @@ const GroupExpenses = () => {
 
   // 🔒 Memory locks to prevent duplicate voice processing
   const lastProcessedText = useRef<string>("");
+  const settledTranscriptRef = useRef<string>("");
   const isProcessingRef = useRef<boolean>(false);
 
   // 🔒 [INITIALIZATION_SEQUENCE]
@@ -277,20 +278,40 @@ const GroupExpenses = () => {
 
   // 🛡️ [OFFLINE_SYNC_LISTENER]
   // Ensures UI stays in sync with local SQLite mutations even when disconnected.
+  // Implements strict debouncing to prevent invalidation storms during batch/sync events.
+  const invalidationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     const handleSyncUpdate = () => {
-      console.log("🔄 [OFFLINE_SYNC_EVENT] Invalidating ledger queries...");
-      queryClient.invalidateQueries({ queryKey: ["group-expenses", selectedGroupId] });
-      queryClient.invalidateQueries({ queryKey: ["expense-splits", selectedGroupId] });
-      queryClient.invalidateQueries({ queryKey: ["group-members", selectedGroupId] });
-      queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
+      if (invalidationTimeoutRef.current) {
+        clearTimeout(invalidationTimeoutRef.current);
+      }
+      
+      invalidationTimeoutRef.current = setTimeout(() => {
+        console.log("🔄 [OFFLINE_SYNC_EVENT] Debounced refresh signal executed. Invalidating ledger queries...");
+        void queryClient.invalidateQueries({ queryKey: ["group-expenses", selectedGroupId] });
+        void queryClient.invalidateQueries({ queryKey: ["expense-splits", selectedGroupId] });
+        void queryClient.invalidateQueries({ queryKey: ["group-members", selectedGroupId] });
+        void queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
+      }, 300); // 300ms debounce window
     };
 
     window.addEventListener('sync_queue_updated', handleSyncUpdate);
-    return () => window.removeEventListener('sync_queue_updated', handleSyncUpdate);
+    window.addEventListener('newTransaction', handleSyncUpdate);
+    window.addEventListener('newLocalTransaction', handleSyncUpdate);
+    
+    return () => {
+      if (invalidationTimeoutRef.current) clearTimeout(invalidationTimeoutRef.current);
+      window.removeEventListener('sync_queue_updated', handleSyncUpdate);
+      window.removeEventListener('newTransaction', handleSyncUpdate);
+      window.removeEventListener('newLocalTransaction', handleSyncUpdate);
+    };
   }, [queryClient, selectedGroupId, GROUPS_QUERY_KEY]);
 
   // 🛡️ REALTIME LISTENER: Invalidates cache on remote, backend-triggered changes.
+  // Uses debouncing to prevent event storms during rapid cloud syncs.
+  const realtimeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     // 1. Do not subscribe if no group is selected.
     if (!selectedGroupId) return;
@@ -307,10 +328,16 @@ const GroupExpenses = () => {
           filter: `group_id=eq.${selectedGroupId}`,
         },
         (payload) => {
-          console.log('✅ [REALTIME_INSERT] New group expense detected, invalidating cache.', payload.new);
-          // 3. Invalidate queries to trigger a refetch and update the UI.
-          queryClient.invalidateQueries({ queryKey: ['group-expenses', selectedGroupId] });
-          queryClient.invalidateQueries({ queryKey: ['expense-splits', selectedGroupId] });
+          console.log('✅ [REALTIME_INSERT] New group expense detected, scheduling cache invalidation.', payload.new);
+          
+          if (realtimeTimeoutRef.current) {
+            clearTimeout(realtimeTimeoutRef.current);
+          }
+          
+          realtimeTimeoutRef.current = setTimeout(() => {
+            void queryClient.invalidateQueries({ queryKey: ['group-expenses', selectedGroupId] });
+            void queryClient.invalidateQueries({ queryKey: ['expense-splits', selectedGroupId] });
+          }, 300);
         }
       )
       .subscribe((status, err) => {
@@ -326,6 +353,7 @@ const GroupExpenses = () => {
     // 4. Cleanup function to remove the channel when the component unmounts or the group changes.
     return () => {
       console.log(`🔌 [REALTIME_UNSUB] Unsubscribing from group: ${selectedGroupId}`);
+      if (realtimeTimeoutRef.current) clearTimeout(realtimeTimeoutRef.current);
       supabase.removeChannel(channel);
     };
   }, [selectedGroupId, queryClient]);
@@ -449,7 +477,19 @@ const GroupExpenses = () => {
     }
   }, [isLoadingMembers, isLoadingExpenses, isLoadingSplits, isHydrating]);
 
-  const safeExpenses = expenses ?? [];
+  const safeExpenses = useMemo(() => {
+    if (!expenses) return [];
+    // 🛡️ [UI_DEDUPLICATION_HARDENING]
+    // Rule: Activity Ledger MUST never show duplicate transactions even if 
+    // event storms or race conditions cause duplicate state appends.
+    const seen = new Set();
+    return expenses.filter(exp => {
+      if (!exp.id || seen.has(exp.id)) return false;
+      seen.add(exp.id);
+      return true;
+    });
+  }, [expenses]);
+  
   const safeSplits = splits ?? [];
 
   // 💎 30-Day Premium Logic
@@ -654,9 +694,9 @@ const GroupExpenses = () => {
     }
   };
 
-  const gradientClass = "bg-gradient-to-r from-[#7C3AED] via-[#EC4899] to-[#D946EF] text-white shadow-lg border-none";
-  const cardStyle = "bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden";
-  const inputClass = "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-[#EC4899] focus:ring-[#EC4899]/20";
+  const gradientClass = "bg-white text-background hover:bg-white/90 shadow-lg border-none active:scale-[0.98]";
+  const cardStyle = "bg-surface rounded-[24px] border border-border shadow-sm overflow-hidden";
+  const inputClass = "bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-white/20 focus:ring-0 font-mono";
 
   const speechLang = useMemo(() => {
     const langMap: Record<string, string> = {
@@ -805,7 +845,7 @@ const GroupExpenses = () => {
     console.log("🧪 [FINAL_BALANCE_RENDER] (All Members)", mBalances);
 
     return { debts: debtsList, memberBalances: mBalances };
-  }, [safeExpenses, safeSplits, members]);
+  }, [safeExpenses, safeSplits, members, isHydrating, selectedGroupId, isLoadingExpenses, isAuthReady]);
 
   const isUUID = (str: string) => /^[0-9a-fA-F-]{36}$/.test(str);
 
@@ -1146,8 +1186,14 @@ const GroupExpenses = () => {
     const rawTranscript = voice.transcript || "";
     const transcript = rawTranscript.trim();
     
-    // 🛡️ HARD LOOP BREAK: Block if already processing, empty, too short, or saving
-    if (isProcessingRef.current || !transcript || transcript.length < 3 || isAutoSaving) return;
+    // 🛡️ HARD SETTLEMENT LOCK: Block if already processing, empty, too short, saving, or already settled
+    if (
+      isProcessingRef.current || 
+      !transcript || 
+      transcript.length < 3 || 
+      isAutoSaving || 
+      transcript === settledTranscriptRef.current
+    ) return;
     
     // 🔒 Deduplication: Block redundant checks while listening, allow final AI pass when mic stops
     if (transcript === lastProcessedText.current && voice.listening) return;
@@ -1169,6 +1215,8 @@ const GroupExpenses = () => {
           if (!isVoicePremiumActive) {
             if (voice.listening) voice.stop();
             setShowPremiumModal(true);
+            setIsParsing(false);
+            isProcessingRef.current = false;
             return;
           }
 
@@ -1177,7 +1225,11 @@ const GroupExpenses = () => {
           const targetExp = expensesRef.current.find((e: any) => e.title.toLowerCase().includes(targetName));
 
           if (targetExp) {
+            // 🛡️ [SETTLEMENT_SEQUENCE]
             if (voice.listening) voice.stop();
+            if (voice.reset) voice.reset();
+            settledTranscriptRef.current = transcript;
+
             if (isDeleteCommand) {
               await handleDeleteExpense(targetExp.id);
             } else if (isEditCommand) {
@@ -1188,7 +1240,13 @@ const GroupExpenses = () => {
           } else {
             toast({ title: t("not_found", "Not Found ❌"), description: `Could not find a bill named "${targetName}"` });
             if (voice.listening) voice.stop();
+            if (voice.reset) voice.reset();
+            settledTranscriptRef.current = transcript;
           }
+          
+          // 🛡️ [SETTLEMENT_LOCK_RELEASE]
+          setIsParsing(false);
+          isProcessingRef.current = false;
           return; 
         }
 
@@ -1209,12 +1267,16 @@ const GroupExpenses = () => {
 
           const matchedTitle = cleanTitle.length > 1 ? cleanTitle : "Voice Entry";
 
+          // 🛡️ [SETTLEMENT_SEQUENCE] Kill source before async save
+          if (voice.listening) voice.stop();
+          if (voice.reset) voice.reset();
+          settledTranscriptRef.current = transcript;
+
           setExpenseAmount(matchedAmount);
           safeSetPayerId(matchedPayerId, "VoiceRocket");
           setExpenseTitle(matchedTitle);
           setSplitType("equal"); 
 
-          voice.stop();
           await processExpenseRef.current(Number(matchedAmount), matchedPayerId, matchedTitle, "equal", {}, false);
         } 
         else if (!voice.listening) {
@@ -1222,6 +1284,10 @@ const GroupExpenses = () => {
           const result = await parseWithAIRef.current(transcript);
           const data = result.success ? result.data : result.fallback;
           
+          // 🛡️ [SETTLEMENT_SEQUENCE] Kill source
+          if (voice.reset) voice.reset();
+          settledTranscriptRef.current = transcript;
+
           let aiMatchedId = "";
           if (data.paidBy) {
             const aiFound = membersRef.current.find((m: any) => m.name.toLowerCase().includes(data.paidBy!.toLowerCase()));
@@ -1249,13 +1315,16 @@ const GroupExpenses = () => {
       } catch (err) {
         console.error("Voice parsing error:", err);
       } finally {
+        // 🛡️ [FINAL_UI_SETTLEMENT]
         setIsParsing(false);
         isProcessingRef.current = false;
+        // Force transcript to be empty in next render loop if voice.reset hasn't propagated yet
+        if (voice.transcript) voice.reset();
       }
     }, 600); 
 
     return () => clearTimeout(timeoutId);
-  }, [voice.transcript, voice.listening, isAutoSaving, isVoicePremiumActive, toast, t, safeSetPayerId, handleDeleteExpense, voice]);
+  }, [voice.transcript, voice.listening, isAutoSaving]);
 
   const handleUpdateExpenseTitle = async () => {
     if (!editDialogExp || !editTempTitle.trim()) return;
@@ -1637,11 +1706,9 @@ const GroupExpenses = () => {
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="min-h-screen bg-slate-50 pb-32 md:pb-12 font-sans text-slate-900 overflow-x-hidden border-t-[6px] border-[#EC4899]">
-        <AppHeader />
-        
+      <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden">
         {isOffline && (
-          <div className="bg-rose-500 text-white text-xs font-bold text-center py-2 flex items-center justify-center gap-2">
+          <div className="bg-warning text-background text-xs font-bold text-center py-2 flex items-center justify-center gap-2 shadow-md">
             <WifiOff className="h-4 w-4" /> {t("offline", "Offline Mode Active")}
           </div>
         )}
@@ -1649,8 +1716,8 @@ const GroupExpenses = () => {
         <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
           {!isAuthReady || isLoadingGroups ? (
             <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-              <Loader2 className="h-10 w-10 text-purple-600 animate-spin" />
-              <p className="text-slate-500 font-bold animate-pulse">{t("loading", "Loading...")}</p>
+              <Loader2 className="h-10 w-10 text-ai-accent animate-spin" />
+              <p className="text-text-secondary font-medium animate-pulse">{t("loading", "Loading...")}</p>
             </div>
           ) : (
             <>
@@ -1678,34 +1745,34 @@ const GroupExpenses = () => {
           />
 
           {!selectedGroupId ? (
-            <Card className="bg-white border-dashed border-2 border-slate-200 rounded-[36px] p-12 text-center mt-8 shadow-sm">     
-              <div className="bg-slate-50 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-5">
-                <LayoutGrid className="h-10 w-10 text-slate-300" />
+            <Card className="bg-surface border-dashed border-2 border-white/5 rounded-[36px] p-12 text-center mt-8 shadow-sm">     
+              <div className="bg-white/5 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-5">
+                <LayoutGrid className="h-10 w-10 text-white/20" />
               </div>
-              <h2 className="text-2xl font-black text-slate-800 mb-2">{t("split_smarter", "Split Smarter")}</h2>
-              <p className="text-slate-500 max-w-sm mx-auto font-medium">{t("choose_group_msg", "Choose a group from the top menu or create a new one to start recording shared bills.")}</p>
+              <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">{t("split_smarter", "Split Smarter")}</h2>
+              <p className="text-white/40 max-w-sm mx-auto font-medium text-sm">{t("choose_group_msg", "Choose a group from the top menu or create a new one to start recording shared bills.")}</p>
             </Card>
           ) : isHydrating ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <Loader2 className="h-10 w-10 text-purple-600 animate-spin" />
-              <p className="text-slate-500 font-bold animate-pulse">{t("loading_ledger", "Restoring Ledger...")}</p>
+              <Loader2 className="h-10 w-10 text-white/40 animate-spin" />
+              <p className="text-white/20 font-bold uppercase tracking-widest text-xs animate-pulse">{t("loading_ledger", "Restoring Ledger...")}</p>
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* TOP STATS */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className={cn("p-5 flex flex-col justify-center items-center text-center", cardStyle)}>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">{t("group_total")}</p>
-                  <p className="text-2xl font-black text-slate-800 font-mono">{formatCurrency(totalExpense)}</p>
+                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mb-1">{t("group_total")}</p>
+                  <p className="text-2xl font-bold text-white font-mono tracking-tighter">{formatCurrency(totalExpense)}</p>
                 </Card>
                 <Card className={cn("p-5 flex flex-col justify-center items-center text-center", cardStyle)}>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">{t("fixed_share")}</p>
-                  <p className="text-2xl font-black text-purple-600 font-mono">{formatCurrency(perPerson)}</p>
+                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mb-1">{t("fixed_share")}</p>
+                  <p className="text-2xl font-bold text-white font-mono tracking-tighter">{formatCurrency(perPerson)}</p>
                 </Card>
                 <div className="col-span-2 flex items-center justify-end gap-2 px-1">
-                  <div className="flex items-center justify-between w-full sm:w-auto gap-2 bg-white p-2 rounded-[20px] border border-slate-200 shadow-sm">
+                  <div className="flex items-center justify-between w-full sm:w-auto gap-2 bg-surface p-2 rounded-[20px] border border-white/5 shadow-sm">
                     <BillRoulette members={activeMembers} />
-                    <Button onClick={() => setTripAdvisorOpen(true)} variant="outline" size="icon" className="h-12 w-12 rounded-xl">                      <Map className="h-5 w-5 text-slate-600" />
+                    <Button onClick={() => setTripAdvisorOpen(true)} variant="outline" size="icon" className="h-12 w-12 rounded-xl border-white/5 bg-white/5 hover:bg-white/10">                      <Map className="h-5 w-5 text-text-muted" />
                     </Button>
                   </div>
                 </div>
@@ -1748,21 +1815,21 @@ const GroupExpenses = () => {
 
                   {/* Debts Card */}
                   <Card className={cardStyle}>
-                    <CardHeader className="bg-slate-900 py-4">
-                      <CardTitle className="text-xs font-black uppercase text-slate-300 flex items-center gap-2 tracking-widest">
+                    <CardHeader className="bg-white/5 py-4">
+                      <CardTitle className="text-xs font-black uppercase text-white/40 flex items-center gap-2 tracking-widest">
                         <ReceiptIndianRupee className="h-4 w-4" /> {t("who_owes_whom")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-4 space-y-2">
                       {debts.length > 0 ? debts.map((d, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                          <span className="font-bold text-emerald-800 text-xs sm:text-sm">{d.fromName}</span>
-                          <ArrowRight className="h-3 w-3 text-emerald-500 mx-1" />
-                          <span className="font-bold text-emerald-800 text-xs sm:text-sm">{d.toName}</span>
-                          <span className="font-black text-emerald-700 ml-auto font-mono">{formatCurrency(d.amount)}</span>
+                        <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                          <span className="font-bold text-white/80 text-xs sm:text-sm">{d.fromName}</span>
+                          <ArrowRight className="h-3 w-3 text-white/40 mx-1" />
+                          <span className="font-bold text-white/80 text-xs sm:text-sm">{d.toName}</span>
+                          <span className="font-black text-white ml-auto font-mono tracking-tighter">{formatCurrency(d.amount)}</span>
                         </div>
                       )) : (
-                        <div className="text-center py-4 text-xs font-bold text-slate-400">{t("all_settled")}</div>
+                        <div className="text-center py-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">{t("all_settled")}</div>
                       )}
                     </CardContent>
                   </Card>
@@ -1773,80 +1840,80 @@ const GroupExpenses = () => {
                   
                   {/* Bill Entry Panel */}
                   <Card className={cardStyle}>
-                    <CardHeader className="bg-purple-50/50 py-5 border-b border-slate-100 flex flex-row items-center justify-between">
+                    <CardHeader className="bg-white/[0.02] py-5 border-b border-white/5 flex flex-row items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <CardTitle className="text-lg font-black text-purple-700">{t("new_bill_entry")}</CardTitle>
+                          <CardTitle className="text-lg font-black text-white uppercase tracking-tighter">{t("new_bill_entry")}</CardTitle>
                           {isVoicePremiumActive && premiumDaysLeft <= 5 && premiumDaysLeft > 0 && (
-                            <span className="text-[9px] bg-rose-100 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full font-black uppercase tracking-wider animate-pulse">
+                            <span className="text-[9px] bg-white/10 text-white border border-white/10 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider animate-pulse">
                               ⏳ {premiumDaysLeft} Days Left
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-500 font-medium mt-1">
+                        <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest mt-1">
                           {t("voice_hint")} 
-                          {isVoicePremiumActive && <span className="text-purple-600 font-bold ml-1">{t("voice_hint_premium")}</span>}
+                          {isVoicePremiumActive && <span className="text-white font-black ml-1">{t("voice_hint_premium")}</span>}
                         </p>
                       </div>
 
                       <div className="flex gap-2 items-center">
                         {isAutoSaving && (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 rounded-full border border-emerald-200 hidden sm:flex">
-                            <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-                            <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">{t("saving_instantly")}</span>
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 rounded-full border border-white/10 hidden sm:flex">
+                            <div className="h-1.5 w-1.5 bg-white rounded-full opacity-40 animate-pulse" />
+                            <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">{t("saving_instantly")}</span>
                           </div>
                         )}
-                        <Button onClick={handleVoiceStart} className={cn("relative h-12 w-12 rounded-full shadow-md transition-all duration-300", voice.listening ? "bg-rose-500 hover:bg-rose-600 scale-110" : gradientClass)}>
-                          {voice.listening && <span className="absolute inset-0 rounded-full bg-rose-500 animate-ping opacity-20"></span>}
-                          {voice.listening ? <MicOff className="h-5 w-5 text-white" /> : <Mic className="h-5 w-5 text-white" />}
+                        <Button onClick={handleVoiceStart} className={cn("relative h-12 w-12 rounded-full shadow-md transition-all duration-300", voice.listening ? "bg-red-500 hover:bg-red-600 scale-110" : "bg-white text-background hover:bg-white/90")}>
+                          {voice.listening && <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20"></span>}
+                          {voice.listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                         </Button>
                       </div>
                     </CardHeader>
                     
                     <CardContent className="pt-6 space-y-5">
                       {(voice.transcript || isParsing) && (
-                        <div className="p-4 bg-purple-50 rounded-xl border border-purple-100 flex items-center gap-3">
-                          {isParsing ? <Loader2 className="h-5 w-5 text-purple-500 animate-spin mt-0.5" /> : <div className="w-2 h-2 mt-1 rounded-full bg-rose-500 animate-ping" />}
-                          <p className="text-sm italic font-bold text-purple-900">{isParsing ? t("analyzing_command") : `"${voice.transcript}"`}</p>
+                        <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-3">
+                          {isParsing ? <Loader2 className="h-4 w-4 text-white/40 animate-spin" /> : <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />}
+                          <p className="text-sm italic font-medium text-white/80">{isParsing ? t("analyzing_command") : `"${voice.transcript}"`}</p>
                         </div>
                       )}
                       
                       <div className="grid sm:grid-cols-2 gap-5">
-                        <div className="space-y-1.5"><Label className="text-xs font-bold text-slate-600 ml-1">{t("bill_name")}</Label><Input value={expenseTitle} onChange={e => setExpenseTitle(e.target.value)} placeholder={t("bill_name_placeholder")} className={cn("h-12 rounded-xl", inputClass)} /></div>
-                        <div className="space-y-1.5"><Label className="text-xs font-bold text-slate-600 ml-1">{t("amount")}</Label><Input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} placeholder={t("amount_placeholder")} className={cn("h-12 rounded-xl font-black text-xl", inputClass)} /></div>
+                        <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">{t("bill_name")}</Label><Input value={expenseTitle} onChange={e => setExpenseTitle(e.target.value)} placeholder={t("bill_name_placeholder")} className={inputClass} /></div>
+                        <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">{t("amount")}</Label><Input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} placeholder={t("amount_placeholder")} className={cn("text-xl font-black font-mono", inputClass)} /></div>
                       </div>
                       
                       <div className="grid sm:grid-cols-2 gap-5">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-slate-600 ml-1">{t("who_paid")}</Label>
+                          <Label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">{t("who_paid")}</Label>
                           <Select value={expensePaidByMemberId} onValueChange={handlePayerChange}>
-                            <SelectTrigger className={cn("h-12 rounded-xl font-bold", inputClass)}><SelectValue placeholder={t("select_member")} /></SelectTrigger>
-                            <SelectContent className="rounded-xl bg-white border-slate-200">
-                              {activeMembers.map((m: any) => (<SelectItem key={m.id} value={m.id} className="font-bold text-slate-800 focus:bg-slate-100">{m.name}</SelectItem>))}
+                            <SelectTrigger className={cn("h-12 rounded-xl font-bold border-white/5 bg-white/5 text-white", inputClass)}><SelectValue placeholder={t("select_member")} /></SelectTrigger>
+                            <SelectContent className="rounded-xl bg-surface border-white/10 text-white">
+                              {activeMembers.map((m: any) => (<SelectItem key={m.id} value={m.id} className="font-bold focus:bg-white/5">{m.name}</SelectItem>))}
                             </SelectContent>
                           </Select>
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-slate-600 ml-1">{t("split_method")}</Label>
+                          <Label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">{t("split_method")}</Label>
                           <Select value={splitType} onValueChange={(v: SplitType) => setSplitType(v)}>
-                            <SelectTrigger className={cn("h-12 rounded-xl font-bold", inputClass)}><SelectValue /></SelectTrigger>
-                            <SelectContent className="rounded-xl bg-white border-slate-200">
-                              <SelectItem value="equal" className="font-bold text-slate-800 focus:bg-slate-100">{t("split_equally")}</SelectItem>
-                              <SelectItem value="unequal" className="font-bold text-slate-800 focus:bg-slate-100">{t("split_unequally")}</SelectItem>
+                            <SelectTrigger className={cn("h-12 rounded-xl font-bold border-white/5 bg-white/5 text-white", inputClass)}><SelectValue /></SelectTrigger>
+                            <SelectContent className="rounded-xl bg-surface border-white/10 text-white">
+                              <SelectItem value="equal" className="font-bold focus:bg-white/5">{t("split_equally")}</SelectItem>
+                              <SelectItem value="unequal" className="font-bold focus:bg-white/5">{t("split_unequally")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                       </div>
 
                       {splitType === "unequal" && (
-                        <div className="mt-4 p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4 animate-in fade-in zoom-in-95">
+                        <div className="mt-4 p-5 bg-white/5 border border-white/5 rounded-2xl space-y-4 animate-in fade-in zoom-in-95">
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
-                            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">{t("individual_shares")}</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-white/20">{t("individual_shares")}</Label>
                             {(() => {
                               const sum = Object.values(customAmounts).reduce((acc, val) => acc + Number(val || 0), 0);
                               const isMatch = sum === Number(expenseAmount || 0);
                               return (
-                                <span className={cn("text-[10px] font-black px-3 py-1.5 rounded-lg shadow-sm border font-mono", isMatch ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200')}>
+                                <span className={cn("text-[9px] font-bold px-3 py-1 rounded-lg border font-mono tracking-tighter", isMatch ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20')}>
                                   Total: {formatCurrency(convertToPaisa(sum))} / {formatCurrency(convertToPaisa(expenseAmount || 0))}
                                 </span>
                               );
@@ -1854,11 +1921,11 @@ const GroupExpenses = () => {
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {activeMembers.map((m: any) => (
-                              <div key={m.id} className="flex items-center justify-between gap-3 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                                <span className="text-xs font-bold text-slate-700 pl-2">{m.name}</span>
+                              <div key={m.id} className="flex items-center justify-between gap-3 bg-background/50 p-2 rounded-xl border border-white/5 shadow-sm">
+                                <span className="text-xs font-bold text-white/80 pl-2">{m.name}</span>
                                 <div className="relative w-28">
-                                  <ReceiptIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                                  <Input type="number" placeholder="0" value={customAmounts[m.id] || ""} onChange={(e) => setCustomAmounts(prev => ({ ...prev, [m.id]: e.target.value }))} className="h-10 pl-8 rounded-lg font-black text-slate-800 border-slate-200" />
+                                  <ReceiptIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-white/20" />
+                                  <Input type="number" placeholder="0" value={customAmounts[m.id] || ""} onChange={(e) => setCustomAmounts(prev => ({ ...prev, [m.id]: e.target.value }))} className="h-9 pl-8 rounded-lg font-black text-sm text-white border-white/5 bg-white/5 focus:border-white/20" />
                                 </div>
                               </div>
                             ))}
@@ -1866,7 +1933,7 @@ const GroupExpenses = () => {
                         </div>
                       )}
                       
-                      <Button type="button" onClick={(e) => { e.stopPropagation(); addExpense(); }} disabled={isAutoSaving || !expenseAmount || !expensePaidByMemberId} className={cn("w-full h-12 mt-2 font-bold text-base rounded-xl", gradientClass)}>
+                      <Button type="button" onClick={(e) => { e.stopPropagation(); addExpense(); }} disabled={isAutoSaving || !expenseAmount || !expensePaidByMemberId} className="w-full h-14 mt-2 font-black uppercase tracking-widest text-sm rounded-xl bg-white text-background hover:bg-white/90 shadow-lg active:scale-[0.98]">
                         {isAutoSaving ? <Loader2 className="animate-spin h-5 w-5" /> : <span className="flex items-center gap-2"><Sparkles className="h-4 w-4"/> {t("record_expense")}</span>}
                       </Button>
                     </CardContent>
@@ -1874,41 +1941,46 @@ const GroupExpenses = () => {
 
                   {/* Activity Feed */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between mt-4 mb-2">
-                      <h3 className="text-xs font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
-                        <Clock className="h-4 w-4" /> {t("activity_ledger")}
+                    <div className="flex items-center justify-between mt-4 mb-2 px-1">
+                      <h3 className="text-[10px] font-bold uppercase text-white/20 tracking-[0.2em] flex items-center gap-2">
+                        <Clock className="h-3.5 w-3.5" /> {t("activity_ledger")}
                       </h3>
                       {expenses.length > 0 && (
                         <div className="flex items-center gap-2">
                           
                           {/* 🚀 FIXED: Non-blocking Bulk Delete Dialog */}
-                          <Dialog open={showClearLedgerConfirm} onOpenChange={setShowClearLedgerConfirm}>
+                          <Dialog open={showClearLedgerConfirm} onOpenChange={show => !isBulkDeleting && setShowClearLedgerConfirm(show)}>
                             <DialogTrigger asChild>
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
                                 disabled={isBulkDeleting}
-                                className="h-9 px-3 text-rose-500 hover:bg-rose-50 rounded-lg font-black text-[10px] uppercase tracking-widest border border-rose-100"
+                                className="h-9 px-4 text-white/20 hover:text-red-400 hover:bg-red-500/5 rounded-xl font-bold text-[9px] uppercase tracking-widest border border-white/5 transition-all"
                               >
                                 {isBulkDeleting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Trash2 className="h-3 w-3 mr-1" />}
                                 {t("clear_ledger")}
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="p-6 max-w-sm w-[90%] mx-auto rounded-3xl bg-white">
+                            <DialogContent className="p-8 max-w-sm w-[90%] mx-auto rounded-[32px] bg-background border border-white/10 shadow-2xl">
                               <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2 text-rose-600 font-bold">
-                                  <AlertTriangle className="h-6 w-6" /> {t("clear_ledger_confirm_title")}
+                                <DialogTitle className="flex flex-col items-center gap-4 text-white font-black text-xl uppercase tracking-tight">
+                                  <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                                  </div>
+                                  {t("clear_ledger_confirm_title")}
                                 </DialogTitle>
-                                <DialogDescription>{t("clear_ledger_confirm_desc")}</DialogDescription>
+                                <DialogDescription className="text-center text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed pt-2">
+                                  {t("clear_ledger_confirm_desc")}
+                                </DialogDescription>
                               </DialogHeader>
-                              <DialogFooter className="flex gap-2 mt-4">
-                                <Button variant="outline" onClick={() => setShowClearLedgerConfirm(false)} className="rounded-xl flex-1 font-bold">{t("common.cancel")}</Button>
-                                <Button onClick={handleBulkDelete} className="bg-rose-600 text-white rounded-xl flex-1 font-bold shadow-lg hover:bg-rose-700">{t("yes_clear")}</Button>
+                              <DialogFooter className="flex gap-3 mt-8">
+                                <Button variant="ghost" onClick={() => setShowClearLedgerConfirm(false)} className="rounded-xl flex-1 font-bold text-white/40 uppercase tracking-widest text-[10px] border border-white/5 hover:bg-white/5">{t("common.cancel")}</Button>
+                                <Button onClick={handleBulkDelete} className="bg-white text-background rounded-xl flex-1 font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-white/90 active:scale-95">{t("yes_clear")}</Button>
                               </DialogFooter>
                             </DialogContent>
                           </Dialog>
                           
-                          <div className="bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+                          <div className="bg-white/5 rounded-xl p-1 border border-white/5 shadow-sm">
                              <ExportMenu
                                data={expenses.map((exp: any) => {
                                  const payerName = members.find((m: any) => m.id === exp.paid_by_member_id)?.name || exp.paid_by;

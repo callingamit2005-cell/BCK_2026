@@ -14,28 +14,19 @@ const AnnouncementBar = () => {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[48px] z-[110] bg-gradient-to-r from-[#7C3AED] via-[#EC4899] to-[#D946EF] shadow-[0_0_20px_rgba(236,72,153,0.3)] flex items-center justify-center px-4 overflow-hidden">
-      {/* Subtle animated light sweep */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
-      
+    <div className="fixed top-0 left-0 right-0 h-[48px] z-[110] bg-white shadow-sm flex items-center justify-center px-4 overflow-hidden">
       <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-row items-center justify-center gap-3 md:gap-6">
-        <p className="text-white text-[10px] md:text-sm font-medium tracking-wide truncate">
-          🚀 Start using the <span className="font-black text-white decoration-[#ff0f7b] underline underline-offset-4 decoration-2">BachatKaro Web Version</span> instantly — all features are currently free during beta.
+        <p className="text-black text-[10px] md:text-sm font-bold uppercase tracking-widest truncate">
+          🚀 <span className="opacity-60">Start using the</span> BachatKaro Web Version <span className="opacity-60">instantly</span>
         </p>
         
         <Link 
           to="/auth" 
-          className="shrink-0 bg-white text-[#EC4899] px-4 py-1 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2"
+          className="shrink-0 bg-black text-white px-4 py-1 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all hover:opacity-80 active:scale-95 flex items-center gap-2"
         >
-          Login / Signup
+          Access Beta
         </Link>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes shimmer {
-          100% { transform: translateX(100%); }
-        }
-      `}} />
     </div>
   );
 };

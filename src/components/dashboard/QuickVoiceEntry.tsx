@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Loader2, Plus } from 'lucide-react';
+import { Mic, MicOff, Loader2, Plus, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useDashboardAIVoice } from "@/voice/integrations/useDashboardAIVoice";
@@ -16,7 +16,13 @@ import {
   mergeUnifiedLedgerEntries,
 } from '@/features/transactions/ledger';
 
-const QuickVoiceEntry = () => {
+import { parseMultilingualInput } from '@/utils/smartParserEngine';
+
+interface QuickVoiceEntryProps {
+  onManualEntryClick?: () => void;
+}
+
+const QuickVoiceEntry = React.memo(({ onManualEntryClick }: QuickVoiceEntryProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -70,19 +76,27 @@ const QuickVoiceEntry = () => {
 
   const processVoiceExpense = useCallback(async (amount: number, note: string, category: string, mode: string) => {
     if (isAutoSaving || !user) return false;
+    
+    // 🛡️ [RACE_CONDITION_LOCK]
     setIsAutoSaving(true);
     if (voice && voice.reset) voice.reset();
 
     try {
       const savedTransaction = await createLedgerTransaction({
         userId: user.id,
-        amount: convertToPaisa(amount),
+        amount: amount, // Pass Rupees
         type: 'expense',
         category,
         paymentMode: mode,
-        payee: note || "Voice Entry",
+        description: note || "Voice Entry",
         source: 'voice',
+        date: new Date().toISOString(),
       });
+
+      // 🛡️ [UI_STATE_SYNCHRONIZATION]
+      await queryClient.invalidateQueries();
+      window.dispatchEvent(new Event('newTransaction'));
+      window.dispatchEvent(new Event('sync_queue_updated'));
 
       toast({
         title: "Saved Successfully!",
@@ -91,6 +105,9 @@ const QuickVoiceEntry = () => {
       });
       return true;
     } catch (e: any) {
+      // 🛡️ [PHANTOM_POPUP_FIX]
+      // Only show error toast if it's a legitimate failure, not an abort or redundant trigger.
+      console.error("[VOICE_SAVE_ERROR]", e);
       toast({ title: "Error", description: e.message, variant: "destructive" });
       return false;
     } finally {
@@ -115,44 +132,31 @@ const QuickVoiceEntry = () => {
       setIsParsing(true);
       try {
         const transcript = currentTranscript.trim();
-        const amountMatch = transcript.match(/\b\d+(?:\.\d+)?\b/);
+        const data = parseMultilingualInput(transcript);
 
-        if (amountMatch) {
-          const matchedAmount = amountMatch[0];
-          let matchedNote = transcript
-            .replace(matchedAmount, "")
-            .replace(/^(for|paid|rs|rupees?|₹)\s+/i, "")
-            .trim();
-
-          let matchedCategory = "Shopping";
-          if (/(food|lunch|dinner|breakfast|snack|khana|chai|coffee|milk|grocery|ration)/i.test(transcript)) matchedCategory = "Food";
-          else if (/(travel|taxi|cab|uber|ola|bus|train|flight|ticket|auto|petrol|fuel|diesel)/i.test(transcript)) matchedCategory = "Travel";
-          else if (/(movie|cinema|netflix|amazon|prime|hotstar|chill|game)/i.test(transcript)) matchedCategory = "Entertainment";
-          else if (/(medicine|doctor|hospital|pharmacy|pill|medical|health)/i.test(transcript)) matchedCategory = "Healthcare";
-          else if (/(bill|light|electricity|water|wifi|internet|recharge|phone|emi|rent)/i.test(transcript)) matchedCategory = "Bills";
-
-          let matchedMode = "UPI";
-          if (/(cash|nagad|rokar)/i.test(transcript)) {
-            matchedMode = "Cash";
-            matchedNote = matchedNote.replace(/(cash|nagad|rokar)/i, "").trim();
-          } else if (/(card|credit|debit|swipe)/i.test(transcript)) {
-            matchedMode = "Card";
-            matchedNote = matchedNote.replace(/(card|credit card|debit card|swipe|card se)/i, "").trim();
-          }
-
-          const finalNote = matchedNote.length > 1 ? matchedNote : "Voice Entry";
-
+        if (data.amount) {
+          // 🛡️ [VOICE_SETTLEMENT_LOCK]
+          // Stop mic and clear transcript immediately to prevent redundant parsing
+          // of the same voice data which causes 'idempotency collision' error popups.
           if (voice.listening) voice.stop();
-          await processExpenseRef.current(Number(matchedAmount), finalNote, matchedCategory, matchedMode);
+          if (voice.reset) voice.reset();
+          
+          await processExpenseRef.current(
+            Number(data.amount), 
+            data.description, 
+            data.category, 
+            data.paymentMode
+          );
         } else if (!voice.listening) {
+          // Fallback to AI if deterministic parser fails to find an amount
           const result = await parseWithAIRef.current(transcript);
-          const data = result.success ? result.data : result.fallback;
-          if (data.amount) {
+          const aiData = result.success ? result.data : result.fallback;
+          if (aiData.amount) {
             await processExpenseRef.current(
-              Number(data.amount),
-              data.note || "Voice Entry",
-              data.category || "Food",
-              data.paymentMode || "UPI",
+              Number(aiData.amount),
+              aiData.title || "Voice Entry",
+              aiData.category || "Food",
+              aiData.paymentMode || "UPI",
             );
           }
         }

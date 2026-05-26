@@ -45,29 +45,23 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
   }
 
   // UI CONSTANTS
-  const neonGlass = "bg-[#0a0014]/80 backdrop-blur-xl border border-purple-500/30 shadow-[0_20px_50px_-12px_rgba(168,85,247,0.25)] rounded-[32px] overflow-hidden transform-gpu";
-  const inputStyle = "h-14 rounded-2xl bg-white/5 border-white/10 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 text-white font-bold transition-all placeholder:text-white/20";
-  const labelStyle = "text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2 ml-1";
+  const premiumSurface = "bg-surface border border-white/5 shadow-sm rounded-[32px] overflow-hidden transform-gpu";
+  const inputStyle = "h-14 rounded-2xl bg-white/5 border-white/10 focus:border-white/20 focus:ring-0 text-white font-bold transition-all placeholder:text-white/20";
+  const labelStyle = "text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted mb-2 ml-1";
 
   return (
-    <Card className={cn(neonGlass, "relative")}>
-      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-purple-600 to-pink-500" />
-      
-      <div className="absolute -top-24 -right-24 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
-        <Trophy className="h-64 w-64 text-purple-500" />
-      </div>
-
+    <Card className={cn(premiumSurface, "relative")}>
       <CardHeader className="relative z-10 p-8 pb-4">
         <CardTitle className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
-              <Target className="h-6 w-6 text-purple-400" />
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+              <Target className="h-6 w-6 text-white/40" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black text-white uppercase italic tracking-tighter">
-                {t('dreams.title', 'My Dream Goal')} 🎯
+              <span className="text-xl font-bold text-white uppercase tracking-tight">
+                {t('dreams.title', 'My Dream Goal')}
               </span>
-              <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+              <span className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
                 {t('dreams.subtitle', 'Savings Roadmap')}
               </span>
             </div>
@@ -125,7 +119,7 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
 
             <Button 
               onClick={saveGoal} 
-              className="w-full h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black uppercase tracking-widest shadow-lg hover:shadow-purple-500/20 active:scale-95 transition-all"
+              className="w-full h-14 rounded-2xl bg-white text-background font-bold uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all"
             >
               {t('dreams.saveBtn', 'Lock Goal')} 🚀
             </Button>
@@ -134,40 +128,39 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
           <div className="space-y-8 animate-in fade-in">
             {/* Progress Info */}
             <div className="flex flex-col">
-              <span className="text-purple-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">
+              <span className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em] mb-2">
                 {t('dreams.tracking', 'Now Tracking')}
               </span>
-              <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none">{goalName}</h3>
+              <h3 className="text-3xl font-bold text-white uppercase tracking-tight leading-none">{goalName}</h3>
             </div>
 
             {/* Progress Bar */}
             <div className="space-y-4">
               <div className="flex justify-between items-end">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{t('dreams.saved', 'Saved')}</span>
-                  <span className="text-xl font-black text-white font-mono">{formatCurrency(safeSavings)}</span>
+                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{t('dreams.saved', 'Saved')}</span>
+                  <span className="text-xl font-bold text-white font-mono">{formatCurrency(safeSavings)}</span>
                 </div>
                 <div className="flex flex-col text-right">
-                  <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{t('dreams.target', 'Target')}</span>
-                  <span className="text-xl font-black text-purple-400 font-mono">{formatCurrency(Number(targetAmount))}</span>
+                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{t('dreams.target', 'Target')}</span>
+                  <span className="text-xl font-bold text-white font-mono">{formatCurrency(Number(targetAmount))}</span>
                 </div>
               </div>
               
               <div className="relative h-4 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 shadow-inner">
                 <div 
-                  className="h-full bg-gradient-to-r from-purple-600 to-pink-500 transition-all duration-1000 shadow-[0_0_15px_rgba(168,85,247,0.6)]" 
+                  className="h-full bg-white transition-all duration-1000" 
                   style={{ width: `${progress}%` }} 
                 />
               </div>
               
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-3 w-3 text-pink-400 animate-pulse" />
-                  <span className="text-[10px] font-black text-pink-400 uppercase tracking-widest">
+                  <span className="text-[10px] font-bold text-white uppercase tracking-widest">
                     {progress >= 100 ? t('dreams.achieved', 'Goal Achieved!') : `${progress.toFixed(1)}% ${t('dreams.complete', 'Complete')}`}
                   </span>
                 </div>
-                <span className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">
+                <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic">
                   Compounding...
                 </span>
               </div>
@@ -177,17 +170,17 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
             <div className="grid grid-cols-2 gap-4">
                <div className="bg-white/5 rounded-[24px] p-5 border border-white/5 hover:bg-white/10 transition-colors">
                   <div className="flex items-center gap-2 mb-2 opacity-40">
-                    <CreditCard className="h-4 w-4 text-purple-400" />
-                    <span className="text-[9px] uppercase font-black tracking-widest text-white">Monthly</span>
+                    <CreditCard className="h-4 w-4 text-white" />
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-white">Monthly</span>
                   </div>
-                  <p className="text-xl font-black text-white font-mono">{formatCurrency(Number(emiAmount))}</p>
+                  <p className="text-xl font-bold text-white font-mono">{formatCurrency(Number(emiAmount))}</p>
                </div>
                <div className="bg-white/5 rounded-[24px] p-5 border border-white/5 hover:bg-white/10 transition-colors">
                   <div className="flex items-center gap-2 mb-2 opacity-40">
-                    <Calculator className="h-4 w-4 text-purple-400" />
-                    <span className="text-[9px] uppercase font-black tracking-widest text-white">Time Left</span>
+                    <Calculator className="h-4 w-4 text-white" />
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-white">Time Left</span>
                   </div>
-                  <p className="text-xl font-black text-white font-mono">
+                  <p className="text-xl font-bold text-white font-mono">
                     {monthsToGoal === 0 ? '🎉' : `${monthsToGoal} Mo.`}
                   </p>
                </div>

@@ -109,6 +109,8 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+import { WebLayout } from './layouts/WebLayout';
+import { MobileLayout } from './layouts/MobileLayout';
 import { paymentOrchestrator } from "@/services/paymentOrchestrator";
 import { lifecycleService } from "@/services/lifecycleService";
 
@@ -270,54 +272,60 @@ const AppContent = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const isNative = Capacitor.isNativePlatform();
+  const PlatformLayout = isNative ? MobileLayout : WebLayout;
+
   return (
-    <div className="min-h-screen bg-slate-50 border-t-4 border-[#7C3AED]">
+    <div className="min-h-screen bg-background font-sans text-foreground">
       <Toaster />
       <Sonner />
       <Routes>
-        {/* Public Landing */}
-        <Route path="/" element={withSuspense(<Index />)} />
-        <Route path="/blog" element={withSuspense(<Blog />)} />
-        <Route path="/blog/:slug" element={withSuspense(<BlogPost />)} />
-        <Route path="/about" element={withSuspense(<About />)} />
-        <Route path="/contact" element={withSuspense(<Contact />)} />
-        <Route path="/terms" element={withSuspense(<Terms />)} />
-        <Route path="/disclaimer" element={withSuspense(<Disclaimer />)} />
-        
-        {/* Auth Stack */}
-        <Route path="/auth" element={<PublicRoute>{withSuspense(<Auth />)}</PublicRoute>} />
-        <Route path="/login" element={<PublicRoute>{withSuspense(<LoginForm />)}</PublicRoute>} />
-        <Route path="/register" element={<PublicRoute>{withSuspense(<RegisterForm />)}</PublicRoute>} />
-        <Route path="/forgot-password" element={withSuspense(<ForgotPassword />)} />
+        <Route element={<PlatformLayout />}>
+          {/* Public Landing */}
+          <Route path="/" element={
+            isNative ? <Navigate to="/dashboard" replace /> : withSuspense(<Index />)
+          } />
+          <Route path="/blog" element={withSuspense(<Blog />)} />
+          <Route path="/blog/:slug" element={withSuspense(<BlogPost />)} />
+          <Route path="/about" element={withSuspense(<About />)} />
+          <Route path="/contact" element={withSuspense(<Contact />)} />
+          <Route path="/terms" element={withSuspense(<Terms />)} />
+          <Route path="/disclaimer" element={withSuspense(<Disclaimer />)} />
+          
+          {/* Auth Stack */}
+          <Route path="/auth" element={<PublicRoute>{withSuspense(<Auth />)}</PublicRoute>} />
+          <Route path="/login" element={<PublicRoute>{withSuspense(<LoginForm />)}</PublicRoute>} />
+          <Route path="/register" element={<PublicRoute>{withSuspense(<RegisterForm />)}</PublicRoute>} />
+          <Route path="/forgot-password" element={withSuspense(<ForgotPassword />)} />
 
-        {/* Forced Setup Wizard */}
-        <Route 
-          path="/setup" 
-          element={
-            <Suspense fallback={<FullScreenLoader />}>
-              <SetupWizard /> 
-            </Suspense>
-          } 
-        />
-        
-        {/* Enterprise Features (Protected) */}
-        <Route path="/dashboard" element={<ProtectedRoute>{withSuspense(<Dashboard />)}</ProtectedRoute>} />
-        <Route path="/add-expense" element={<ProtectedRoute>{withSuspense(<AddExpense />)}</ProtectedRoute>} />
-        <Route path="/savings" element={<ProtectedRoute>{withSuspense(<Savings />)}</ProtectedRoute>} />
-        <Route path="/group-expenses" element={<ProtectedRoute>{withSuspense(<GroupExpenses />)}</ProtectedRoute>} />
-        <Route path="/analytics" element={<ProtectedRoute>{withSuspense(<Analytics />)}</ProtectedRoute>} />
-        
-        {/* 🚀 FIXED: New Routes for Group Invites and Trip Planning */}
-        <Route path="/join" element={withSuspense(<JoinGroup />)} />
-        <Route path="/deeplink/join" element={withSuspense(<DeepLinkRedirect />)} />
-        <Route path="/trip-planner" element={<ProtectedRoute>{withSuspense(<AdvancedTripPlannerV2 isSharedLink={false} />)}</ProtectedRoute>} />
-        <Route path="/trip-v2/:groupId" element={<ProtectedRoute>{withSuspense(<AdvancedTripPlannerV2 isSharedLink={false} />)}</ProtectedRoute>} />
-        
-        {/* Misc */}
-        <Route path="/privacy-policy" element={withSuspense(<PrivacyPolicy />)} />
-        <Route path="*" element={withSuspense(<NotFound />)} />
+          {/* Forced Setup Wizard */}
+          <Route 
+            path="/setup" 
+            element={
+              <Suspense fallback={<FullScreenLoader />}>
+                <SetupWizard /> 
+              </Suspense>
+            } 
+          />
+          
+          {/* Enterprise Features (Protected) */}
+          <Route path="/dashboard" element={<ProtectedRoute>{withSuspense(<Dashboard />)}</ProtectedRoute>} />
+          <Route path="/add-expense" element={<ProtectedRoute>{withSuspense(<AddExpense />)}</ProtectedRoute>} />
+          <Route path="/savings" element={<ProtectedRoute>{withSuspense(<Savings />)}</ProtectedRoute>} />
+          <Route path="/group-expenses" element={<ProtectedRoute>{withSuspense(<GroupExpenses />)}</ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute>{withSuspense(<Analytics />)}</ProtectedRoute>} />
+          
+          {/* 🚀 FIXED: New Routes for Group Invites and Trip Planning */}
+          <Route path="/join" element={withSuspense(<JoinGroup />)} />
+          <Route path="/deeplink/join" element={withSuspense(<DeepLinkRedirect />)} />
+          <Route path="/trip-planner" element={<ProtectedRoute>{withSuspense(<AdvancedTripPlannerV2 isSharedLink={false} />)}</ProtectedRoute>} />
+          <Route path="/trip-v2/:groupId" element={<ProtectedRoute>{withSuspense(<AdvancedTripPlannerV2 isSharedLink={false} />)}</ProtectedRoute>} />
+          
+          {/* Misc */}
+          <Route path="/privacy-policy" element={withSuspense(<PrivacyPolicy />)} />
+          <Route path="*" element={withSuspense(<NotFound />)} />
+        </Route>
       </Routes>
-      {session && <BottomNav />}
     </div>
   );
 };
@@ -330,7 +338,7 @@ function App() {
           <TooltipProvider>
             <AuthProvider>
               <LanguageProvider>
-                <ThemeProvider attribute="class" defaultTheme="light">
+                <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
                   <AppContent />
                 </ThemeProvider>
               </LanguageProvider>

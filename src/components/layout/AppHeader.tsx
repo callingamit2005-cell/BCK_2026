@@ -1,11 +1,11 @@
 /**
- * AppHeader.tsx - BachatKaro Neon Enterprise Edition
- * UI: Deep Neon Purple-Pink Theme with Glassmorphism
+ * AppHeader.tsx - BachatKaro Premium Command Center (Web)
+ * UI: Luxury Fintech Monochrome (AMOLED Black + Soft Accent)
  * Logic: 100% Intact (Auth & Routing Preserved)
  */
 
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PiggyBank, Users, LogOut, Wallet, Sparkles } from 'lucide-react';
+import { LayoutDashboard, PiggyBank, Users, LogOut, Wallet } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -24,20 +24,11 @@ const AppHeader = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Amit bhai's Deep Neon Pink-Purple Theme Config
-  const neonTextGradient = "bg-gradient-to-r from-[#D946EF] via-[#EC4899] to-[#8B5CF6]";
-  // Deep Purple-Pink base gradient overlay on #1E1B4B
-  const deepNeonBg = "bg-[#1E1B4B] bg-gradient-to-r from-[#4C1D95]/40 via-[#701A75]/40 to-[#4C1D95]/40";
-
   return (
     <header className={cn(
       "sticky top-0 z-[100] w-full transition-all duration-300",
-      "backdrop-blur-2xl border-b border-[#EC4899]/30 shadow-[0_4px_30px_rgba(236,72,153,0.15)]",
-      deepNeonBg
+      "border-b border-white/5 bg-background/95"
     )}>
-      {/* Top Neon Accent Line */}
-      <div className="h-[2px] w-full bg-gradient-to-r from-[#D946EF] via-[#EC4899] to-[#8B5CF6] opacity-80" />
-
       <div className="safe-x max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           
@@ -47,41 +38,38 @@ const AppHeader = () => {
             className="flex items-center gap-3 group active:scale-95 transition-all"
           >
             <div className={cn(
-              "p-2.5 rounded-2xl shadow-[0_0_20px_rgba(236,72,153,0.4)] transform group-hover:rotate-12 transition-all duration-500",
-              "bg-gradient-to-br from-[#EC4899] to-[#7C3AED]"
+              "p-2.5 rounded-2xl shadow-sm transform transition-all duration-500",
+              "bg-surface border border-white/10"
             )}>
-              <Wallet className="h-6 w-6 text-white" />
+              <Wallet className="h-6 w-6 text-foreground" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white">
-              Bachat<span className={cn("text-transparent bg-clip-text animate-pulse", neonTextGradient)}>Karo</span>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Bachat<span className="text-text-muted">Karo</span>
             </h1>
           </Link>
 
-          {/* Desktop Nav - Neon Glass Pill */}
-          <nav className="hidden md:flex items-center gap-2 bg-black/30 p-1.5 rounded-[22px] border border-white/10">
+          {/* Desktop Nav - Monochrome Hierarchy */}
+          <nav className="hidden md:flex items-center gap-1 bg-surface p-1 rounded-2xl border border-white/5">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-2 px-6 py-2.5 text-sm font-bold rounded-2xl transition-all duration-300 relative group',
+                  'flex items-center gap-2 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all duration-300 relative group',
                   isActive(item.path)
-                    ? 'bg-gradient-to-r from-[#EC4899] to-[#7C3AED] text-white shadow-[0_0_15px_rgba(236,72,153,0.6)]'
-                    : 'text-white/60 hover:text-white hover:bg-white/10'
+                    ? 'bg-white/10 text-white shadow-sm'
+                    : 'text-text-muted hover:text-white hover:bg-white/5'
                 )}
               >
-                <item.icon className={cn("h-4 w-4 transition-transform group-hover:scale-110", isActive(item.path) ? "text-white" : "text-white/40")} />
+                <item.icon className={cn("h-3.5 w-3.5 transition-transform", isActive(item.path) ? "text-white" : "text-text-muted")} />
                 <span>{item.label}</span>
-                {isActive(item.path) && (
-                  <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-pink-300 animate-bounce" />
-                )}
               </Link>
             ))}
           </nav>
 
           {/* Action Hub */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:block p-1 bg-white/5 rounded-xl border border-white/10 hover:border-[#EC4899]/50 transition-colors">
+            <div className="hidden sm:block p-1 bg-surface rounded-xl border border-white/5 hover:border-white/10 transition-colors">
               <ThemeToggle />
             </div>
 
@@ -90,7 +78,7 @@ const AppHeader = () => {
                 variant="ghost"
                 size="icon"
                 onClick={signOut}
-                className="h-11 w-11 text-white/70 hover:text-pink-400 hover:bg-pink-500/10 rounded-xl transition-all border border-transparent hover:border-pink-500/30"
+                className="h-11 w-11 text-text-muted hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/5"
               >
                 <LogOut className="h-5 w-5" />
               </Button>

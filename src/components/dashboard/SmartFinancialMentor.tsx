@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles, BrainCircuit, Zap } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,7 +13,7 @@ interface SmartFinancialMentorProps {
   } | null;
 }
 
-const SmartFinancialMentor = ({ advice }: SmartFinancialMentorProps) => {
+const SmartFinancialMentor = React.memo(({ advice }: SmartFinancialMentorProps) => {
   const { t } = useLanguage();
 
   const neonGlass = "bg-[#0a0014]/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[32px] overflow-hidden transform-gpu transition-all hover:border-[#ff0f7b]/30";
@@ -73,6 +74,6 @@ const SmartFinancialMentor = ({ advice }: SmartFinancialMentorProps) => {
       </CardContent>
     </Card>
   );
-};
+});
 
 export default SmartFinancialMentor;

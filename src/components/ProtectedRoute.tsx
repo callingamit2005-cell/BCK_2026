@@ -12,14 +12,13 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   // 🔹 Show polished loader while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-pink-50">
-        <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-2xl shadow-xl shadow-purple-100/20 border border-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-background antialiased">
+        <div className="flex flex-col items-center gap-6 p-10 bg-surface rounded-[24px] border border-white/5 shadow-sm">
           <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 animate-pulse opacity-20 absolute inset-0"></div>
-            <Loader2 className="h-12 w-12 text-purple-600 animate-spin relative z-10" />
+            <div className="w-12 h-12 rounded-full border-2 border-white/10 border-t-white animate-spin" />
           </div>
-          <p className="text-sm font-medium text-slate-600">
-            Checking authentication...
+          <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] animate-pulse">
+            Authenticating Session
           </p>
         </div>
       </div>

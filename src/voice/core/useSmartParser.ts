@@ -1,22 +1,11 @@
-// src/hooks/useSmartParser.ts
-// Enterprise‑grade hook for parsing expense text with AI and fallback.
-// Logic untouched – only comments and formatting enhanced.
 
 /**
- * Voice Expense Flow Explanation:
- * ================================
- * This hook sends the transcript to a Cloudflare Worker AI endpoint.
- * 
- * - On success: returns `{ success: true, data: ParsedResult }` with all fields.
- * - On failure after retries: returns `{ success: false, fallback: ParsedResult }`
- *   with fallback values extracted using simple regex/keyword matching.
- * 
- * The fallback attempts to fill amount, title, category, paymentMode, split, and paidBy
- * (though paidBy is rarely available without AI). This ensures the form can still be
- * partially filled even if the AI service is down.
+ * useSmartParser.ts - BachatKaro Smart Parsing Hook
+ * Integrates AI parsing with a robust multilingual fallback engine.
  */
 
 import { useCallback, useRef, useEffect } from "react";
+import { parseMultilingualInput } from "@/utils/smartParserEngine";
 
 // ===== Types =====
 export interface ParsedResult {
@@ -33,34 +22,10 @@ export type ParseResult =
   | { success: false; fallback: ParsedResult; error: unknown };
 
 // ===== Configuration =====
-const DEFAULT_API_URL =
-  "https://silent-thunder-0d25.orv-customer.workers.dev/";
+const DEFAULT_API_URL = "https://silent-thunder-0d25.orv-customer.workers.dev/";
 const DEFAULT_TIMEOUT_MS = 10000;
 const MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 500;
-
-// ===== Keyword mappings for fallback parsing =====
-const CATEGORY_KEYWORDS: Record<string, string[]> = {
-  Food: ["food", "dinner", "lunch", "breakfast", "restaurant", "pizza", "burger", "coffee"],
-  Travel: ["travel", "taxi", "bus", "train", "flight", "uber", "ola", "petrol", "fuel"],
-  Shopping: ["shopping", "mall", "cloth", "shoe", "amazon", "flipkart"],
-  Bills: ["bill", "electricity", "water", "internet", "mobile", "recharge"],
-  Entertainment: ["movie", "netflix", "concert", "game"],
-  Healthcare: ["doctor", "medicine", "hospital", "clinic"],
-  Others: ["other", "misc"],
-};
-
-const PAYMENT_KEYWORDS: Record<string, string[]> = {
-  Cash: ["cash"],
-  UPI: ["upi", "gpay", "phonepe", "paytm"],
-  Card: ["card", "credit", "debit", "visa", "mastercard"],
-  "Net Banking": ["netbanking", "neft", "rtgs"],
-};
-
-const SPLIT_KEYWORDS: Record<string, "equal" | "unequal"> = {
-  equal: ["equal", "equally", "split"],
-  unequal: ["unequal", "custom", "different"],
-};
 
 // ===== Type guard =====
 function isValidParsedResult(data: any): data is ParsedResult {
@@ -82,63 +47,27 @@ function isValidParsedResult(data: any): data is ParsedResult {
   );
 }
 
-// ===== Enhanced fallback parser =====
+/**
+ * 🛡️ [UNIFIED_FALLBACK]
+ * Uses the deterministic multilingual engine if AI fails.
+ */
 function fallbackParse(text: string): ParsedResult {
-  const lower = text.toLowerCase();
-  const amountMatch = lower.match(/\d+/);
-  const amount = amountMatch ? Number(amountMatch[0]) : undefined;
-
-  // Determine category
-  let category: string | null = null;
-  for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
-    if (keywords.some(kw => lower.includes(kw))) {
-      category = cat;
-      break;
-    }
-  }
-
-  // Determine payment mode
-  let paymentMode: string | null = null;
-  for (const [mode, keywords] of Object.entries(PAYMENT_KEYWORDS)) {
-    if (keywords.some(kw => lower.includes(kw))) {
-      paymentMode = mode;
-      break;
-    }
-  }
-
-  // Determine split type
-  let split: "equal" | "unequal" | undefined = undefined;
-  for (const [type, keywords] of Object.entries(SPLIT_KEYWORDS)) {
-    if (keywords.some(kw => lower.includes(kw))) {
-      split = type as "equal" | "unequal";
-      break;
-    }
-  }
-
-  // Attempt to extract paidBy: look for common name patterns (simple heuristic)
-  // This is very basic; often the AI is needed for accurate extraction.
-  const paidByMatch = lower.match(/(?:paid by|from|by)\s+([a-z]+)/i);
-  const paidBy = paidByMatch ? paidByMatch[1] : undefined;
-
+  const result = parseMultilingualInput(text);
+  
   return {
-    amount,
-    title: text.trim(),
-    paidBy,
-    category,
-    paymentMode,
-    split: split || "equal", // default to equal if not found
+    amount: result.amount || undefined,
+    title: result.description,
+    category: result.category,
+    paymentMode: result.paymentMode,
+    split: "equal",
   };
 }
 
-// ===== Hook =====
 /**
  * useSmartParser
  * 
  * A React hook that sends a transcript to an AI endpoint for parsing,
- * with automatic retries and a fallback keyword‑based parser.
- * 
- * @param apiUrl - URL of the Cloudflare Worker AI endpoint.
- * @returns An object containing the `parseWithAI` function.
+ * with automatic retries and a high-accuracy multilingual fallback parser.
  */
 export const useSmartParser = (apiUrl: string = DEFAULT_API_URL) => {
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -196,7 +125,6 @@ export const useSmartParser = (apiUrl: string = DEFAULT_API_URL) => {
           return { success: true, data };
         } catch (err) {
           if (err instanceof DOMException && err.name === "AbortError") {
-            // Request aborted – likely unmount, rethrow to stop processing
             throw err;
           }
 

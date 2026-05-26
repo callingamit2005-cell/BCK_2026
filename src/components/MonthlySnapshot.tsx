@@ -31,69 +31,68 @@ const MonthlySnapshot: React.FC<MonthlySnapshotProps> = ({
   const { t } = useTranslation();
 
   // Polished UI Classes
-  const gradientClass = "bg-gradient-to-r from-purple-600 to-pink-500";
-  const cardClass = "bg-white rounded-2xl shadow-xl shadow-purple-100/20 border border-slate-100";
+  const cardClass = "bg-surface rounded-[24px] border border-border shadow-sm";
 
   return (
-    <div className={`${cardClass} p-5`}>
+    <div className={`${cardClass} p-6`}>
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-2 rounded-xl">
-          <Calendar className="h-5 w-5 text-purple-600" />
+      <div className="flex items-center gap-3 mb-6">
+        <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+          <Calendar className="h-5 w-5 text-white/40" />
         </div>
-        <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-          {t('monthlySnapshot.title', { month })}
-        </h3>
+        <div>
+          <h3 className="text-xl font-black text-white uppercase tracking-tighter">
+            {t('monthlySnapshot.title', { month })}
+          </h3>
+          <p className="text-[9px] text-white/20 font-bold uppercase tracking-[0.2em] mt-0.5">
+            {t('monthlySnapshot.description', 'Commitment Audit')}
+          </p>
+        </div>
       </div>
-
-      {/* Subtle helper text */}
-      <p className="text-xs text-slate-400 italic mb-4">
-        {t('monthlySnapshot.description', 'Monthly cash flow – actual money in and out')}
-      </p>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Income */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-1.5 bg-green-100 rounded-lg">
-              <TrendingUp className="h-4 w-4 text-green-600" />
+        <div className="bg-white/5 rounded-2xl p-5 border border-white/5 hover:bg-white/[0.08] transition-all">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-1.5 bg-white/5 rounded-lg border border-white/5">
+              <TrendingUp className="h-4 w-4 text-white/40" />
             </div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
               {t('monthlySnapshot.income')}
             </span>
           </div>
-          <p className="text-xl font-black text-green-600">
+          <p className="text-2xl font-black text-white font-mono tracking-tighter">
             {formatCurrency(totalIncome)}
           </p>
         </div>
 
         {/* Expenses */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-1.5 bg-red-100 rounded-lg">
-              <TrendingDown className="h-4 w-4 text-red-600" />
+        <div className="bg-white/5 rounded-2xl p-5 border border-white/5 hover:bg-white/[0.08] transition-all">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-1.5 bg-white/5 rounded-lg border border-white/5">
+              <TrendingDown className="h-4 w-4 text-white/40" />
             </div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
               {t('monthlySnapshot.expenses')}
             </span>
           </div>
-          <p className="text-xl font-black text-red-600">
+          <p className="text-2xl font-black text-white/60 font-mono tracking-tighter">
             {formatCurrency(totalExpense)}
           </p>
         </div>
 
         {/* Savings */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-1.5 bg-blue-100 rounded-lg">
-              <PiggyBank className="h-4 w-4 text-blue-600" />
+        <div className="bg-white/5 rounded-2xl p-5 border border-white/5 hover:bg-white/[0.08] transition-all">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-1.5 bg-white/5 rounded-lg border border-white/5">
+              <PiggyBank className="h-4 w-4 text-white/40" />
             </div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
               {t('monthlySnapshot.savings')}
             </span>
           </div>
-          <p className="text-xl font-black text-blue-600">
+          <p className="text-2xl font-black text-white font-mono tracking-tighter">
             {formatCurrency(savings)}
           </p>
         </div>

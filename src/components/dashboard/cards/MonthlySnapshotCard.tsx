@@ -14,7 +14,7 @@ interface MonthlySnapshotCardProps {
   neonGlass: string;
 }
 
-export const MonthlySnapshotCard: React.FC<MonthlySnapshotCardProps> = ({
+export const MonthlySnapshotCard: React.FC<MonthlySnapshotCardProps> = React.memo(({
   totalInflow,
   budgetVal,
   totalOutflow,
@@ -23,27 +23,26 @@ export const MonthlySnapshotCard: React.FC<MonthlySnapshotCardProps> = ({
   neonGlass,
 }) => {
   return (
-    <Card className={cn(neonGlass, "border-0 shadow-[0_0_50px_-12px_rgba(255,15,123,0.3)]")}>
-      <div className="h-1.5 w-full bg-gradient-to-r from-purple-600 to-[#ff0f7b]" />
+    <Card className={cn(neonGlass, "border-border shadow-sm")}>
       <CardHeader className="p-8 pb-4">
-        <CardTitle className="text-2xl font-black text-white flex items-center gap-4 italic uppercase tracking-tighter">
-          <PieChart className="h-7 w-7 text-[#ff0f7b]" /> {t('monthlySnapshot.title', 'Monthly Snapshot')}
+        <CardTitle className="text-xl font-bold text-white flex items-center gap-4 uppercase tracking-tight">
+          <PieChart className="h-6 w-6 text-text-muted" /> {t('monthlySnapshot.title', 'Monthly Snapshot')}
         </CardTitle>
-        <CardDescription className="text-[#b3b3b3] text-[10px] font-bold uppercase tracking-[0.2em] ml-11">{t('common.liveAudit', 'Live Audit')} · {format(new Date(), 'MMMM yyyy')}</CardDescription>
+        <CardDescription className="text-text-muted text-[9px] font-bold uppercase tracking-[0.2em] ml-10">{t('common.liveAudit', 'Live Audit')} · {format(new Date(), 'MMMM yyyy')}</CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 p-6 sm:p-8 pt-4">
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-8 pt-4">
         {[
-          { label: t('common.monthlyIncome', "Monthly Income"), value: totalInflow, color: 'text-purple-400' },
-          { label: t('common.monthlyBudget', "Monthly Budget"), value: budgetVal, color: 'text-blue-400' },
-          { label: t('common.totalSpent', "Total Spent"), value: totalOutflow, color: 'text-rose-400' },
-          { label: t('common.netSaved', "Net Saved"), value: netSaved, color: 'text-emerald-400' }
+          { label: t('common.monthlyIncome', "Monthly Income"), value: totalInflow },
+          { label: t('common.monthlyBudget', "Monthly Budget"), value: budgetVal },
+          { label: t('common.totalSpent', "Total Spent"), value: totalOutflow },
+          { label: t('common.netSaved', "Net Saved"), value: netSaved }
         ].map((item, idx) => (
-          <div key={idx} className="bg-white/5 border border-white/10 rounded-[28px] p-6 hover:border-[#ff0f7b]/30 transition-all duration-500">
-            <p className="text-[9px] font-black text-[#b3b3b3] uppercase tracking-widest mb-1">{item.label}</p>
-            <p className={cn("text-2xl font-black font-mono", item.color)}>{formatCurrency(item.value)}</p>
+          <div key={idx} className="bg-white/5 border border-white/5 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300">
+            <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest mb-1">{item.label}</p>
+            <p className="text-2xl font-bold font-mono text-white tracking-tighter">{formatCurrency(item.value)}</p>
           </div>
         ))}
       </CardContent>
     </Card>
   );
-};
+});

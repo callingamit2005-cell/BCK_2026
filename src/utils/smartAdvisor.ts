@@ -73,6 +73,14 @@ export interface FinancialSummary {
   transactionCount: number;
   unnecessarySpend: number;
   monthYear: string;
+  // Behavioral Patterns
+  lateNightSpend: number; // 10PM - 4AM
+  weekendSpend: number;
+  salaryExhaustionDay: number | null; // Day of month when 80% of income is spent
+  upiVelocity: number; // Avg transactions per day
+  smallUpiHabitCount: number; // Count of small transactions < 200
+  firstHalfSpend: number;
+  secondHalfSpend: number;
 }
 
 /**
@@ -89,21 +97,36 @@ export const summarizeLedger = (transactions: Transaction[]): FinancialSummary =
     if (!t.date || !isValidDate(t.date)) return false;
     const d = new Date(t.date);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-  });
+  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   let incomeTotal = 0;
   let expenseTotal = 0;
+  let lateNightSpend = 0;
+  let weekendSpend = 0;
+  let unnecessarySpend = 0;
+  let cumulativeExpense = 0;
+  let salaryExhaustionDay: number | null = null;
+  let smallUpiHabitCount = 0;
+  let firstHalfSpend = 0;
+  let secondHalfSpend = 0;
+  
   const categoryMap: Record<string, number> = {};
   const merchantMap: Record<string, number> = {};
   const unnecessaryCats = ['food', 'shopping', 'entertainment', 'others'];
-  let unnecessarySpend = 0;
 
   currentMonthTxs.forEach(t => {
     const amt = Number(t.amount || 0);
+    const d = new Date(t.date);
+    const hour = d.getHours();
+    const day = d.getDay();
+    const dateNum = d.getDate();
+
     if (t.type === 'income') {
       incomeTotal += amt;
     } else {
       expenseTotal += amt;
+      cumulativeExpense += amt;
+      
       const cat = t.category || 'Others';
       categoryMap[cat] = (categoryMap[cat] || 0) + amt;
       
@@ -112,6 +135,19 @@ export const summarizeLedger = (transactions: Transaction[]): FinancialSummary =
 
       if (unnecessaryCats.includes(cat.toLowerCase())) {
         unnecessarySpend += amt;
+      }
+
+      // Behavioral detection
+      if (hour >= 22 || hour <= 4) lateNightSpend += amt;
+      if (day === 0 || day === 6) weekendSpend += amt;
+      if (amt > 0 && amt < 20000) smallUpiHabitCount++; // < 200 rupees
+      
+      if (dateNum <= 15) firstHalfSpend += amt;
+      else secondHalfSpend += amt;
+
+      // Salary exhaustion check (80% threshold)
+      if (incomeTotal > 0 && !salaryExhaustionDay && cumulativeExpense >= (incomeTotal * 0.8)) {
+        salaryExhaustionDay = dateNum;
       }
     }
   });
@@ -133,10 +169,9 @@ export const summarizeLedger = (transactions: Transaction[]): FinancialSummary =
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5);
 
-  // Simple unusual spike detection (e.g., > 3x average)
   const unusualSpikes: string[] = [];
   if (currentMonthTxs.length >= 5) {
-    const avgExpense = expenseTotal / currentMonthTxs.filter(t => t.type === 'expense').length;
+    const avgExpense = expenseTotal / (currentMonthTxs.filter(t => t.type === 'expense').length || 1);
     currentMonthTxs
       .filter(t => t.type === 'expense' && t.amount > avgExpense * 3)
       .slice(0, 2)
@@ -144,6 +179,8 @@ export const summarizeLedger = (transactions: Transaction[]): FinancialSummary =
         unusualSpikes.push(`High spend: ₹${(t.amount/100).toLocaleString('en-IN')} at ${t.sender || t.category}`);
       });
   }
+
+  const daysPassed = Math.max(1, now.getDate());
 
   return {
     incomeTotal,
@@ -155,24 +192,50 @@ export const summarizeLedger = (transactions: Transaction[]): FinancialSummary =
     unusualSpikes,
     transactionCount: currentMonthTxs.length,
     unnecessarySpend,
-    monthYear
+    monthYear,
+    lateNightSpend,
+    weekendSpend,
+    salaryExhaustionDay,
+    upiVelocity: currentMonthTxs.length / daysPassed,
+    smallUpiHabitCount,
+    firstHalfSpend,
+    secondHalfSpend
   };
 };
 
 /**
  * Advanced Personalization Engine
- * Tone: Father + Mentor (Hinglish)
+ * Tone: Experienced Wealth Mentor, Emotionally Intelligent
+ * Supported Languages: English, Hindi, Hinglish
  */
-export const getRuleBasedStructuredAdviceFromSummary = (summary: FinancialSummary): StructuredAIAdvice => {
-  if (summary.transactionCount === 0) return DEFAULT_ADVICE;
+export const getRuleBasedStructuredAdviceFromSummary = (summary: FinancialSummary, language: string = 'en'): StructuredAIAdvice => {
+  const isHindi = language === 'hi';
+  const isHinglish = language === 'hinglish' || language.includes('in');
+  
+  const fmt = (val: number) => `₹${(val / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+
+  if (summary.transactionCount === 0) {
+    return {
+      action: isHindi ? "बेटा, खर्चे लिखना शुरू करो।" : (isHinglish ? "Beta, kharcha track karna start karo." : "Start tracking your expenses."),
+      reason: isHindi ? "बिना डेटा के मैं सही रास्ता नहीं दिखा पाऊंगा।" : (isHinglish ? "Bina data ke main sahi rasta nahi dikha paunga." : "Without data, I can't give you accurate financial guidance."),
+      steps: isHindi ? "1. खर्चे डालो\n2. बजट बनाओ" : (isHinglish ? "1. Daily kharcha dalo\n2. Budget set karo" : "1. Log daily expenses\n2. Set a budget"),
+      insights: isHindi ? "स्मार्ट इनसाइट्स के लिए खर्चे ट्रैक करें।" : (isHinglish ? "Start tracking to unlock insights." : "Track spending to unlock insights."),
+      projection: isHindi ? "खर्च ट्रैक करने पर भविष्य की बचत दिखेगी।" : (isHinglish ? "Track spending to see future predictions." : "Track spending to see future predictions."),
+      growth: isHindi ? "आज से बचत शुरू करें।" : (isHinglish ? "Aaj se save karna shuru karo." : "Start saving today."),
+      healthScore: 50,
+      healthReason: isHindi ? "डेटा नहीं है।" : (isHinglish ? "Data missing hai." : "No data available."),
+      confidence: "LOW",
+      investmentOptions: { sip: "", emergency: "", fd: "" },
+      platforms: ["Groww", "Zerodha"],
+      personalizedPlan: { sipAmount: 0, emergencyTarget: 0, savingsRate: 0, riskProfile: "Low", strategy: "" }
+    };
+  }
 
   let confidence: "HIGH" | "MEDIUM" | "LOW" = "LOW";
   if (summary.transactionCount > 20) confidence = "HIGH";
   else if (summary.transactionCount >= 5) confidence = "MEDIUM";
 
   const potentialSavings = Math.round(summary.unnecessarySpend * 0.4);
-  
-  // Personalized Plan Calculation
   const sipAmount = Math.max(500, Math.floor((summary.surplus * 0.5) / 100 / 100) * 100);
   const emergencyMonthly = Math.max(500, Math.floor((summary.surplus * 0.3) / 100 / 100) * 100);
   const emergencyTarget = Math.round((summary.expenseTotal * 3) / 100 / 100) * 100;
@@ -181,30 +244,127 @@ export const getRuleBasedStructuredAdviceFromSummary = (summary: FinancialSummar
   if (summary.savingsRate > 30) riskProfile = "High";
   else if (summary.savingsRate > 15) riskProfile = "Medium";
 
-  // Logic for Health Score
+  // --- Behavioral Logic Layer ---
+  let emotion = "stable";
   let score = 70;
-  let healthReason = "Beta, aapka budget balance mein hai, sahi chapa hai!";
-  if (summary.incomeTotal > 0) {
-    const ratio = summary.expenseTotal / summary.incomeTotal;
-    if (ratio > 1) { score = 30; healthReason = "Overspending alert! Income se zyada kharch ho raha hai, beta."; }
-    else if (ratio > 0.8) { score = 50; healthReason = "Savings kam hain. Faltu 'Wants' pe control rakho."; }
-    else if (ratio < 0.5) { score = 90; healthReason = "Shabaash! Aapki savings discipline bohot solid hai."; }
+  
+  const ratio = summary.incomeTotal > 0 ? summary.expenseTotal / summary.incomeTotal : 1.1;
+  const highFoodAndShopping = (summary.topCategories.find(c => c.category.toLowerCase() === 'food')?.amount || 0) + 
+                              (summary.topCategories.find(c => c.category.toLowerCase() === 'shopping')?.amount || 0);
+  const lifestyleRatio = summary.expenseTotal > 0 ? highFoodAndShopping / summary.expenseTotal : 0;
+
+  if (ratio > 0.95) { 
+    score = 25; 
+    emotion = "stress"; 
+  } else if (summary.salaryExhaustionDay && summary.salaryExhaustionDay < 15) {
+    score = 40;
+    emotion = "exhaustion";
+  } else if (summary.lateNightSpend > (summary.expenseTotal * 0.15)) {
+    score = 55;
+    emotion = "impulsive_night";
+  } else if (summary.smallUpiHabitCount > 30) {
+    score = 60;
+    emotion = "upi_habit";
+  } else if (lifestyleRatio > 0.45) {
+    emotion = "lifestyle_inflation";
+    score = 50;
+  } else if (ratio < 0.4 && summary.transactionCount > 10) { 
+    score = 95; 
+    emotion = "elite"; 
+  } else if (ratio < 0.6) {
+    score = 85;
+    emotion = "disciplined";
   }
 
+  let actionStr = "";
+  let reasonStr = "";
+  let healthReasonStr = "";
+  let projectionStr = "";
+  let growthStr = "";
+  let strategyStr = "";
+
+  // 🛡️ [EMOTIONAL_MENTOR_STRINGS] - Varied to avoid repetition fatigue
+  if (emotion === "stress") {
+    const variations = [
+      isHindi ? "खर्चे तुरंत रोकें, सैलरी पर भारी दबाव है।" : (isHinglish ? "Emergency alert! Paisa bahut fast nikal raha hai, control karo." : "Halt non-essential spending. Your outgoing velocity is dangerous."),
+      isHindi ? "कैश बचाएं, यह महीना मुश्किल हो सकता है।" : (isHinglish ? "Current spending month-end pressure create kar sakta hai." : "Spending trajectory suggests end-of-month liquidity risk.")
+    ];
+    actionStr = variations[summary.transactionCount % variations.length];
+    reasonStr = isHindi ? "आप अपनी कमाई से ज्यादा खर्च कर रहे हैं। यह कर्ज का जाल बन सकता है।" : (isHinglish ? "Aap income se zyada spend kar rahe ho. Bina savings ke emergency sambhalna mushkil hoga." : "You're spending more than you earn. This trajectory leads directly to financial instability.");
+    healthReasonStr = isHindi ? "वित्तीय तनाव बहुत ज्यादा है।" : (isHinglish ? "Financial stress moderate hai. Cash-flow pressure feel hoga." : "High financial stress detected. Stability is compromised.");
+    projectionStr = isHindi ? "बचत शून्य की ओर जा रही है।" : (isHinglish ? "Savings zero ki taraf ja rahi hai, sambhal jao." : "Projected savings are near zero.");
+    growthStr = isHindi ? "अभी निवेश से ज्यादा पैसा बचाने पर ध्यान दें।" : (isHinglish ? "Abhi investment se zyada cash preservation zaroori hai." : "Prioritize cash retention over new investments right now.");
+    strategyStr = isHindi ? "कठोर बजट लागू करें।" : (isHinglish ? "Strict survival budget follow karna padega, beta." : "Implement a strict survival budget immediately.");
+  } 
+  else if (emotion === "exhaustion") {
+    actionStr = isHindi ? "महीने के अंत के लिए बैकअप रखें।" : (isHinglish ? `Salary fast khatam ho rahi hai. Month ke start mein hi 80% budget exhaust.` : `Slow down. You've burned 80% of your budget in the first half of the month.`);
+    reasonStr = isHindi ? "महीने के पहले हिस्से में खर्च बहुत तेज है।" : (isHinglish ? "Aapka paisa month ke start mein fast nikal raha hai. End tak pressure aa jayega." : "Your spending velocity in the first 15 days is unsustainable for the full month.");
+    healthReasonStr = isHindi ? "कैश-फ्लो दबाव में है।" : (isHinglish ? "Cash-flow tight hai. Month-end kaise manage karoge?" : "Imbalanced cash-flow. End-of-month deficit likely.");
+    projectionStr = isHindi ? "महीना खत्म होने से पहले पैसे खत्म हो सकते हैं।" : (isHinglish ? "Is speed se chale toh month-end tak udhaar lena pad sakta hai." : "At this rate, you'll be out of cash before your next payday.");
+    growthStr = isHindi ? "SIP से पहले कैश फ्लो बैलेंस करें।" : (isHinglish ? "Pehle salary ko full month chalana seekho, phir SIP badhao." : "Balance your burn rate before increasing investment commitments.");
+    strategyStr = isHindi ? "डेली खर्च की लिमिट सेट करें।" : (isHinglish ? "Daily spend cap set karo warna month-end tough hoga." : "Apply a strict daily spending cap of ₹500 for the next 10 days.");
+  }
+  else if (emotion === "impulsive_night") {
+    actionStr = isHindi ? "देर रात के ऑर्डर्स पर नियंत्रण रखें।" : (isHinglish ? `Raat ke orders control karo. ₹${(summary.lateNightSpend/100).toFixed(0)} sirf 10PM ke baad kharch hue.` : `Control late-night spending. You spent ${fmt(summary.lateNightSpend)} after 10 PM.`);
+    reasonStr = isHindi ? "देर रात के फूड और शॉपिंग ऑर्डर्स बजट बिगाड़ रहे हैं।" : (isHinglish ? "Raat ke food orders milkar month-end mein ₹4000+ extra kharcha bana rahe hain." : "Late-night food deliveries are small but cumulative. They're draining ₹4000+ monthly.");
+    healthReasonStr = isHindi ? "रात के खर्चों में स्पाइक है।" : (isHinglish ? "Impulsive behavior alert! Raat ki cravings budget kha rahi hain." : "Impulsive night-time spending detected.");
+    projectionStr = isHindi ? "इन्हें रोककर आप बड़ी बचत कर सकते हैं।" : (isHinglish ? `Cravings control kiye toh saal mein ${fmt(summary.lateNightSpend * 12)} extra bachenge.` : `Redirecting night orders could save you ${fmt(summary.lateNightSpend * 12)} annually.`);
+    growthStr = isHindi ? "इस फिजूलखर्ची को SIP में बदलें।" : (isHinglish ? "In orders ka paisa SIP mein dalo, future set hoga." : "Convert late-night impulses into a compounding wealth fund.");
+    strategyStr = isHindi ? "रात में एप्स से दूर रहें।" : (isHinglish ? "10 PM ke baad food/shopping apps mat kholo." : "Uninstall food delivery apps or disable notifications after 9 PM.");
+  }
+  else if (emotion === "upi_habit") {
+    actionStr = isHindi ? "छोटे UPI पेमेंट्स पर नजर रखें।" : (isHinglish ? `UPI habit alert! Is month ${summary.smallUpiHabitCount} baar small payments kiye.` : `Watch your UPI habits. You made ${summary.smallUpiHabitCount} small transactions this month.`);
+    reasonStr = isHindi ? "छोटे-छोटे ₹20-₹50 के खर्च पता भी नहीं चलते और बजट खा जाते हैं।" : (isHinglish ? "Chhote-chhote UPI kharche silently savings ko kha rahe hain. Aapko track bhi nahi rehta." : "Micro-transactions (₹20-₹50) are invisible leaks. They're silently eroding your surplus.");
+    healthReasonStr = isHindi ? "UPI खर्चों की फ्रीक्वेंसी ज्यादा है।" : (isHinglish ? "UPI velocity high hai. Control income nahi, habit hai." : "High frequency of small UPI transactions.");
+    projectionStr = isHindi ? "इन आदतों को सुधारना जरूरी है।" : (isHinglish ? "Small leaks fix kiye toh savings 20% badh sakti hai." : "Fixing small leaks can boost your monthly savings by 20%.");
+    growthStr = isHindi ? "बचत की आदत डालें।" : (isHinglish ? "Aap save kar sakte ho, problem income nahi — daily spending hai." : "You have the capacity to save; the issue is habit, not income.");
+    strategyStr = isHindi ? "कैश का इस्तेमाल करें।" : (isHinglish ? "Next 5 din sirf Cash use karo, UPI band rakho." : "Try using strictly cash for all small daily needs for 5 days.");
+  }
+  else if (emotion === "lifestyle_inflation") {
+    actionStr = isHindi ? "लाइफस्टाइल खर्चों को संतुलित करें।" : (isHinglish ? `Lifestyle inflation! Wants pe ${fmt(highFoodAndShopping)} kharch ho raha hai.` : `Balance lifestyle inflation. Discretionary spend hit ${fmt(highFoodAndShopping)}.`);
+    reasonStr = isHindi ? "शौक और जरूरत के बीच का अंतर पहचानें।" : (isHinglish ? "Amazon aur Swiggy se zyada focus emergency fund pe hona chahiye." : "Your standard of living is rising faster than your standard of saving.");
+    healthReasonStr = isHindi ? "लाइफस्टाइल खर्चे अधिक हैं।" : (isHinglish ? "Wants pe kharcha unusually high hai. Need vs Want samjho." : "Lifestyle maintenance cost is too high.");
+    projectionStr = isHindi ? "भविष्य की वेल्थ पर असर पड़ सकता है।" : (isHinglish ? `Is pattern se wealth building slow hai. Change zaroori hai.` : `This lifestyle will delay your financial freedom by years.`);
+    growthStr = isHindi ? "शॉपिंग से ज्यादा निवेश को महत्व दें।" : (isHinglish ? "Shopping apps se zyada SIP apps use karna shuru karo." : "Own assets that pay you, not products that cost you.");
+    strategyStr = isHindi ? "24-घंटे का नियम अपनाएं।" : (isHinglish ? "Har purchase se pehle 24 ghante wait karne ki aadat dalo." : "Apply the 24-hour rule to every non-essential purchase.");
+  }
+  else if (emotion === "elite" || emotion === "disciplined") {
+    actionStr = isHindi ? "आप बेहतरीन काम कर रहे हैं, निवेश बढ़ाएं!" : (isHinglish ? "Solid discipline! Savings speed ekdum mast hai. Shabaash!" : "Elite financial discipline! Your retention rate is outstanding. Well done.");
+    reasonStr = isHindi ? "कमाई का बड़ा हिस्सा बचाना ही अमीरी का रास्ता है।" : (isHinglish ? "Aap income ka bada portion retain kar rahe ho, this is brilliant discipline." : "Retaining a high percentage of income is the fastest path to wealth.");
+    healthReasonStr = isHindi ? "आर्थिक स्थिति बहुत मजबूत है।" : (isHinglish ? "Financial condition bohot strong hai. Tension free raho." : "Exceptional financial stability.");
+    projectionStr = isHindi ? `एक साल में आप ${fmt(summary.surplus * 12)} जोड़ लेंगे!` : (isHinglish ? `Yahi speed rahi toh saal bhar mein ${fmt(summary.surplus * 12)} ki wealth build hogi! ✨` : `Outstanding! You are on track to accumulate ${fmt(summary.surplus * 12)} this year! ✨`);
+    growthStr = isHindi ? `अब ${fmt(sipAmount)} की एग्रेसिव SIP का सही समय है।` : (isHinglish ? `Abhi ${fmt(sipAmount)} ki aggressive SIP dalo, wealth compound hogi.` : `Perfect time to deploy ${fmt(sipAmount)} into high-growth equity SIPs.`);
+    strategyStr = isHindi ? "पोर्टफोलियो डाइवर्सिफाई करें।" : (isHinglish ? "Ab sirf save nahi, diversify bhi karo and assets badhao." : "Strategic asset allocation is your next milestone. Diversify.");
+  }
+  else {
+    actionStr = isHindi ? "बजट स्थिर है, बचत बढ़ाने की कोशिश करें।" : (isHinglish ? "Budget stable hai, bas thoda aur save kar sakte ho." : "Budget is steady. Seek opportunities to optimize further.");
+    reasonStr = isHindi ? "सब कुछ ठीक है, बस निवेश में निरंतरता बनाए रखें।" : (isHinglish ? "Balance sahi hai, bas consistency chahiye wealth building ke liye." : "You have achieved balance. Now focus on increasing your savings rate.");
+    healthReasonStr = isHindi ? "वित्तीय सेहत अच्छी है।" : (isHinglish ? "Financial health normal hai, bas discipline maintain karo." : "Healthy financial state.");
+    projectionStr = isHindi ? `अनुमानित वार्षिक बचत ${fmt(summary.surplus * 12)} होगी।` : (isHinglish ? `Estimated yearly savings ${fmt(summary.surplus * 12)} bachegi.` : `Projected annual savings: ${fmt(summary.surplus * 12)}.`);
+    growthStr = isHindi ? "SIP नियमित रखें।" : (isHinglish ? "Emergency fund full karo aur SIP continue rakho." : "Complete your 6-month buffer and maintain SIP consistency.");
+    strategyStr = isHindi ? "लगातार निवेश ही भविष्य की सुरक्षा है।" : (isHinglish ? "Consistency hi success ka rasta hai, lagay raho." : "Consistency is your primary wealth multiplier. Keep going.");
+  }
+
+  const stepsStr = isHindi 
+    ? `1. ${fmt(sipAmount)} की SIP शुरू करें\n2. इमरजेंसी फंड में ${fmt(emergencyMonthly)} डालें\n3. अनावश्यक UPI खर्च ट्रैक करें`
+    : (isHinglish 
+      ? `1. ₹${sipAmount/100} ki SIP start karo\n2. Emergency fund mein ₹${emergencyMonthly/100} dalo\n3. Chhote UPI kharche control karo`
+      : `1. Start a ₹${sipAmount/100} SIP\n2. Buffer ₹${emergencyMonthly/100} for Emergency\n3. Audit all recurring UPI spends`);
+
   return {
-    action: potentialSavings > 0 ? `Beta, ₹${(potentialSavings/100).toLocaleString('en-IN')} extra bacha lo.` : "Current budget follow karte raho.",
-    reason: summary.unnecessarySpend > 0 ? `${formatCurrency(summary.unnecessarySpend)} 'Wants' mein kharch ho raha hai, sambhal jao.` : "Wasteful kharch nahi hai, good job!",
-    steps: `1. ₹${sipAmount} ki SIP shuru karo\n2. Emergency fund mein ₹${emergencyMonthly} dalo\n3. Daily kharch note karte raho`,
-    insights: `Is mahine ${summary.transactionCount} transactions kiye hain. Top spending: ${summary.topCategories[0]?.category || 'N/A'}.`,
-    projection: summary.surplus > 0 ? `Yahi pattern raha toh saal mein ₹${(summary.surplus * 12 / 100).toLocaleString('en-IN')} save karoge. ✨` : "Projected savings focus ki zaroorat hai, beta.",
-    growth: summary.surplus > 100000 ? `Aap ₹${(summary.surplus/100).toLocaleString('en-IN')} save kar rahe ho — isme se ₹${sipAmount} SIP start karo.` : "Pehle 3 mahine ka emergency fund banana zaroori hai.",
+    action: actionStr,
+    reason: reasonStr,
+    steps: stepsStr,
+    insights: isHindi ? `इस महीने ${summary.transactionCount} लेन-देन हुए। मुख्य खर्च: ${summary.topCategories[0]?.category || 'N/A'}।` : (isHinglish ? `Is mahine ${summary.transactionCount} transactions kiye. Top spend: ${summary.topCategories[0]?.category || 'N/A'}.` : `Analyzed ${summary.transactionCount} transactions. Primary outflow: ${summary.topCategories[0]?.category || 'N/A'}.`),
+    projection: projectionStr,
+    growth: growthStr,
     healthScore: score,
-    healthReason: healthReason,
+    healthReason: healthReasonStr,
     confidence: confidence,
     investmentOptions: {
-      sip: sipAmount > 1000 ? `Monthly ₹${sipAmount} Index Funds mein dalo, wealth banegi.` : "₹500 se bhi SIP start ho sakti hai, der mat karo.",
-      emergency: `Target: ₹${emergencyTarget.toLocaleString('en-IN')}. Mushkil waqt ke liye paisa alag rakho.`,
-      fd: "Safe returns chahiye toh Bank FD ya Liquid Funds best hain."
+      sip: isHindi ? `${fmt(sipAmount)} की SIP आपके भविष्य को सुरक्षित करेगी।` : (isHinglish ? `Monthly ₹${sipAmount/100} SIP future goals ke liye must hai.` : `A monthly SIP of ₹${sipAmount/100} is required for wealth creation.`),
+      emergency: isHindi ? `टारगेट: ${fmt(emergencyTarget)}। मुश्किल वक्त का साथी।` : (isHinglish ? `Target: ₹${emergencyTarget/100}. Bure waqt mein yehi kaam aayega.` : `Target: ₹${emergencyTarget/100}. Secure this as your survival safety net.`),
+      fd: isHindi ? "सुरक्षित रिटर्न के लिए बैंक FD बेहतर है।" : (isHinglish ? "Safe returns ke liye Bank FD ya Liquid Funds best hain." : "Bank FDs or Liquid Funds provide capital protection.")
     },
     platforms: ["Groww", "Zerodha", "Paytm Money"],
     personalizedPlan: {
@@ -212,15 +372,15 @@ export const getRuleBasedStructuredAdviceFromSummary = (summary: FinancialSummar
       emergencyTarget,
       savingsRate: summary.savingsRate,
       riskProfile,
-      strategy: riskProfile === "High" ? "Aggressive Growth plan follow karo, beta." : "Safe and Consistent wealth building pe focus karo."
+      strategy: strategyStr
     }
   };
 };
 
 // Deprecated in favor of summary-based logic, kept for API compatibility
-export const getRuleBasedStructuredAdvice = (transactions: Transaction[]): StructuredAIAdvice => {
+export const getRuleBasedStructuredAdvice = (transactions: Transaction[], language: string = 'en'): StructuredAIAdvice => {
   const summary = summarizeLedger(transactions);
-  return getRuleBasedStructuredAdviceFromSummary(summary);
+  return getRuleBasedStructuredAdviceFromSummary(summary, language);
 };
 
 function sanitizeAIResponse(raw: string): string {
@@ -297,11 +457,11 @@ function safeJsonParse(input: any, fallback = null) {
 /**
  * Rich Structured AI Advice Generator
  */
-export const getRichStructuredAIAdvice = async (transactions: Transaction[], language: string = 'hinglish'): Promise<StructuredAIAdvice> => {
+export const getRichStructuredAIAdvice = async (transactions: Transaction[], language: string = 'en'): Promise<StructuredAIAdvice> => {
   // 🛡️ [PHASE_31] LOCAL PREPROCESSING
   // Summarize first to prevent O(N) re-processing in rule engine and prompt builder
   const summary = summarizeLedger(transactions);
-  const fallback = getRuleBasedStructuredAdviceFromSummary(summary);
+  const fallback = getRuleBasedStructuredAdviceFromSummary(summary, language);
   
   if (summary.transactionCount === 0) return fallback;
 
@@ -318,17 +478,25 @@ export const getRichStructuredAIAdvice = async (transactions: Transaction[], lan
     // 🛡️ [DATA_COMPRESSION] Enriched compressed prompt
     const topCatsStr = summary.topCategories.map(c => `${c.category}: ₹${(c.amount/100).toFixed(0)} (${c.percentage.toFixed(0)}%)`).join(', ');
     const spikesStr = summary.unusualSpikes.length > 0 ? `Spikes: ${summary.unusualSpikes.join('; ')}` : '';
+    
+    let requestedLangName = 'English';
+    if (language === 'hi') requestedLangName = 'Hindi';
+    else if (language === 'hinglish' || language.includes('in')) requestedLangName = 'Hinglish';
 
     const prompt = `Financial Snapshot for ${summary.monthYear}:
     - Income: ₹${(summary.incomeTotal/100).toLocaleString('en-IN')}
     - Expense: ₹${(summary.expenseTotal/100).toLocaleString('en-IN')}
     - Top Spending: ${topCatsStr}
+    - Late Night Spend (10PM-4AM): ₹${(summary.lateNightSpend/100).toFixed(0)}
+    - Weekend Spend: ₹${(summary.weekendSpend/100).toFixed(0)}
+    - Small UPI Payments count: ${summary.smallUpiHabitCount}
+    - 80% Salary Exhaustion Day: ${summary.salaryExhaustionDay || 'Not reached'}
     - ${spikesStr}
     - Local Recommendation: ${fallback.action}
     - Local Reason: ${fallback.reason}
 
-    Please refine this into a personal 'Father + Mentor' style advice in Hinglish.
-    Be wise, concise, and provide actionable steps.
+    Please refine this into a personal 'Experienced Wealth Mentor' style advice in ${requestedLangName}.
+    Be wise, empathetic, concise, and provide actionable steps. Understand emotional spending patterns like lifestyle inflation, salary pressure, or late-night emotional ordering.
     Include investment advice (SIP: ₹${fallback.personalizedPlan?.sipAmount}, Emergency: ₹${fallback.personalizedPlan?.emergencyTarget}).
     Return ONLY valid JSON with exactly the same keys as structured advice.`;
 

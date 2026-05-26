@@ -18,7 +18,7 @@ interface FinancialSummaryProps {
 
 /**
  * FinancialSummary - High-Velocity Financial Header
- * UI System: True Dark Neon Glass V2
+ * UI System: Premium Monochrome
  * Interaction: scale(0.965) + butter-soft physics
  */
 const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions, loading }) => {
@@ -42,7 +42,7 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions, loadi
 
   // Interaction Config
   const summaryInteraction = {
-    whileTap: { scale: 0.965 },
+    whileTap: { scale: 0.98 },
     transition: { type: "spring", stiffness: 300, damping: 20, ease: [0.34, 1.56, 0.64, 1] }
   };
 
@@ -54,15 +54,15 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions, loadi
         {/* Card A: Total In */}
         <motion.div 
           {...summaryInteraction}
-          className="glass-v2 min-w-[160px] p-5 rounded-[28px] border-white/5 snap-start flex flex-col gap-3 cursor-pointer"
+          className="bg-surface min-w-[160px] p-5 rounded-[24px] border border-white/5 snap-start flex flex-col gap-3 cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-emerald-500/10 rounded-lg">
-              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />
+            <div className="p-1.5 bg-white/5 rounded-lg">
+              <ArrowUpRight className="h-3.5 w-3.5 text-white/40" />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-widest text-[#b3b3b3]">Total In</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Total In</span>
           </div>
-          <p className="text-xl font-black text-white font-mono tracking-tighter">
+          <p className="text-xl font-black text-foreground font-mono tracking-tighter">
             {loading ? '---' : formatCurrency(summary.totalIn)}
           </p>
         </motion.div>
@@ -70,15 +70,15 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions, loadi
         {/* Card B: Total Out */}
         <motion.div 
           {...summaryInteraction}
-          className="glass-v2 min-w-[160px] p-5 rounded-[28px] border-white/5 snap-start flex flex-col gap-3 cursor-pointer"
+          className="bg-surface min-w-[160px] p-5 rounded-[24px] border border-white/5 snap-start flex flex-col gap-3 cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-dynamic-pink/10 rounded-lg">
-              <ArrowDownRight className="h-3.5 w-3.5 text-dynamic-pink" />
+            <div className="p-1.5 bg-white/5 rounded-lg">
+              <ArrowDownRight className="h-3.5 w-3.5 text-white/40" />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-widest text-[#b3b3b3]">Total Out</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Total Out</span>
           </div>
-          <p className="text-xl font-black text-white font-mono tracking-tighter drop-shadow-[0_0_8px_rgba(255,15,123,0.3)]">
+          <p className="text-xl font-black text-foreground font-mono tracking-tighter">
             {loading ? '---' : formatCurrency(summary.totalOut)}
           </p>
         </motion.div>
@@ -86,15 +86,15 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions, loadi
         {/* Card C: Net Balance (Hero Card) */}
         <motion.div 
           {...summaryInteraction}
-          className="glass-v2 min-w-[200px] p-5 rounded-[28px] border-[#ff0f7b]/20 snap-start flex flex-col gap-3 cursor-pointer bg-white/[0.08]"
+          className="bg-surface min-w-[200px] p-5 rounded-[24px] border border-white/10 snap-start flex flex-col gap-3 cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-[#5f0a87]/20 rounded-lg border border-[#5f0a87]/30">
-              <Activity className="h-3.5 w-3.5 text-[#ff0f7b]" />
+            <div className="p-1.5 bg-white/10 rounded-lg">
+              <Activity className="h-3.5 w-3.5 text-white/60" />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-widest text-[#b3b3b3]">Net Surplus</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Net Surplus</span>
           </div>
-          <p className="text-2xl font-black font-mono tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87]">
+          <p className="text-2xl font-black font-mono tracking-tighter text-foreground">
             {loading ? '---' : formatCurrency(summary.net)}
           </p>
         </motion.div>

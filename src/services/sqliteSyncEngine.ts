@@ -277,7 +277,11 @@ export const syncEngine = {
           }
 
           if (success) {
-            await db.run(`UPDATE sync_queue SET status = 'completed' WHERE id = ?`, [row.id]);
+            // 🛡️ [SYNC_STATUS_LOCK]
+            // Only mark as completed if the row is still in 'syncing' status.
+            // This prevents a stale sync completion from overwriting a newer 'pending' update
+            // from a local edit that occurred while this sync was in-flight.
+            await db.run(`UPDATE sync_queue SET status = 'completed' WHERE id = ? AND status = 'syncing'`, [row.id]);
             
             // 🛡️ SYNC CONSISTENCY: Update local record status to allow eventual cleanup
             try {

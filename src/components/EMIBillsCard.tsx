@@ -43,21 +43,22 @@ const BillItem = React.memo<{
   }, [onDelete, bill.id]);
 
   return (
-    <li className="flex items-center justify-between py-3 px-2 hover:bg-slate-50 rounded-xl transition-colors">
-      <div>
-        <div className="font-medium text-slate-800">{bill.name}</div>
-        <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+    <li className="flex items-center justify-between py-3.5 px-3 hover:bg-white/5 rounded-xl transition-colors border border-transparent hover:border-white/5">
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-white truncate">{bill.name}</div>
+        <div className="text-[10px] text-white/40 flex items-center gap-1 mt-0.5 font-bold uppercase tracking-widest">
           <span>{t('emiBills.dueLabel', 'Due')}:</span>
           <span>{new Date(bill.dueDate).toLocaleDateString('en-IN')}</span>
         </div>
       </div>
       <div className="flex items-center gap-2">
         <span
-          className={
+          className={cn(
+            "font-black font-mono tracking-tighter text-lg mr-2",
             bill.status === 'paid'
-              ? 'text-emerald-600 font-semibold'
-              : 'text-rose-600 font-semibold'
-          }
+              ? 'text-white/40'
+              : 'text-white'
+          )}
         >
           {formatCurrency(bill.amount)}
         </span>
@@ -65,7 +66,7 @@ const BillItem = React.memo<{
         {/* Edit button */}
         <button
           onClick={handleEdit}
-          className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+          className="p-2 text-white/20 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
           aria-label={t('emiBills.editAria', 'Edit')}
           title={t('emiBills.edit', 'Edit')}
         >
@@ -75,7 +76,7 @@ const BillItem = React.memo<{
         {/* Delete button */}
         <button
           onClick={handleDelete}
-          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          className="p-2 text-white/20 hover:text-rose-500 hover:bg-white/5 rounded-lg transition-colors"
           aria-label={t('emiBills.deleteAria', 'Delete')}
           title={t('emiBills.delete', 'Delete')}
         >
@@ -84,15 +85,15 @@ const BillItem = React.memo<{
 
         {bill.status === 'unpaid' && onPay && (
           <button
-            className="ml-1 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all"
+            className="ml-1 px-4 py-2 bg-white text-background rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-white/90 transition-all active:scale-[0.98]"
             onClick={handlePay}
           >
             {t('emiBills.pay', 'Pay')}
           </button>
         )}
         {bill.status === 'paid' && (
-          <span className="ml-1 flex items-center gap-1 text-xs text-emerald-600 font-medium">
-            <CheckCircle className="h-3.5 w-3.5" />
+          <span className="ml-1 flex items-center gap-1 text-[9px] text-white/40 font-bold uppercase tracking-widest bg-white/5 px-2 py-1 rounded-lg border border-white/5">
+            <CheckCircle className="h-3 w-3" />
             {t('emiBills.paid', 'Paid')}
           </span>
         )}
@@ -121,14 +122,14 @@ const EMIBillsCard: React.FC<EMIBillsCardProps> = ({
   const billList = useMemo(() => {
     if (bills.length === 0) {
       return (
-        <div className="text-slate-400 text-sm py-6 text-center bg-slate-50 rounded-xl">
+        <div className="text-white/20 text-[10px] font-bold uppercase tracking-widest py-10 text-center bg-white/5 border border-dashed border-white/10 rounded-xl">
           {t('emiBills.noBills', 'No EMI bills found.')}
         </div>
       );
     }
 
     return (
-      <ul className="divide-y divide-slate-100">
+      <ul className="space-y-1">
         {bills.map((bill) => (
           <BillItem
             key={bill.id}
@@ -143,31 +144,31 @@ const EMIBillsCard: React.FC<EMIBillsCardProps> = ({
   }, [bills, onPay, onEdit, onDelete, t]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl shadow-purple-100/20 border border-slate-100 p-5">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <div className="flex items-center gap-2">
-          <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-2 rounded-xl">
-            <CheckCircle className="h-5 w-5 text-purple-600" />
+    <div className="bg-surface rounded-[24px] border border-border shadow-sm p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+            <CheckCircle className="h-5 w-5 text-white/40" />
           </div>
-          <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-            {t('emiBills.title', 'EMI & Fixed Bills')}
-          </h3>
+          <div>
+            <h3 className="text-xl font-black text-white uppercase tracking-tighter">
+              {t('emiBills.title', 'Fixed Bills')}
+            </h3>
+            <p className="text-[9px] text-white/20 font-bold uppercase tracking-[0.2em] mt-0.5">
+              {t('emiBills.description', 'Commitment Audit')}
+            </p>
+          </div>
         </div>
         {onAddEmiLoan && (
           <button
             onClick={onAddEmiLoan}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 px-6 h-12 bg-white text-background rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-white/90 transition-all w-full sm:w-auto active:scale-[0.98]"
           >
             <Plus className="h-4 w-4" />
-            {t('emiBills.addEmiLoan', 'Add EMI Loan Details')}
+            {t('emiBills.addEmiLoan', 'Add Loan Details')}
           </button>
         )}
       </div>
-
-      {/* Subtle helper text */}
-      <p className="text-xs text-slate-400 italic mb-3">
-        {t('emiBills.description', 'Manage your recurring EMI commitments')}
-      </p>
 
       {billList}
     </div>

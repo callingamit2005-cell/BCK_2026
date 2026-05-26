@@ -16,45 +16,45 @@ const PricingComparison = () => {
   return (
     <section className="py-24 px-6 max-w-7xl mx-auto" id="pricing">
       <div className="text-center mb-16">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#ff0f7b]/30 bg-[#ff0f7b]/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-[#ff7bc0] mb-6">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-white/60 mb-6">
           <Sparkles className="h-3 w-3" />
           Comparison
         </div>
-        <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
-          Core vs <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87]">Premium Features</span>
+        <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight uppercase">
+          Standard vs Elite
         </h2>
-        <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium">
-          Compare what is available for free and what will be part of Premium in the future.
+        <p className="text-white/40 text-lg max-w-2xl mx-auto font-bold uppercase tracking-wide">
+          Evaluate the features available in each service tier.
         </p>
       </div>
 
-      <div className="relative overflow-hidden rounded-[40px] border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-[24px] border border-white/5 bg-white/[0.01] backdrop-blur-xl shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.03]">
-                <th className="py-8 px-8 text-sm font-black uppercase tracking-widest text-slate-400">Feature</th>
-                <th className="py-8 px-8 text-sm font-black uppercase tracking-widest text-white">Core (Basic)</th>
-                <th className="py-8 px-8 text-sm font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87]">Premium</th>
+              <tr className="border-b border-white/10 bg-white/5">
+                <th className="py-8 px-8 text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">Capability</th>
+                <th className="py-8 px-8 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Standard</th>
+                <th className="py-8 px-8 text-[10px] font-black uppercase tracking-[0.3em] text-white">Elite</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {comparisonData.map((item, index) => (
                 <tr key={index} className="group hover:bg-white/[0.02] transition-colors">
-                  <td className="py-6 px-8 text-white font-bold text-lg md:text-xl tracking-tight">{item.feature}</td>
-                  <td className="py-6 px-8 text-slate-400 font-medium text-base md:text-lg">
+                  <td className="py-6 px-8 text-white font-bold text-sm uppercase tracking-widest">{item.feature}</td>
+                  <td className="py-6 px-8 text-white/20 font-medium text-xs">
                     <div className="flex items-center gap-3">
                       {item.free === "Not Available" ? (
-                        <Minus className="h-5 w-5 text-slate-600" />
+                        <Minus className="h-4 w-4 text-white/10" />
                       ) : (
-                        <Check className="h-5 w-5 text-slate-500" />
+                        <Check className="h-4 w-4 text-white/20" />
                       )}
                       {item.free}
                     </div>
                   </td>
-                  <td className="py-6 px-8 text-slate-200 font-bold text-base md:text-lg">
+                  <td className="py-6 px-8 text-white font-bold text-xs uppercase tracking-widest">
                     <div className="flex items-center gap-3">
-                      <Check className="h-5 w-5 text-[#ff0f7b]" />
+                      <Check className="h-4 w-4 text-white" />
                       {item.premium}
                     </div>
                   </td>
@@ -64,9 +64,9 @@ const PricingComparison = () => {
           </table>
         </div>
         
-        <div className="p-8 md:p-12 border-t border-white/10 bg-white/[0.03]">
-          <p className="text-center text-slate-400 font-bold italic text-lg md:text-xl">
-            "All features are currently available during beta testing. Premium plans will be introduced later."
+        <div className="p-8 md:p-12 border-t border-white/10 bg-white/5">
+          <p className="text-center text-white/40 font-bold italic text-sm uppercase tracking-widest">
+            "All system capabilities are currently unlocked during the beta cycle."
           </p>
         </div>
       </div>

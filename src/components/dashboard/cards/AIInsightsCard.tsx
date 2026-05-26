@@ -19,7 +19,7 @@ interface AIInsightsCardProps {
   neonGlass: string;
 }
 
-export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({
+export const AIInsightsCard: React.FC<AIInsightsCardProps> = React.memo(({
   aiAdvice,
   aiAlerts,
   aiPrediction,
@@ -27,32 +27,30 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({
   neonGlass,
 }) => {
   return (
-    <Card className={cn(neonGlass, "p-8 relative border-[#ff0f7b]/35 shadow-[0_0_40px_-10px_rgba(255,15,123,0.3)]")}>
-      <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-[#ff0f7b]/20 border border-[#ff0f7b]/40 rounded-full">
-        <span className="w-1.5 h-1.5 bg-[#ff0f7b] rounded-full animate-pulse shadow-[0_0_8px_#ff0f7b]" />
-        <span className="text-[8px] font-black text-[#ff0f7b] uppercase tracking-widest">ANALYSIS</span>
+    <Card className={cn(neonGlass, "p-8 relative border-border shadow-sm")}>
+      <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+        <span className="w-1.5 h-1.5 bg-white rounded-full opacity-40" />
+        <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest">ANALYSIS</span>
       </div>
       <div className="space-y-6">
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[#b3b3b3] text-[10px] font-black uppercase tracking-[0.3em]">AI Analysis</h3>
+            <h3 className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em]">AI Analysis</h3>
             {aiAdvice?.confidence && (
               <span className={cn(
-                "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border",
-                aiAdvice.confidence === 'HIGH' ? "text-emerald-400 border-emerald-400/30 bg-emerald-400/10" :
-                aiAdvice.confidence === 'MEDIUM' ? "text-amber-400 border-amber-400/30 bg-amber-400/10" :
-                "text-rose-400 border-rose-400/30 bg-rose-400/10"
+                "text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md border",
+                "text-text-secondary border-white/10 bg-white/5"
               )}>
                 Confidence: {aiAdvice.confidence}
               </span>
             )}
           </div>
           <div className="space-y-3">
-            <p className="text-white text-sm font-bold flex items-start gap-2">
-              <Sparkles className="h-4 w-4 text-[#ff0f7b] shrink-0 mt-0.5" />
+            <p className="text-white text-sm font-bold flex items-start gap-2 leading-relaxed">
+              <Sparkles className="h-4 w-4 text-text-muted shrink-0 mt-0.5" />
               {aiAdvice?.insights || 'Analyzing your patterns...'}
             </p>
-            <p className="text-white/60 text-xs font-medium italic">
+            <p className="text-text-muted text-xs font-medium italic leading-relaxed">
               {aiAdvice?.projection}
             </p>
           </div>
@@ -60,11 +58,11 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({
 
         {aiAlerts.length > 0 && (
           <div className="pt-4 border-t border-white/5">
-            <h3 className="text-[#b3b3b3] text-[10px] font-black uppercase tracking-[0.3em] mb-4">Smart Alerts</h3>
+            <h3 className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Smart Alerts</h3>
             <div className="space-y-3">
               {aiAlerts.map((alert, idx) => (
-                <p key={idx} className="text-rose-400 text-sm font-bold flex items-start gap-2">
-                  <Zap className="h-4 w-4 shrink-0 mt-0.5" />
+                <p key={idx} className="text-white/80 text-sm font-bold flex items-start gap-2">
+                  <Zap className="h-4 w-4 text-text-muted shrink-0 mt-0.5" />
                   {alert}
                 </p>
               ))}
@@ -74,16 +72,13 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({
 
         <div className="pt-4 border-t border-white/5 flex items-center justify-between">
           <div>
-            <h3 className="text-[#b3b3b3] text-[10px] font-black uppercase tracking-[0.3em] mb-1">Spend Prediction</h3>
-            <p className="text-white text-lg font-black font-mono">{formatCurrency(aiPrediction.predictedTotal)}</p>
+            <h3 className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em] mb-1">Spend Prediction</h3>
+            <p className="text-white text-lg font-bold font-mono tracking-tighter">{formatCurrency(aiPrediction.predictedTotal)}</p>
           </div>
           <div className="text-right">
-            <h3 className="text-[#b3b3b3] text-[10px] font-black uppercase tracking-[0.3em] mb-1">Trend</h3>
+            <h3 className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em] mb-1">Trend</h3>
             <span className={cn(
-              "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border",
-              aiPrediction.trend === 'increasing' ? "text-rose-400 border-rose-400/30 bg-rose-400/10" :
-              aiPrediction.trend === 'decreasing' ? "text-emerald-400 border-emerald-400/30 bg-emerald-400/10" :
-              "text-blue-400 border-blue-400/30 bg-blue-400/10"
+              "text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border bg-white/5 border-white/10 text-text-muted"
             )}>
               {aiPrediction.trend}
             </span>
@@ -92,4 +87,4 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = ({
       </div>
     </Card>
   );
-};
+});

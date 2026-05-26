@@ -6,7 +6,7 @@
  * 🚀 UPGRADE: Integrated Monthly Trend Bar Chart (Android Stable).
  */
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { 
@@ -43,19 +43,19 @@ interface CategoryChartProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Food: '#F472B6', 
-  Shopping: '#EC4899', 
-  Bills: '#8B5CF6', 
-  Travel: '#C084FC', 
-  Entertainment: '#D946EF', 
-  Others: '#A855F7',
+  Food: '#E5E5E5',       // Platinum
+  Travel: '#808080',     // Muted
+  Shopping: '#B3B3B3',   // Secondary
+  Bills: '#FFFFFF',      // Primary
+  Entertainment: '#404040', // Dark Graphite
+  Others: '#1A1A1A',
 };
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   Food: '🍔', Shopping: '🛒', Bills: '📄', Travel: '✈️', Entertainment: '🎬', Others: '📦',
 };
 
-const CategoryChart = ({ expenses, loading, budget = 0 }: CategoryChartProps) => {
+const CategoryChart = React.memo(({ expenses, loading, budget = 0 }: CategoryChartProps) => {
   // ==================== LOGIC: PIE ENGINE ====================
   const categoryData = useMemo(() => {
     const grouped: Record<string, number> = {};
@@ -64,7 +64,7 @@ const CategoryChart = ({ expenses, loading, budget = 0 }: CategoryChartProps) =>
       grouped[cat] = (grouped[cat] || 0) + Number(expense.amount || 0);
     });
     return Object.entries(grouped).map(([name, value]) => ({
-      name, value, color: CATEGORY_COLORS[name] || '#8B5CF6', emoji: CATEGORY_EMOJIS[name] || '💰',
+      name, value, color: CATEGORY_COLORS[name] || '#808080', emoji: CATEGORY_EMOJIS[name] || '💰',
     })).sort((a, b) => b.value - a.value);
   }, [expenses]);
 
@@ -107,41 +107,41 @@ const CategoryChart = ({ expenses, loading, budget = 0 }: CategoryChartProps) =>
     }));
   }, [expenses]);
 
-  // UI SYSTEM - TRUE DARK NEON GLASS V2
-  const neonGlass = "bg-[#0a0014]/80 backdrop-blur-xl border border-[#ff0f7b]/30 shadow-[0_20px_50px_-12px_rgba(255,15,123,0.3)] rounded-[32px] overflow-hidden transform-gpu";
-  const glassPanel = "bg-white/5 border border-white/10 rounded-2xl p-5 transform-gpu transition-all hover:bg-white/10";
-  const labelText = "text-[#b3b3b3] font-black uppercase tracking-widest text-[9px]";
+  // UI SYSTEM - PREMIUM ENTERPRISE
+  const premiumSurface = "bg-surface border border-border shadow-sm rounded-[24px] overflow-hidden transform-gpu";
+  const glassPanel = "bg-white/5 border border-white/5 rounded-xl p-5 transform-gpu transition-all hover:bg-white/[0.08]";
+  const labelText = "text-white/40 font-bold uppercase tracking-widest text-[9px]";
   const dataText = "text-white font-mono font-black";
 
   // ==================== RENDER STATES ====================
   
   if (loading) {
     return (
-      <Card className={cn(neonGlass, "h-[300px] flex flex-col items-center justify-center gap-4")}>
-        <Loader2 className="h-10 w-10 animate-spin text-[#ff0f7b] drop-shadow-[0_0_10px_#ff0f7b]" />
-        <p className="text-[#ff0f7b] text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Syncing Intel...</p>
+      <Card className={cn(premiumSurface, "h-[300px] flex flex-col items-center justify-center gap-4")}>
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.2em] animate-pulse">Syncing Intel</p>
       </Card>
     );
   }
 
   if (categoryData.length === 0) {
     return (
-      <Card className={cn(neonGlass, "p-12 text-center")}>
-        <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10 shadow-inner backdrop-blur-md animate-bounce">
-          <Sparkles className="h-8 w-8 text-white opacity-40" />
+      <Card className={cn(premiumSurface, "p-12 text-center")}>
+        <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/5 shadow-inner backdrop-blur-md">
+          <Sparkles className="h-8 w-8 text-white opacity-10" />
         </div>
-        <h3 className="text-white text-lg font-black mb-2 uppercase tracking-tighter italic">Data Engine Silent</h3>
-        <p className="text-[#b3b3b3] text-[10px] font-bold uppercase tracking-widest">Feed the system to unlock market insights</p>
+        <h3 className="text-white text-lg font-black mb-2 uppercase tracking-tighter">Data Engine Silent</h3>
+        <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Feed the system to unlock market insights</p>
       </Card>
     );
   }
 
   return (
-    <Card className={neonGlass}>
+    <Card className={premiumSurface}>
       <CardHeader className="p-8 pb-0">
-        <CardTitle className="text-xl font-black text-white flex items-center gap-4 tracking-widest uppercase italic">
-          <div className="p-2.5 rounded-xl bg-[#ff0f7b]/10 border border-[#ff0f7b]/20 shadow-[0_0_15px_rgba(255,15,123,0.2)]">
-            <PieIcon className="h-5 w-5 text-[#ff0f7b]" />
+        <CardTitle className="text-xl font-black text-white flex items-center gap-4 tracking-tighter uppercase">
+          <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 shadow-sm">
+            <PieIcon className="h-5 w-5 text-white/40" />
           </div>
           Market Intel
         </CardTitle>
@@ -167,13 +167,12 @@ const CategoryChart = ({ expenses, loading, budget = 0 }: CategoryChartProps) =>
                     <Cell 
                       key={`cell-${index}`} 
                       fill={entry.color} 
-                      style={{ filter: `drop-shadow(0 0 8px ${entry.color}44)` }}
                     />
                   ))}
                 </Pie>
                 <ChartTooltip 
                   cursor={false} 
-                  content={<ChartTooltipContent hideLabel className="bg-[#0a0014] border border-white/10 rounded-xl text-white font-mono shadow-2xl backdrop-blur-xl" />} 
+                  content={<ChartTooltipContent hideLabel className="bg-surface border border-white/10 rounded-xl text-white font-mono shadow-2xl" />} 
                 />
               </PieChart>
             </ChartContainer>
@@ -181,21 +180,21 @@ const CategoryChart = ({ expenses, loading, budget = 0 }: CategoryChartProps) =>
             {/* Center Total Overlay */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className={labelText}>Current Burn</span>
-              <span className={cn("text-2xl", dataText)}>{formatCurrency(total)}</span>
+              <span className={cn("text-2xl tracking-tighter", dataText)}>{formatCurrency(total)}</span>
             </div>
           </div>
 
           {/* LEGEND AREA - High Contrast List */}
           <div className="space-y-3 max-h-[280px] overflow-y-auto hide-scrollbar custom-scrollbar pr-2">
             {categoryData.map((item) => (
-              <div key={item.name} className="flex items-center justify-between p-3.5 bg-white/5 border border-white/5 rounded-xl transition-all hover:bg-white/10 hover:border-white/20">
+              <div key={item.name} className="flex items-center justify-between p-3.5 bg-white/5 border border-white/5 rounded-xl transition-all hover:bg-white/[0.08]">
                 <div className="flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}88` }} />
-                  <span className="text-[10px] font-black text-white/80 uppercase tracking-widest">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">
                     {item.emoji} {item.name}
                   </span>
                 </div>
-                <span className={cn("text-xs", dataText)}>
+                <span className={cn("text-xs tracking-tighter", dataText)}>
                   {formatCurrency(item.value)}
                 </span>
               </div>
@@ -206,35 +205,35 @@ const CategoryChart = ({ expenses, loading, budget = 0 }: CategoryChartProps) =>
         {/* SECTION 2: BAR CHART AREA (MONTHLY TREND) - Android Safe Fixed Render */}
         <div className="pt-6 border-t border-white/5 space-y-6">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-[#ff0f7b]/10 border border-[#ff0f7b]/20">
-              <BarChart3 className="h-4 w-4 text-[#ff0f7b]" />
+            <div className="p-2 rounded-lg bg-white/5 border border-white/5 shadow-sm">
+              <BarChart3 className="h-4 w-4 text-white/40" />
             </div>
             <span className={labelText}>Monthly Velocity</span>
           </div>
 
           <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
             <BarChart width={300} height={160} data={monthlyTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.02)" />
               <XAxis 
                 dataKey="name" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }} 
+                tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: 'bold' }} 
                 dy={10}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }}
+                tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: 'bold' }}
               />
               <Tooltip
-                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg shadow-2xl">
-                        <p className="text-[10px] font-black text-white/40 uppercase mb-1">{payload[0].payload.name}</p>
-                        <p className="text-xs font-black text-[#ff0f7b]">{formatCurrency(payload[0].value as number)}</p>
+                      <div className="bg-surface border border-white/10 p-2 rounded-lg shadow-2xl">
+                        <p className="text-[9px] font-bold text-white/40 uppercase mb-1">{payload[0].payload.name}</p>
+                        <p className="text-xs font-black text-white">{formatCurrency(payload[0].value as number)}</p>
                       </div>
                     );
                   }
@@ -243,14 +242,14 @@ const CategoryChart = ({ expenses, loading, budget = 0 }: CategoryChartProps) =>
               />
               <Bar 
                 dataKey="value" 
-                radius={[4, 4, 0, 0]} 
-                barSize={24}
+                radius={[2, 2, 0, 0]} 
+                barSize={20}
                 isAnimationActive={false}
               >
                 {monthlyTrendData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={index === monthlyTrendData.length - 1 ? '#ff0f7b' : 'rgba(255,255,255,0.1)'} 
+                    fill={index === monthlyTrendData.length - 1 ? '#FFFFFF' : 'rgba(255,255,255,0.1)'} 
                   />
                 ))}
               </Bar>
@@ -261,19 +260,19 @@ const CategoryChart = ({ expenses, loading, budget = 0 }: CategoryChartProps) =>
         {/* BOTTOM INSIGHT ROW - Corrected Horizontal Stack */}
         <div className="grid grid-cols-2 gap-5 pt-4 border-t border-white/5">
           <div className={glassPanel}>
-            <Activity className="h-4 w-4 text-emerald-400 mb-2 drop-shadow-[0_0_5px_#10b981]" />
+            <Activity className="h-4 w-4 text-white/40 mb-2" />
             <p className={labelText}>Today's Pulse</p>
-            <p className={cn("text-lg", dataText)}>Healthy</p>
+            <p className={cn("text-lg tracking-tighter", dataText)}>Healthy</p>
           </div>
           <div className={glassPanel}>
-            <Zap className="h-4 w-4 text-purple-400 mb-2 drop-shadow-[0_0_5px_#a855f7]" />
+            <Zap className="h-4 w-4 text-white/40 mb-2" />
             <p className={labelText}>AI Audit</p>
-            <p className={cn("text-lg", dataText)}>Optimized</p>
+            <p className={cn("text-lg tracking-tighter", dataText)}>Optimized</p>
           </div>
         </div>
       </CardContent>
     </Card>
   );
-};
+});
 
 export default CategoryChart;

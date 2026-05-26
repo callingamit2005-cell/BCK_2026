@@ -38,9 +38,9 @@ const MemberSection: React.FC<MemberSectionProps> = ({
 }) => {
   return (
     <Card className={cardStyle}>
-      <CardHeader className="bg-slate-50 py-4 border-b border-slate-100">
-        <CardTitle className="text-base font-black flex items-center gap-2 text-slate-800">
-          <Users className="h-5 w-5 text-purple-600" /> {t("members")} ({activeMembers.length})
+      <CardHeader className="bg-white/5 py-4 border-b border-white/5">
+        <CardTitle className="text-base font-black flex items-center gap-3 text-white uppercase tracking-tighter">
+          <Users className="h-5 w-5 text-white/40" /> {t("members")} ({activeMembers.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-5 space-y-4">
@@ -50,33 +50,33 @@ const MemberSection: React.FC<MemberSectionProps> = ({
               placeholder="Name" 
               value={memberName} 
               onChange={e => setMemberName(e.target.value)} 
-              className={cn("h-11 rounded-xl", inputClass)} 
+              className={cn("h-11 rounded-xl font-bold", inputClass)} 
             />
             <Button 
               type="button" 
               onClick={handleAddMember} 
               disabled={!memberName.trim() || isAddingMember} 
-              className={cn("h-11 px-5 rounded-xl font-bold", gradientClass)}
+              className={cn("h-11 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest", gradientClass)}
             >
               {isAddingMember ? <Loader2 className="animate-spin h-4 w-4" /> : t("add")}
             </Button>
           </div>
         )}
-        <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+        <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
           {members.map((m: any) => (
             <div 
               key={m.id} 
               className={cn(
-                "flex justify-between items-center p-3 rounded-xl border shadow-sm transition-colors", 
-                m.is_deleted ? "bg-slate-50 border-slate-200 opacity-60" : "bg-white border-slate-100 hover:border-purple-200"
+                "flex justify-between items-center p-3 rounded-xl border transition-all duration-300", 
+                m.is_deleted ? "bg-white/5 border-white/5 opacity-40" : "bg-white/5 border-white/5 hover:border-white/10"
               )}
             >
-              <span className="text-sm font-bold text-slate-700">
-                {m.name} {m.role === 'admin' && '👑'} {m.is_deleted && <span className="ml-2 text-xs text-slate-400 font-normal italic">(Departed)</span>}
+              <span className="text-xs font-bold text-white/80">
+                {m.name} {m.role === 'admin' && '👑'} {m.is_deleted && <span className="ml-2 text-[9px] text-white/20 font-bold uppercase tracking-widest italic">(Departed)</span>}
               </span>
               {isAdmin && m.role !== 'admin' && !m.is_deleted && (
                 <Trash2
-                  className="h-4 w-4 text-slate-300 hover:text-red-500 cursor-pointer"
+                  className="h-3.5 w-3.5 text-white/20 hover:text-red-400 cursor-pointer transition-colors"
                   onClick={() => onDeleteMember(m)}
                 />
               )}
@@ -87,9 +87,9 @@ const MemberSection: React.FC<MemberSectionProps> = ({
         {isAdmin && (
           <Button 
             onClick={handleInviteShare} 
-            className="w-full flex items-center justify-center gap-2 h-12 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border border-[#25D366]/30 rounded-xl font-bold transition-all mt-2"
+            className="w-full flex items-center justify-center gap-2 h-12 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/10 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all mt-2"
           >
-            <Share2 className="h-4 w-4" /> {t("invite_whatsapp")}
+            <Share2 className="h-3.5 w-3.5" /> {t("invite_whatsapp")}
           </Button>
         )}
       </CardContent>

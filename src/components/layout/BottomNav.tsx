@@ -6,8 +6,8 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import SmartUniversalInput from "../SmartUniversalInput";
 
 /**
- * BottomNav.tsx - BachatKaro Modern-Style Mobile Navigation
- * Design: True Dark Neon Glass V2
+ * BottomNav.tsx - BachatKaro Premium Monochrome Mobile Navigation
+ * Design: AMOLED Black + Soft Accent System
  * Physics: Apple-grade touch precision
  */
 const BottomNav = () => {
@@ -32,20 +32,14 @@ const BottomNav = () => {
   ];
 
   // Physics & Touch System
-  const applePhysics = "transition-all duration-300 ease-butter-soft active:scale-[0.965] touch-action-manipulation";
+  const applePhysics = "transition-all duration-300 ease-butter-soft active:scale-[0.98] touch-action-manipulation";
 
   return (
     <>
       <nav
-        className="safe-x safe-bottom md:hidden fixed bottom-0 left-0 right-0 z-[100] w-full min-h-[84px] bg-[#0a0014]/88 backdrop-blur-[32px] border-t border-[#ff0f7b]/30 flex items-center justify-around px-3 pt-2 pb-3"
+        className="safe-x safe-bottom md:hidden fixed bottom-0 left-0 right-0 z-[100] w-full min-h-[84px] bg-background border-t border-white/5 flex items-center justify-around px-3 pt-2 pb-3"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
       >
-        <style>{`
-          @keyframes neon-halo-rotate {
-            0% { transform: translate(-50%, -50%) rotateZ(0deg); }
-            100% { transform: translate(-50%, -50%) rotateZ(360deg); }
-          }
-        `}</style>
         {navItems.map((item) => {
           if (item.hidden) {
             // Render invisible placeholder to prevent layout shift
@@ -56,17 +50,6 @@ const BottomNav = () => {
           if (item.isCenter) {
             return (
               <div key="center-fab" className={cn("relative -top-5 flex items-center justify-center", applePhysics)}>
-                {/* 2. Rainbow Halo Wrapper */}
-                <div 
-                  className="absolute top-1/2 left-1/2 w-[76px] h-[76px] rounded-full blur-[14px] opacity-90 pointer-events-none"
-                  style={{
-                    background: 'conic-gradient(from 0deg, #FF0000, #FFA500, #FFFF00, #008000, #0000FF, #4B0082, #EE82EE, #FF0000)',
-                    animation: 'neon-halo-rotate 3s linear infinite',
-                    zIndex: 0,
-                    willChange: 'transform'
-                  }}
-                />
-                
                 {/* 3. Toggle Logic */}
                 <button
                   type="button"
@@ -74,13 +57,13 @@ const BottomNav = () => {
                   aria-expanded={isOpen}
                   aria-label={isOpen ? "Close add transaction panel" : "Open add transaction panel"}
                   className={cn(
-                    "relative z-10 flex flex-col items-center justify-center w-[64px] h-[64px] rounded-full shadow-[0_0_25px_rgba(236,72,153,0.5)] bg-gradient-to-br from-[#7C3AED] via-[#EC4899] to-[#D946EF] border-4 border-[#0a0014] touch-manipulation"
+                    "relative z-10 flex flex-col items-center justify-center w-[60px] h-[60px] rounded-full bg-surface border border-white/10 touch-manipulation"
                   )}
                 >
-                  <item.icon className={cn("h-8 w-8 text-white transition-transform duration-300", isOpen ? "rotate-45" : "rotate-0")} />
+                  <item.icon className={cn("h-7 w-7 text-white transition-transform duration-300", isOpen ? "rotate-45" : "rotate-0")} />
                 </button>
                 
-                <span className="absolute -bottom-6 text-[10px] font-black uppercase tracking-widest text-white/50">
+                <span className="absolute -bottom-6 text-[9px] font-bold uppercase tracking-widest text-text-muted">
                   {item.label}
                 </span>
               </div>
@@ -102,13 +85,13 @@ const BottomNav = () => {
             >
               <div className={cn(
                 "p-1.5 rounded-xl transition-all duration-300",
-                active ? "bg-[#ff0f7b]/20 text-[#ff0f7b]" : "text-white/40 group-hover:text-white/70"
+                active ? "text-white" : "text-text-muted group-hover:text-text-secondary"
               )}>
-                <item.icon className={cn("h-6 w-6", active && "drop-shadow-[0_0_8px_rgba(255,15,123,0.8)]")} />
+                <item.icon className={cn("h-5 w-5")} />
               </div>
               <span className={cn(
-                "text-[9px] font-black uppercase tracking-widest transition-colors",
-                active ? "text-[#ff0f7b]" : "text-white/40"
+                "text-[8px] font-bold uppercase tracking-[0.2em] transition-colors",
+                active ? "text-white" : "text-text-muted"
               )}>
                 {item.label}
               </span>

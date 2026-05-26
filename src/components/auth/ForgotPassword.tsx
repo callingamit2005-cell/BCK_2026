@@ -86,21 +86,20 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4
-      bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 antialiased">
 
-      <Card className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/40 p-8 transition-all duration-300">
+      <Card className="w-full max-w-md bg-surface border border-white/5 rounded-[24px] p-8 shadow-sm transition-all duration-300">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg ring-4 ring-white/40">
-              <KeyRound className="h-8 w-8 text-white" />
+            <div className="w-14 h-14 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 shadow-inner">
+              <KeyRound className="h-6 w-6 text-white/40" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Reset Password
+          <CardTitle className="text-2xl font-black tracking-tighter text-white uppercase">
+            Reset Identity
           </CardTitle>
-          <CardDescription className="text-gray-500 text-sm">
-            Enter your email and new password.
+          <CardDescription className="text-white/40 text-[9px] font-bold uppercase tracking-widest">
+            Enter your email and new credentials.
           </CardDescription>
         </CardHeader>
 
@@ -108,24 +107,21 @@ const ForgotPassword = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="reset-email">Email address</Label>
+              <Label htmlFor="reset-email" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">Email address</Label>
               <Input
                 id="reset-email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="amit@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="border border-gray-300 rounded-lg px-4 py-3
-                  focus:ring-2 focus:ring-purple-400
-                  focus:border-purple-500
-                  transition-all duration-200"
+                className="h-12 bg-white/5 border-white/5 rounded-xl text-white font-bold focus:border-white/20 transition-all"
               />
             </div>
 
             {/* New Password */}
             <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
+              <Label htmlFor="new-password" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">New Password</Label>
               <Input
                 id="new-password"
                 type="password"
@@ -134,16 +130,13 @@ const ForgotPassword = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 minLength={6}
-                className="border border-gray-300 rounded-lg px-4 py-3
-                  focus:ring-2 focus:ring-purple-400
-                  focus:border-purple-500
-                  transition-all duration-200"
+                className="h-12 bg-white/5 border-white/5 rounded-xl text-white font-bold focus:border-white/20 transition-all"
               />
             </div>
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Label htmlFor="confirm-password" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">Confirm Password</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -152,29 +145,26 @@ const ForgotPassword = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="border border-gray-300 rounded-lg px-4 py-3
-                  focus:ring-2 focus:ring-purple-400
-                  focus:border-purple-500
-                  transition-all duration-200"
+                className="h-12 bg-white/5 border-white/5 rounded-xl text-white font-bold focus:border-white/20 transition-all"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl py-3 shadow-lg hover:brightness-110 hover:scale-[1.02] transition-all duration-200 disabled:opacity-70"
+              className="w-full h-14 bg-white text-background rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Reset Password
+              Commit Reset
             </Button>
 
-            <div className="text-center">
+            <div className="text-center pt-4 border-t border-white/5">
               <button
                 type="button"
                 onClick={() => navigate('/auth')}
-                className="inline-flex items-center gap-1 text-sm text-purple-600 hover:underline transition-colors"
+                className="inline-flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-widest hover:text-white transition-colors"
               >
-                <ArrowLeft className="h-3 w-3" /> Back to Sign In
+                <ArrowLeft className="h-3 w-3" /> Back to Authorization
               </button>
             </div>
           </form>

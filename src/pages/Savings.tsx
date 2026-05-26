@@ -1,6 +1,6 @@
 /**
  * Savings Component - BachatKaro Fintech
- * Premium UI: Clean Light Mode with Signature Purple/Pink Gradients.
+ * Premium UI: Monochrome Premium Edition (AMOLED Black + Soft Whites)
  * Logic: Updated to Local-First Architecture (SQLite + Supabase)
  * Safety: Memory-leak free, Soft-delete enforced.
  */
@@ -129,47 +129,46 @@ const Savings = () => {
     }
   };
 
-  const primaryGradient = "bg-gradient-to-r from-[#7C3AED] to-[#EC4899]";
+  const primaryBtn = "bg-white text-background hover:bg-white/90 shadow-sm border-none active:scale-[0.98]";
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-32 md:pb-12 antialiased">
-      <header className={cn("text-white sticky top-0 z-50 shadow-[0_10px_30px_rgba(236,72,153,0.2)]", primaryGradient)}>
+    <div className="min-h-screen bg-background pb-32 md:pb-12 antialiased selection:bg-white/10">
+      <header className="sticky top-0 z-50 bg-background/95 border-b border-white/5">
         <div className="max-w-4xl mx-auto flex items-center justify-between p-4 sm:p-6">
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => navigate('/dashboard')}
-              className="h-12 w-12 text-white hover:bg-white/20 rounded-2xl border border-white/20 transition-all active:scale-95"
+              className="h-11 w-11 text-text-muted hover:text-white hover:bg-white/5 rounded-xl border border-transparent transition-all active:scale-[0.98]"
             >
-              <ArrowLeft className="h-6 w-6" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-black tracking-tighter flex items-center gap-2.5">
-                <PiggyBank className="h-7 w-7" />
+              <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5 text-white uppercase">
+                <PiggyBank className="h-6 w-6 text-text-muted" />
                 {tSafe('savings.page.title', 'Savings Goals')}
               </h1>
-              <p className="text-[10px] uppercase font-black tracking-[0.25em] opacity-80 mt-0.5">BachatKaro Wealth</p>
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted mt-0.5">BachatKaro Wealth Engine</p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+      <main className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {goals.length > 0 && (
           <div className="relative group">
-            <div className="absolute inset-0 bg-purple-500/5 blur-[50px] rounded-full -z-10" />
             <SavingsSummary goals={goals} />
           </div>
         )}
 
-        <div className="bg-white rounded-[36px] p-2 sm:p-3 shadow-xl border border-slate-200">
+        <div className="bg-surface rounded-[24px] p-2 sm:p-3 shadow-sm border border-white/5">
           <CardHeader className="px-6 pt-6 pb-2">
             <div className="flex items-center gap-2 mb-1.5">
-              <PlusCircle className="h-4 w-4 text-purple-600" />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Initialization</span>
+              <PlusCircle className="h-3.5 w-3.5 text-text-muted" />
+              <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">Initialization</span>
             </div>
-            <CardTitle className={cn("text-2xl sm:text-3xl font-black bg-clip-text text-transparent", primaryGradient)}>
+            <CardTitle className="text-2xl font-bold text-white uppercase tracking-tight">
                New Ambition
             </CardTitle>
           </CardHeader>
@@ -190,22 +189,19 @@ const Savings = () => {
 
         {loading && goals.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="relative h-16 w-16">
-              <div className="absolute inset-0 rounded-full border-4 border-purple-100" />
-              <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
-            </div>
-            <p className="text-sm font-black text-slate-400 uppercase tracking-widest animate-pulse">Syncing Vault...</p>
+            <div className="w-8 h-8 border-2 border-white/10 border-t-white rounded-full animate-spin" />
+            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest animate-pulse">Syncing Vault</p>
           </div>
         )}
 
         {!loading && goals.length === 0 && (
-          <Card className="border-dashed border-2 bg-slate-50/50 rounded-[32px] overflow-hidden">
+          <Card className="border-dashed border-2 bg-white/[0.02] border-white/5 rounded-[32px] overflow-hidden">
             <CardContent className="flex flex-col items-center justify-center py-20 text-center px-10">
-              <div className="bg-white p-6 rounded-3xl shadow-sm mb-6 border border-slate-100">
-                <Target className="h-12 w-12 text-slate-300" />
+              <div className="bg-white/5 p-6 rounded-3xl mb-6 border border-white/5">
+                <Target className="h-10 w-10 text-white/10" />
               </div>
-              <h3 className="text-xl font-black text-slate-800 mb-2">No active ambitions</h3>
-              <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
+              <h3 className="text-xl font-black text-white uppercase tracking-tight">No active ambitions</h3>
+              <p className="text-white/40 text-sm max-w-xs leading-relaxed font-medium">
                 {tSafe('savings.no_goals', "You haven't set any savings goals yet. Start by creating your first ambition above.")}
               </p>
             </CardContent>

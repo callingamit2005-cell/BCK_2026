@@ -467,6 +467,8 @@ export const purgeExpiredCloudLedgerData = async (userId: string, window: Ledger
   }
 };
 
+import { autoMapTransactionToGroup } from "@/features/auto-group/AutoGroupMapper";
+
 export const createLedgerTransaction = async (input: {
   userId: string;
   amount: number;
@@ -481,12 +483,26 @@ export const createLedgerTransaction = async (input: {
   const timestamp = /^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim()) ? toLocalStart(new Date(rawDate)).toISOString() : rawDate;
 
   // 🛡️ [PHASE_1_AMOUNT_HARDENING]
-  // Manual and voice entry flow currently passes raw Rupees. 
-  // We MUST convert to integer Paisa before any persistence or sync.
   const amountPaisa = convertToPaisa(input.amount);
 
+  // 🛡️ [PHASE_1_IDEMPOTENCY_HARDENING]
+  // Rule: Manual/Voice/Paste MUST generate a unique UUID to prevent collisions on identical repeated expenses.
+  // Deterministic hashing is only for system-level de-duplication (SMS).
+  const isUserAction = input.source === 'manual' || input.source === 'voice' || input.source === 'paste';
+  
+  // 🚀 [PLATFORM_PARITY_FIX] Use the safe UUID helper from sqlite integrations
+  const { getSafeUUID } = await import('@/integrations/sqlite');
+  const safeId = getSafeUUID();
+  
+  // 🛡️ [BUG_FIX: sha256:NaN]
+  // generateDataHash(string) returns a string (radix 36). 
+  // Calling Math.abs() on that string produces NaN.
+  const idempotencyKey = isUserAction 
+    ? `user_act:${safeId}`
+    : `det_hash:${generateDataHash(JSON.stringify(input) + input.userId)}`;
+
   const payload = {
-    id: crypto.randomUUID(),
+    id: safeId,
     user_id: input.userId,
     amount: amountPaisa, // Enforce Paisa
     category: input.category,
@@ -497,20 +513,44 @@ export const createLedgerTransaction = async (input: {
     entry_source: input.source,
     sync_status: 'pending',
     is_deleted: false,
+    idempotency_key: idempotencyKey, // Pre-bind identity
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
 
+  console.log(`🧪 [LEDGER_TRANSACTION_SAVE]`, {
+    id: safeId,
+    source: input.source,
+    amount: input.amount,
+    paisa: amountPaisa,
+    key: idempotencyKey,
+    ts: new Date().getTime()
+  });
+
   if (Capacitor.getPlatform() === 'android') {
     const { saveLocalTransaction, enqueueSync } = await import('@/integrations/sqlite');
+    // 🛡️ [IDENTITY_PIPELINE] 
+    // saveLocalTransaction is the master authority. It generates the ID 
+    // and triggers the auto-mapping pipeline internally.
     await saveLocalTransaction(payload);
     await enqueueSync('transactions', 'INSERT', payload);
+    
     window.dispatchEvent(new Event('newLocalTransaction'));
+    window.dispatchEvent(new Event('newTransaction'));
     return payload;
   }
 
   const { data, error } = await supabase.from('transactions').insert([payload]).select().single();
   if (error) throw error;
+
+  // 🛡️ [UI_REFRESH_STABILIZATION]
+  // On Web, we MUST await the mapping to ensure Supabase RPC completes 
+  // before the dashboard/ledger refetch is triggered.
+  if (data && data.type === 'expense') {
+     console.log('🌐 [LEDGER_PIPELINE] Awaiting auto-mapping for Web...');
+     await autoMapTransactionToGroup(data);
+  }
+
   return data;
 };
 

@@ -35,15 +35,15 @@ const StatsBar = () => {
   ];
 
   return (
-    <section className="py-20 relative">
+    <section className="py-24 relative antialiased">
       <div className="max-w-6xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-8">
           {stats.map((s, i) => (
-            <div key={i} className="text-center">
-              <div className="text-3xl md:text-5xl font-black text-white mb-2 tracking-tighter">
+            <div key={i} className="text-center group">
+              <div className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tighter tabular-nums transition-transform group-hover:scale-105 duration-500">
                 {s.value}
               </div>
-              <div className="text-xs md:text-sm font-bold text-pink-500/80 uppercase tracking-widest">
+              <div className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] group-hover:text-white/40 transition-colors">
                 {s.label}
               </div>
             </div>

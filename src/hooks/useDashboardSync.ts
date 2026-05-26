@@ -89,8 +89,7 @@ export const useDashboardSync = (
     const runFirstLoadSync = async () => {
       try {
         if (Capacitor.getPlatform() === 'android') {
-          const { syncService } = await import('@/services/syncService');
-          if (active) void syncService.startSync();
+          if (active) void syncEngine.processQueue();
         }
 
         // 🛡️ [HYDRATION_WINDOW_STRATEGY]
@@ -126,8 +125,8 @@ export const useDashboardSync = (
         if (Capacitor.getPlatform() === 'android' && cloudData && cloudData.length > 0) {
           console.log(`🚀 [SQLite] Seeding ${cloudData.length} bootstrap records to local storage SILENTLY`);
           for (const row of cloudData) {
-            // 🛡️ [SILENT_HYDRATION] Use silent: true during batch seeding
-            await saveLocalTransaction(row, true).catch(() => undefined);
+            // 🛡️ [SILENT_HYDRATION] Use silent: true and syncStatus: 'completed' during bootstrap
+            await saveLocalTransaction(row, true, 'completed').catch(() => undefined);
           }
           // 🚀 [DETERMINISTIC_SINGLE_SIGNAL] One event after batch is complete
           window.dispatchEvent(new Event('sync_queue_updated'));
@@ -147,8 +146,7 @@ export const useDashboardSync = (
             await loadNativeTransactions();
 
             if (Capacitor.getPlatform() === 'android') {
-              const { syncService } = await import('@/services/syncService');
-              if (active) void syncService.startSync();
+              if (active) void syncEngine.processQueue();
             }
 
             // Final settling invalidation
@@ -160,8 +158,7 @@ export const useDashboardSync = (
         else if (cloudCount === 0 && localCount > 0) {
           console.log("🚀 [Sync] Found local data but no cloud, starting sync engine...");
           if (Capacitor.getPlatform() === 'android') {
-            const { syncService } = await import('@/services/syncService');
-            if (active) void syncService.startSync();
+            if (active) void syncEngine.processQueue();
           }
         }
       } catch (err) {

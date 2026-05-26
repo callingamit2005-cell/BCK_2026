@@ -106,8 +106,11 @@ export async function autoMapTransactionToGroup(transaction: any) {
       return;
     }
 
+    // 🚀 [PLATFORM_PARITY_FIX]
+    const { getSafeUUID } = await import('@/integrations/sqlite');
+    
     // 5. Prepare Payload
-    const expenseId = transaction.id || self.crypto.randomUUID();
+    const expenseId = transaction.id || getSafeUUID();
     const idempotencyKey = transaction.sms_hash ? `auto_${transaction.sms_hash}` : `auto_${expenseId}`;
     const amount = Number(transaction.amount);
 

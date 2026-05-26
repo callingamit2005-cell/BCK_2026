@@ -649,8 +649,8 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {isDetecting ? (
              <div className="flex flex-col items-center justify-center py-8 gap-3">
-                <div className="w-6 h-6 border-2 border-[#ff0f7b] border-t-transparent rounded-full animate-spin" />
-                <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">Detecting payment apps...</p>
+                <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest">Detecting payment apps...</p>
              </div>
         ) : (
             <div className="space-y-5">
@@ -660,18 +660,18 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
                             console.log("[CLICK_1] Recommended App Tapped:", recommendedApp.name);
                             handleUPILaunch(recommendedApp);
                         }}
-                        className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:border-[#ff0f7b]/50 active:bg-pink-500/5 transition-all"
+                        className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 active:bg-white/5 transition-all"
                     >
                         <div className="flex items-center gap-3.5">
-                            <div className="w-10 h-10 rounded-xl bg-[#ff0f7b]/10 border border-[#ff0f7b]/20 flex items-center justify-center">
-                                <Smartphone className="h-5 w-5 text-[#ff0f7b]" />
+                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                <Smartphone className="h-5 w-5 text-white" />
                             </div>
                             <div className="text-left">
-                                <p className="text-white text-xs font-black uppercase">{recommendedApp.name}</p>
-                                <p className="text-white/30 text-[8px] font-bold uppercase">Recommended</p>
+                                <p className="text-white text-xs font-bold uppercase">{recommendedApp.name}</p>
+                                <p className="text-text-muted text-[8px] font-bold uppercase">Recommended</p>
                             </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-white/20" />
+                        <ChevronRight className="h-4 w-4 text-text-muted" />
                     </button>
                 )}
                 {otherApps.length > 0 && (
@@ -683,12 +683,12 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
                                     console.log("[CLICK_1] Other App Tapped:", app.name);
                                     handleUPILaunch(app);
                                 }} 
-                                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/50 active:bg-purple-500/10 transition-all"
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 active:bg-white/10 transition-all"
                             >
-                                <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                                    <Smartphone className="h-4 w-4 text-purple-400" />
+                                <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center">
+                                    <Smartphone className="h-4 w-4 text-white" />
                                 </div>
-                                <p className="text-white text-[9px] font-black uppercase tracking-widest">{app.name}</p>
+                                <p className="text-white text-[9px] font-bold uppercase tracking-widest">{app.name}</p>
                             </button>
                         ))}
                     </div>
@@ -696,21 +696,21 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
             </div>
         )}
         <div className="bg-white/5 rounded-xl p-4 border border-white/5 flex items-start gap-3.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
-            <p className="text-white/20 text-[7px] font-bold leading-relaxed uppercase tracking-widest">Safe & Secure Settlement via NPCI-regulated UPI apps.</p>
+            <ShieldCheck className="h-3.5 w-3.5 text-white/40 shrink-0 mt-0.5" />
+            <p className="text-text-muted text-[7px] font-bold leading-relaxed uppercase tracking-widest">Safe & Secure Settlement via NPCI-regulated UPI apps.</p>
         </div>
     </div>
   );
 
   const VerificationView = () => (
     <div className="flex flex-col items-center text-center space-y-6 py-6 animate-in zoom-in-95 duration-500">
-        <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-[0_0_40px_rgba(16,185,129,0.1)]">
-          <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
+          <CheckCircle2 className="h-10 w-10 text-white" />
         </div>
         
         <div className="space-y-2">
-          <h2 className="text-2xl font-black text-white uppercase italic tracking-tight">Payment Sent?</h2>
-          <p className="text-[#b3b3b3] text-[11px] font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[240px]">
+          <h2 className="text-2xl font-bold text-white uppercase tracking-tight">Payment Sent?</h2>
+          <p className="text-text-muted text-[11px] font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[240px]">
             Please confirm if you completed the transfer of <br/>
             <span className="text-white text-base block mt-1 font-mono">{formatCurrency(selectedTarget?.amount || 0)}</span>
           </p>
@@ -719,7 +719,7 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
         <div className="flex flex-col w-full gap-3 pt-4 px-4">
           <Button 
             onClick={() => handleFinalVerification(true)}
-            className="h-14 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-lg active:scale-95 transition-transform"
+            className="h-14 bg-white text-background rounded-2xl font-bold uppercase text-xs tracking-[0.2em] shadow-sm active:scale-95 transition-transform hover:bg-white/90"
           >
             Yes, Mark as Paid
           </Button>
@@ -728,14 +728,14 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
               <Button 
                 variant="ghost"
                 onClick={handleRetryPayment}
-                className="h-12 bg-white/5 border border-white/10 text-white/60 hover:text-white font-black uppercase text-[9px] tracking-[0.2em] rounded-xl"
+                className="h-12 bg-white/5 border border-white/10 text-text-muted hover:text-white font-bold uppercase text-[9px] tracking-[0.2em] rounded-xl"
               >
                 Retry
               </Button>
               <Button 
                 variant="ghost"
                 onClick={() => handleFinalVerification(false)}
-                className="h-12 bg-white/5 border border-white/10 text-rose-400 hover:text-rose-300 font-black uppercase text-[9px] tracking-[0.2em] rounded-xl"
+                className="h-12 bg-white/5 border border-white/10 text-text-secondary hover:text-white font-bold uppercase text-[9px] tracking-[0.2em] rounded-xl"
               >
                 Cancel
               </Button>
@@ -743,8 +743,8 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
         </div>
 
         <div className="flex items-center gap-2 px-8 py-3 bg-white/5 rounded-2xl border border-white/5">
-            <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-            <p className="text-white/30 text-[8px] font-bold leading-relaxed uppercase tracking-widest text-left">
+            <ShieldCheck className="h-4 w-4 text-white/40 shrink-0" />
+            <p className="text-text-muted text-[8px] font-bold leading-relaxed uppercase tracking-widest text-left">
                 Your balances will update instantly after you confirm. Ledger integrity is guaranteed.
             </p>
         </div>
@@ -754,18 +754,18 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#0a0014] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
-      <div className="h-1 w-full bg-gradient-to-r from-purple-600 to-[#ff0f7b] shrink-0" />
+    <div className="fixed inset-0 z-[100] bg-background overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
+      <div className="h-1 w-full bg-white/5 shrink-0" />
       <div className="px-6 pt-6 pb-4 flex justify-between items-center shrink-0">
         <div className="text-left">
-          <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">
+          <h2 className="text-xl font-bold text-white uppercase tracking-tight">
             {view === 'selector' ? 'Choose Payment' : view === 'identity_setup' ? 'Identity Setup' : view === 'pay_apps' ? 'Settle Up' : 'Verification'}
           </h2>
-          <p className="text-[#b3b3b3] text-[8px] font-black uppercase tracking-[0.15em] mt-0.5">
+          <p className="text-text-muted text-[8px] font-bold uppercase tracking-[0.15em] mt-0.5">
             {view === 'selector' ? 'Settle Member or Upgrade' : selectedTarget?.name}
           </p>
         </div>
-        <button onClick={() => onOpenChange(false)} className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 active:scale-90 transition-all"><X size={18} /></button>
+        <button onClick={() => onOpenChange(false)} className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-text-muted active:bg-white/10 active:scale-90 transition-all hover:text-white"><X size={18} /></button>
       </div>
       
       {/* 🛡️ [STABILIZED_SCROLL_HIERARCHY] */}
@@ -788,13 +788,13 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
             <div className="space-y-6">
               <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
                 <div className="text-left">
-                  <p className="text-white/40 text-[7px] font-black uppercase tracking-widest">Amount to Pay</p>
-                  <p className="text-[#ff0f7b] text-xl font-black font-mono">{formatCurrency(selectedTarget?.amount || 0)}</p>
+                  <p className="text-text-muted text-[7px] font-bold uppercase tracking-widest">Amount to Pay</p>
+                  <p className="text-white text-xl font-bold font-mono">{formatCurrency(selectedTarget?.amount || 0)}</p>
                 </div>
                 <button onClick={() => {
                     console.log("[VIEW_TRANSITION] Changing target from pay_apps");
                     setView('selector');
-                }} className="px-3 py-1.5 rounded-lg bg-white/5 text-[7px] font-black text-white/30 hover:text-white uppercase tracking-widest border border-white/5 transition-all">Change</button>
+                }} className="px-3 py-1.5 rounded-lg bg-white/5 text-[7px] font-bold text-text-muted hover:text-white uppercase tracking-widest border border-white/5 transition-all">Change</button>
               </div>
               <PayAppsView />
             </div>
@@ -806,7 +806,9 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
       </div>
       
       {/* Android Safe Bottom Indicator Area */}
-      <div className="h-[max(20px,env(safe-area-inset-bottom))] bg-[#0a0014] shrink-0" />
+      <div className="h-[max(20px,env(safe-area-inset-bottom))] bg-background shrink-0" />
     </div>
   );
 });
+
+export default SmartPaySheet;

@@ -118,109 +118,87 @@ const WaitlistCheckoutModal = ({ open, onOpenChange, onSuccess }: WaitlistChecko
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95%] max-w-md overflow-hidden border-none bg-transparent p-0 shadow-none sm:w-full">
-        <div className="relative overflow-hidden rounded-[2rem] border border-[rgba(255,15,123,0.35)] bg-white/[0.06] shadow-[0_0_60px_rgba(10,0,20,0.8)] backdrop-blur-[32px] sm:rounded-[2.5rem]">
-          <div className="pointer-events-none absolute inset-0 opacity-30">
-            <div className="absolute -left-10 -top-10 h-48 w-48 rounded-full bg-[#ff0f7b] blur-[80px]" />
-            <div className="absolute -bottom-10 -right-10 h-48 w-48 rounded-full bg-[#5f0a87] blur-[80px]" />
-          </div>
-
-          <div className="relative z-10 space-y-6 bg-[#0a0014]/90 p-6 sm:space-y-8 sm:p-8">
-            <div className="space-y-3 text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-[#ff0f7b]" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#b3b3b3]">
-                  VIP Waitlist Access
+        <div className="relative overflow-hidden rounded-[24px] border border-white/5 bg-surface shadow-2xl backdrop-blur-3xl">
+          <div className="relative z-10 space-y-8 p-6 sm:p-10">
+            <div className="space-y-4 text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-white/40" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+                  Priority Access Protocol
                 </span>
               </div>
 
-              <DialogTitle className="neon-bloom text-3xl sm:text-4xl uppercase">JOIN BACHATKARO FAMILY</DialogTitle>
-              <DialogDescription className="px-2 text-xs leading-relaxed text-[#b3b3b3] sm:text-sm">
-                Unlock early access and stay ahead of the public launch.
+              <DialogTitle className="text-2xl sm:text-3xl font-black uppercase tracking-tighter text-white">Secure Slot Activation</DialogTitle>
+              <DialogDescription className="px-2 text-[10px] font-bold uppercase tracking-widest text-white/40 leading-relaxed">
+                Initialize your founding credentials for early system deployment.
               </DialogDescription>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: Mail, label: "Email Locked" },
-                { icon: CheckCircle2, label: "Spot Reserved" },
+                { icon: Mail, label: "Identity Locked" },
+                { icon: CheckCircle2, label: "Slot Reserved" },
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/[0.03] p-4 transition-all hover:border-[#ff0f7b]/30"
+                  className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-all hover:bg-white/[0.04]"
                 >
-                  <item.icon className="mb-2 h-5 w-5 text-[#ff0f7b]" />
-                  <span className="text-center text-[9px] font-bold uppercase leading-tight tracking-tight text-[#b3b3b3]">
+                  <item.icon className="mb-2 h-4 w-4 text-white/40" />
+                  <span className="text-center text-[8px] font-bold uppercase leading-tight tracking-widest text-white/20">
                     {item.label}
                   </span>
                 </div>
               ))}
             </div>
 
-            <form onSubmit={handleCheckout} className="space-y-6">
-              <div className="space-y-2">
-                <label className="ml-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#b3b3b3]">
-                  Email Destination
+            <form onSubmit={handleCheckout} className="space-y-8">
+              <div className="space-y-3">
+                <label className="ml-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">
+                  Dispatch Address
                 </label>
-                <div className="rounded-2xl border border-[#ff0f7b]/35 bg-white/[0.06] p-[1px] shadow-[0_0_18px_rgba(255,15,123,0.12)]">
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@domain.com"
-                    className="h-14 w-full rounded-[15px] bg-[#14041f] px-6 text-white outline-none transition-all duration-300 ease-butter-soft placeholder:text-white/20 focus:bg-white/[0.04] focus:ring-1 focus:ring-[#ff0f7b]/40"
-                  />
-                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="operator@network.com"
+                  className="h-14 w-full rounded-xl bg-background border border-white/5 px-6 text-white font-mono text-sm outline-none transition-all placeholder:text-white/10 focus:border-white/20 shadow-inner"
+                />
               </div>
 
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="btn-soft relative flex h-16 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87] text-white shadow-[0_0_28px_rgba(255,15,123,0.3)] active:scale-[0.965] disabled:cursor-not-allowed disabled:opacity-70 group"
+                className="relative flex h-16 w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-white text-background shadow-lg transition-all active:scale-[0.98] disabled:opacity-20 uppercase font-black tracking-widest text-xs"
               >
-                {showSparkle && (
-                  <>
-                    <Sparkles className="absolute left-4 top-4 h-4 w-4 animate-ping text-white/40" />
-                    <Sparkles className="absolute right-4 bottom-4 h-4 w-4 animate-ping text-white/40" />
-                    <Sparkles className="absolute left-1/2 top-2 h-3 w-3 -translate-x-1/2 animate-bounce text-white/60" />
-                  </>
-                )}
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 {isProcessing ? (
-                  <span className="animate-soft-pulse inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/10 px-5 py-2 shadow-[0_0_24px_rgba(255,15,123,0.35)]">
-                    <Loader2 className="h-5 w-5 animate-spin text-white drop-shadow-[0_0_12px_rgba(255,15,123,0.8)]" />
-                    <span className="text-sm font-black uppercase tracking-[0.15em] text-white">
-                      Processing...
-                    </span>
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Synchronizing...</span>
+                  </div>
                 ) : (
-                  <span className="text-sm font-black uppercase tracking-[0.2em] text-white">
-                    SECURE MY EARLY ACCESS
-                  </span>
+                  <span>Activate My Access</span>
                 )}
               </button>
 
-              <div className="space-y-4 px-2">
-                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 text-center">
-                  <p className="mb-3 text-[11px] font-black uppercase tracking-widest text-[#ff0f7b]">
-                    🚀 You're officially on the waitlist
+              <div className="space-y-6">
+                <div className="rounded-xl border border-white/5 bg-white/[0.01] p-6 text-center">
+                  <p className="mb-4 text-[9px] font-black uppercase tracking-[0.3em] text-white">
+                    Protocol Benefits
                   </p>
-                  <ul className="space-y-2 text-[10px] font-bold tracking-wide text-[#b3b3b3]">
-                    <li>• Priority access before public launch</li>
-                    <li>• Early user perks & founder benefits</li>
-                    <li>• First access to all new features</li>
+                  <ul className="space-y-3 text-[8px] font-bold tracking-[0.15em] text-white/40 uppercase">
+                    <li>• Wave-0 Entry Authorization</li>
+                    <li>• Founding Member status</li>
+                    <li>• Early Feature Deployment</li>
                   </ul>
-                  <p className="mt-3 text-[10px] italic text-[#b3b3b3]/60">
-                    Your invite is coming soon.
-                  </p>
                 </div>
 
-                <p className="text-center text-[10px] leading-tight text-[#b3b3b3]/70">
-                  By joining, you agree to our{" "}
-                  <Link to="/terms" className="text-white underline transition-colors hover:text-[#ff0f7b]">
-                    Terms
+                <p className="text-center text-[8px] leading-relaxed text-white/20 uppercase font-bold tracking-widest px-4">
+                  By joining, you agree to the{" "}
+                  <Link to="/terms" className="text-white hover:opacity-60 transition-opacity">
+                    Operational Terms
                   </Link>
-                  . * All features are currently available during beta testing.
+                  . Beta cycle access enabled.
                 </p>
               </div>
             </form>

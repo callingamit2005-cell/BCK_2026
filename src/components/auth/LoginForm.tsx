@@ -97,7 +97,7 @@ const LoginForm = () => {
     }
   };
 
-  const primaryGradient = "bg-gradient-to-r from-[#7C3AED] to-[#EC4899]";
+  const primaryGradient = "bg-white text-background hover:bg-white/90 shadow-lg border-none active:scale-[0.98]";
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-200">
@@ -106,23 +106,23 @@ const LoginForm = () => {
       <Button 
         type="button"
         onClick={handleGoogleLogin}
-        className="w-full h-13 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm group active:scale-[0.965] cubic-bezier(0.34, 1.56, 0.64, 1)"
+        className="w-full h-13 bg-white/5 border border-white/5 text-white font-bold rounded-2xl flex items-center justify-center gap-3 hover:bg-white/10 transition-all shadow-sm group active:scale-[0.98]"
       >
-        <img src="https://www.google.com/favicon.ico" className="w-5 h-5 group-hover:scale-110 transition-transform" alt="G" />
+        <img src="https://www.google.com/favicon.ico" className="w-5 h-5 group-hover:scale-110 transition-transform grayscale brightness-200" alt="G" />
         {t('auth_continue_google', 'Continue with Google')}
       </Button>
 
       <div className="relative flex items-center justify-center">
-        <span className="absolute inset-x-0 h-px bg-slate-100"></span>
-        <span className="relative px-4 text-[10px] font-black text-slate-400 bg-white uppercase tracking-widest">
+        <span className="absolute inset-x-0 h-px bg-white/5"></span>
+        <span className="relative px-4 text-[10px] font-bold text-white/20 bg-background uppercase tracking-widest">
           {t('auth_or_email', 'Or login with email')}
         </span>
       </div>
 
-      <form onSubmit={handleLogin} className="space-y-5">
+      <form onSubmit={handleLogin} className="space-y-6">
         <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
-            <Mail size={14} className="text-[#7C3AED]" />
+          <Label className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest flex items-center gap-2">
+            <Mail size={12} className="text-white/40" />
             {t('auth_email', 'Email Address')}
           </Label>
           <Input
@@ -130,13 +130,13 @@ const LoginForm = () => {
             placeholder="amit@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-12 rounded-2xl border-slate-200 focus:ring-2 focus:ring-[#7C3AED]/20 transition-all"
+            className="h-12 bg-white/5 rounded-xl border-white/5 text-white font-bold focus:border-white/20 transition-all"
           />
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
-            <Lock size={14} className="text-[#EC4899]" />
+          <Label className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest flex items-center gap-2">
+            <Lock size={12} className="text-white/40" />
             {t('auth_password', 'Password')}
           </Label>
           <Input
@@ -144,13 +144,13 @@ const LoginForm = () => {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-12 rounded-2xl border-slate-200 focus:ring-2 focus:ring-[#EC4899]/20 transition-all"
+            className="h-12 bg-white/5 rounded-xl border-white/5 text-white font-bold focus:border-white/20 transition-all"
           />
         </div>
 
         {/* 🛡️ CLOUDFLARE TURNSTILE (Updated for @marsidev) */}
         <div 
-          className="flex justify-center pt-2 overflow-hidden rounded-xl border-debug"
+          className="flex justify-center pt-2 overflow-hidden rounded-xl"
           onClick={() => console.log("[POINTER_BLOCKING_LAYER] Turnstile Container Tapped")}
         >
           <Turnstile 
@@ -159,24 +159,20 @@ const LoginForm = () => {
                 console.log("[BUTTON_DISABLED_STATE] Turnstile Success");
                 setIsHuman(true);
             }}
-            theme="light"
+            theme="dark"
           />
         </div>
 
         {error && (
-          <div className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-100 rounded-2xl p-4 animate-shake">
+          <div className="text-[10px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-shake uppercase tracking-widest">
             ⚠️ {error}
           </div>
         )}
 
-        {(() => {
-          console.log("[BUTTON_RENDER] Login Button Rendered", { loading, isHuman, isLoggingIn: isLoggingInRef.current });
-          return null;
-        })()}
         <Button
           type="submit"
           disabled={loading || !isHuman}
-          className={`w-full h-14 ${primaryGradient} text-white rounded-2xl font-black text-lg shadow-[0_15px_30px_-5px_rgba(124,58,237,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50`}
+          className={`w-full h-14 bg-white text-background rounded-2xl font-black text-lg shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all disabled:opacity-20 uppercase tracking-widest`}
         >
           {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <LogIn className="mr-2 h-5 w-5" />}
           {t('auth_login_button', 'Sign In')}

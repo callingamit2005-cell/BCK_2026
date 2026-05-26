@@ -58,7 +58,7 @@ import {
 } from '@/integrations/smsBridge';
 
 // AI Intelligence
-import { getRichStructuredAIAdvice } from '@/utils/smartAdvisor';
+import { getRichStructuredAIAdvice, getRuleBasedStructuredAdvice } from '@/utils/smartAdvisor';
 import { predictMonthlySpend } from '@/utils/predictionEngine';
 import { getOverspendingAlerts } from '@/utils/alertEngine';
 
@@ -85,9 +85,7 @@ const Dashboard = () => {
   if (process.env.NODE_ENV === 'development') {
     forensicEngine.trackRender('Dashboard');
   }
-  console.log('[Dashboard_Forensic] Component Executing');
   const { user } = useAuth();
-  console.log('[Dashboard_Forensic] Auth state:', { hasUser: !!user });
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -95,11 +93,9 @@ const Dashboard = () => {
   useI18nNamespaces(["dashboard", "common", "savings", "split"]);
 
   const now = useMemo(() => {
-    console.log('[Dashboard_Forensic] useMemo: now');
     return new Date();
   }, []);
   const currentMonthYear = format(now, 'yyyy-MM');
-  console.log('[Dashboard_Forensic] currentMonthYear:', currentMonthYear);
   const ledgerWindow = useMemo(() => getLedgerWindow(user?.created_at, now), [user?.created_at, now]);
   const retentionMessage = useMemo(
     () => getLedgerRetentionMessage(ledgerWindow),
@@ -168,8 +164,6 @@ const Dashboard = () => {
     };
   }, []);
 
-  // --- DATA FETCHING & SYNC ---
-  console.log('[Dashboard_Forensic] Calling useDashboardData');
   const {
     salaryData,
     budgetData,
@@ -182,20 +176,16 @@ const Dashboard = () => {
     lastMonthExpenses,
     filteredViewData
   } = useDashboardData(user, canReadSms, ledgerWindow, currentMonthYear, dateFilter, isSQLiteReady);
-  console.log('[Dashboard_Filtered_Count]', filteredViewData?.length);
-  console.log('[Dashboard_Forensic] useDashboardData returned');
 
   useDashboardSync(user, canReadSms, ledgerWindow, isReady, loadNativeTransactions, () => setIsSQLiteReady(true));
 
   useEffect(() => {
     if (isReady && canReadSms) {
-      console.log('[Dashboard_Forensic] Triggering initial native transaction load.');
       loadNativeTransactions();
     }
   }, [isReady, canReadSms, loadNativeTransactions]);
 
   useEffect(() => {
-    console.log('[Dashboard_Forensic] Readiness check:', { loadingExpenses, isLoadingNativeTransactions });
     if (!loadingExpenses && !isLoadingNativeTransactions) {
       setIsReady(true);
     }
@@ -217,8 +207,9 @@ const Dashboard = () => {
   }, [budgetData]);
 
   // --- CALCULATIONS ---
-  const salaryVal = getSalaryAmount(salaryData as SalaryRecord | undefined);
-  const budgetVal = Number(budgetData?.monthly_budget) || 0;
+  const salaryVal = useMemo(() => getSalaryAmount(salaryData as SalaryRecord | undefined), [salaryData]);
+  const budgetVal = useMemo(() => Number(budgetData?.monthly_budget) || 0, [budgetData]);
+  
   const monthlyExpenseSum = useMemo(() => currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0), [currentMonthExpenses]);
   const lastMonthTotal = useMemo(() => lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0), [lastMonthExpenses]);
 
@@ -247,12 +238,11 @@ const Dashboard = () => {
     })
     .reduce((sum, e) => sum + Number(e?.amount || 0), 0), [allUnifiedTransactions, currentMonthYear]);
 
-  const totalInflow = salaryVal + monthlyExtraIncome;
-  const totalOutflow = monthlyExpenseSum + monthlyEMI;
-  const netSaved = totalInflow - totalOutflow;
+  const totalInflow = useMemo(() => salaryVal + monthlyExtraIncome, [salaryVal, monthlyExtraIncome]);
+  const totalOutflow = useMemo(() => monthlyExpenseSum + monthlyEMI, [monthlyExpenseSum, monthlyEMI]);
+  const netSaved = useMemo(() => totalInflow - totalOutflow, [totalInflow, totalOutflow]);
 
   // 🛡️ [ANALYTICS_STABILIZATION] Filter-Responsive Totals
-  // Ensures UI analytics cards accurately reflect Today/Week/Month/Custom selections
   const filteredSpent = useMemo(() => 
     filteredViewData.filter(t => t.type !== 'income' && t.direction !== 'credit').reduce((sum, e) => sum + Number(e?.amount || 0), 0), 
   [filteredViewData]);
@@ -273,6 +263,13 @@ const Dashboard = () => {
   const lastProcessedFingerprintRef = useRef<string | null>(null);
   const isAIRequestInFlightRef = useRef(false);
   const [aiAdvice, setAiAdvice] = useState<any>(null);
+
+  // 🛡️ [DETERMINISTIC_FALLBACK_MEMO]
+  // Pre-calculate rule-based advice locally to provide instant UX while AI is fetching.
+  const localRuleAdvice = useMemo(() => {
+    if (!isReady || !allUnifiedTransactions) return null;
+    return getRuleBasedStructuredAdvice(allUnifiedTransactions, language);
+  }, [allUnifiedTransactions, language, isReady]);
 
   useEffect(() => {
     // Prevent storm: skip if request already in flight, fingerprint hasn't changed, 
@@ -302,6 +299,10 @@ const Dashboard = () => {
 
     return () => clearTimeout(timer);
   }, [financialFingerprint, allUnifiedTransactions, language, isReady]);
+
+  // 🛡️ [AI_PRIORITY_MERGE]
+  // Combined active advice (Rich AI > Local Rule)
+  const activeAdvice = aiAdvice || localRuleAdvice;
 
   const aiPrediction = useMemo(() => predictMonthlySpend(currentMonthExpenses), [currentMonthExpenses]);
   const aiAlerts = useMemo(() => getOverspendingAlerts((allUnifiedTransactions || []).filter(t => t.type === 'expense')), [allUnifiedTransactions]);
@@ -606,100 +607,105 @@ const Dashboard = () => {
   }, [user, queryClient, toast]);
 
   // ==================== UI STYLING CONSTANTS ====================
-  const applePhysics = "transition-all duration-500 ease-butter-soft transform-gpu active:scale-[0.965]";
-  const neonGlass = `bg-[#0a0014]/80 backdrop-blur-xl border border-[#ff0f7b]/35 shadow-2xl rounded-[32px] overflow-hidden transform-gpu will-change-transform`;
-  const inputStyle = `h-14 rounded-2xl bg-white/5 border-white/10 focus:border-[#ff0f7b]/50 focus:ring-1 focus:ring-[#ff0f7b]/50 text-white font-mono font-black transition-all`;
-  const stepperBtn = `h-10 px-4 bg-[rgba(255,15,123,0.2)] border border-[#ff0f7b]/30 text-[#ff0f7b] rounded-xl font-black transition-all hover:bg-[rgba(255,15,123,0.3)] active:scale-90`;
+  const applePhysics = "transition-all duration-500 ease-butter-soft transform-gpu active:scale-[0.98]";
+  const premiumCard = "bg-surface border border-border shadow-sm rounded-[24px] overflow-hidden transform-gpu will-change-transform";
+  const inputStyle = "h-14 rounded-xl bg-white/5 border-white/5 focus:border-white/20 focus:ring-0 text-white font-mono font-bold transition-all placeholder:text-white/20";
+  const stepperBtn = "h-10 px-4 bg-white/5 border border-white/5 text-white rounded-lg font-bold transition-all hover:bg-white/10 active:scale-95";
 
   if (!isReady) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-[#0a0014] text-white gap-4">
-        <div className="w-12 h-12 border-4 border-[#ff0f7b] border-t-transparent rounded-full animate-spin" />
-        <p className="font-black uppercase tracking-[0.3em] text-[10px] animate-pulse">Initializing Dashboard...</p>
+      <div className="flex flex-col items-center justify-center h-screen bg-background text-foreground gap-4">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <p className="font-bold uppercase tracking-widest text-[9px] opacity-40">Initializing Workspace</p>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen w-full bg-[#0a0014] overflow-y-auto selection:bg-pink-500/30 relative antialiased scroll-smooth custom-scrollbar`}>
+    <div className="min-h-screen w-full bg-background overflow-y-auto selection:bg-white/10 relative antialiased scroll-smooth custom-scrollbar">
       {/* Restore Indicator */}
       {isRestoring && (
-        <div className="fixed top-0 left-0 w-full z-[100] bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] py-1.5 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top duration-500 shadow-xl">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          <span>Restoring your data from cloud...</span>
+        <div className="fixed top-0 left-0 w-full z-[100] bg-surface border-b border-white/5 text-foreground text-[10px] font-bold uppercase tracking-[0.2em] py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top duration-500 shadow-sm">
+          <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
+          <span>Restoring ledger from cloud</span>
         </div>
       )}
 
-      {/* Dynamic Background Glows */}
-      <div className={`fixed -top-24 -right-24 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none transform-gpu will-change-transform`} />
-      <div className={`fixed -bottom-24 -left-24 w-[500px] h-[500px] bg-pink-600/10 blur-[120px] rounded-full pointer-events-none transform-gpu will-change-transform`} />
-
-      <AppHeader />
-      <DashboardSubheader activeTab={activeTab} onTabChange={setActiveTab} />
-
-      <main className={`flex flex-col gap-8 sm:gap-10 w-full max-w-xl lg:max-w-6xl xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-24 relative z-10`}>
+      <main className="flex flex-col gap-6 sm:gap-8 w-full max-w-xl lg:max-w-6xl xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 relative z-10">
+        
+        {/* Contextual Dashboard Mode Switcher */}
+        <DashboardSubheader activeTab={activeTab} onTabChange={setActiveTab} />
 
         {activeTab === 'daily' && (
           <>
-            <div className="sticky top-16 z-[40] -mx-6 px-6 bg-[#0a0014]/60 backdrop-blur-md py-3 flex gap-3 overflow-x-auto hide-scrollbar border-b border-white/5">
+            <div className="sticky top-0 sm:top-4 z-[40] -mx-6 px-6 bg-background/80 backdrop-blur-xl py-3 flex gap-3 overflow-x-auto hide-scrollbar border-b border-white/5">
               <DateFilter value={dateFilter} onChange={setDateFilter} filteredData={filteredViewData || []} />
             </div>
 
-            <Suspense fallback={<div className="h-24 animate-pulse bg-white/5 rounded-3xl" />}><div className={applePhysics}><SmartUniversalInput /></div></Suspense>
-            <Suspense fallback={<div className="h-24 animate-pulse bg-white/5 rounded-3xl" />}><BudgetPulse spent={filteredSpent} budget={budgetVal} /></Suspense>
-            <Suspense fallback={<div className="h-24 animate-pulse bg-white/5 rounded-3xl" />}><MonthlyComparison currentMonthTotal={filteredSpent} lastMonthTotal={lastMonthTotal} /></Suspense>
+            <Suspense fallback={<div className="h-32 w-full bg-surface animate-pulse rounded-[24px]" />}>
+              <div className={applePhysics}><SmartUniversalInput /></div>
+            </Suspense>
+            
+            <Suspense fallback={<div className="h-44 w-full bg-surface animate-pulse rounded-[24px]" />}>
+              <BudgetPulse spent={filteredSpent} budget={budgetVal} />
+            </Suspense>
 
-            <div className={cn(neonGlass, "p-8 relative border-[#ff0f7b]/35 shadow-[0_0_40px_-10px_rgba(255,15,123,0.3)]")}>
-              <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-[#ff0f7b]/20 border border-[#ff0f7b]/40 rounded-full">
-                <span className="w-1.5 h-1.5 bg-[#ff0f7b] rounded-full animate-pulse shadow-[0_0_8px_#ff0f7b]" />
-                <span className="text-[8px] font-black text-[#ff0f7b] uppercase tracking-widest">{t('common.aiActive', 'AI Active')}</span>
+            <Suspense fallback={<div className="h-28 w-full bg-surface animate-pulse rounded-[24px]" />}>
+              <MonthlyComparison currentMonthTotal={filteredSpent} lastMonthTotal={lastMonthTotal} />
+            </Suspense>
+
+            <div className="bg-surface p-8 relative rounded-[24px] border border-white/5">
+              <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                <span className="w-1.5 h-1.5 bg-white rounded-full opacity-40 animate-pulse" />
+                <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">{t('common.aiActive', 'AI Active')}</span>
               </div>
               <div className="flex flex-col items-center justify-center text-center">
-                <h3 className="text-[#b3b3b3] text-[10px] font-black uppercase tracking-[0.3em] mb-6">{t('dashboard.aiEngine', 'Deep Insight Engine')}</h3>
-                <div className="min-h-[80px] flex items-center justify-center mb-6">
-                  <Suspense fallback={<Loader2 className="h-6 w-6 animate-spin text-[#ff0f7b]" />}>
+                <h3 className="text-white/40 text-[9px] font-bold uppercase tracking-[0.2em] mb-6">{t('dashboard.aiEngine', 'Deep Insight Engine')}</h3>
+                <div className="min-h-[80px] flex items-center justify-center mb-6 w-full">
+                  <Suspense fallback={<div className="h-20 w-full bg-white/5 animate-pulse rounded-2xl" />}>
                     <SmartFinancialMentor
-                      advice={aiAdvice ? { action: aiAdvice.action, reason: aiAdvice.reason, steps: aiAdvice.steps, confidence: aiAdvice.confidence } : null}
+                      advice={activeAdvice ? { action: activeAdvice.action, reason: activeAdvice.reason, steps: activeAdvice.steps, confidence: activeAdvice.confidence } : null}
                     />
                   </Suspense>
                 </div>
-                <p className="text-[#b3b3b3] text-[9px] font-bold uppercase tracking-widest flex items-center gap-2 mt-4 opacity-50">
+                <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest flex items-center gap-2 mt-4">
                   <BrainCircuit className="h-3 w-3" /> {t('common.hardwareAccelerated', 'Hardware Accelerated Logic')}
                 </p>
               </div>
             </div>
 
-            <Suspense fallback={<div className="h-48 animate-pulse bg-white/5 rounded-3xl" />}>
+            <Suspense fallback={<div className="h-[400px] w-full bg-surface animate-pulse rounded-[24px]" />}>
               <CategoryChart expenses={filteredViewData} loading={loadingExpenses} budget={budgetVal} />
             </Suspense>
 
-            <Suspense fallback={<div className="h-48 animate-pulse bg-white/5 rounded-3xl" />}>
+            <Suspense fallback={<div className="h-[500px] w-full bg-surface animate-pulse rounded-[24px]" />}>
               <MarketIntelligence 
                 transactions={filteredViewData} 
                 currentMonthExpenses={filteredViewData} 
-                advice={aiAdvice ? { 
-                  growth: aiAdvice.growth, 
-                  confidence: aiAdvice.confidence,
-                  investmentOptions: aiAdvice.investmentOptions,
-                  platforms: aiAdvice.platforms,
-                  personalizedPlan: aiAdvice.personalizedPlan
+                advice={activeAdvice ? { 
+                  growth: activeAdvice.growth, 
+                  confidence: activeAdvice.confidence,
+                  investmentOptions: activeAdvice.investmentOptions,
+                  platforms: activeAdvice.platforms,
+                  personalizedPlan: activeAdvice.personalizedPlan
                 } : null}
               />
             </Suspense>
 
             <AIInsightsCard 
-              aiAdvice={aiAdvice ? { insights: aiAdvice.insights, projection: aiAdvice.projection, confidence: aiAdvice.confidence } : null} 
+              aiAdvice={activeAdvice ? { insights: activeAdvice.insights, projection: activeAdvice.projection, confidence: activeAdvice.confidence } : null} 
               aiAlerts={aiAlerts} 
               aiPrediction={aiPrediction} 
               t={t} 
-              neonGlass={neonGlass} 
+              neonGlass={premiumCard} 
             />
 
             <FinancialHealthScore 
               salary={filteredIncome} 
               totalExpenses={filteredSpent} 
-              advice={aiAdvice ? { healthScore: aiAdvice.healthScore, healthReason: aiAdvice.healthReason, confidence: aiAdvice.confidence } : null}
+              advice={activeAdvice ? { healthScore: activeAdvice.healthScore, healthReason: activeAdvice.healthReason, confidence: activeAdvice.confidence } : null}
             />
+            
             <RecentExpenses 
               expenses={filteredViewData} 
               loading={loadingExpenses || isLoadingNativeTransactions} 
@@ -713,9 +719,9 @@ const Dashboard = () => {
 
         {activeTab === 'planning' && (
           <>
-            <MonthlySnapshotCard totalInflow={totalInflow} budgetVal={budgetVal} totalOutflow={totalOutflow} netSaved={netSaved} t={t} neonGlass={neonGlass} />
-            <IncomeEngineCard salaryInput={salaryInput} setSalaryInput={setSalaryInput} handleSaveIncome={handleSaveIncome} isSavingIncome={isSavingIncome} t={t} neonGlass={neonGlass} inputStyle={inputStyle} applePhysics={applePhysics} />
-            <SafeSpendCard budgetInput={budgetInput} setBudgetInput={setBudgetInput} handleSaveBudget={handleSaveBudget} isSavingBudget={isSavingBudget} adjustBudget={adjustBudget} t={t} neonGlass={neonGlass} inputStyle={inputStyle} applePhysics={applePhysics} stepperBtn={stepperBtn} />
+            <MonthlySnapshotCard totalInflow={totalInflow} budgetVal={budgetVal} totalOutflow={totalOutflow} netSaved={netSaved} t={t} neonGlass={premiumCard} />
+            <IncomeEngineCard salaryInput={salaryInput} setSalaryInput={setSalaryInput} handleSaveIncome={handleSaveIncome} isSavingIncome={isSavingIncome} t={t} neonGlass={premiumCard} inputStyle={inputStyle} applePhysics={applePhysics} />
+            <SafeSpendCard budgetInput={budgetInput} setBudgetInput={setBudgetInput} handleSaveBudget={handleSaveBudget} isSavingBudget={isSavingBudget} adjustBudget={adjustBudget} t={t} neonGlass={premiumCard} inputStyle={inputStyle} applePhysics={applePhysics} stepperBtn={stepperBtn} />
             <DebtLedgerSection emiList={emiList} t={t} applePhysics={applePhysics} onAddLoan={() => { resetLoanForm(); setShowLoanModal(true); }} onDeleteEMI={handleDeleteEMI} onEditEMI={async (emi) => {
               const { convertToRupees } = await import('@/utils/currencyFormatter');
               setEditingLoanId(emi.id);
@@ -732,18 +738,18 @@ const Dashboard = () => {
           </>
         )}
 
-        {activeTab === 'future' && ( <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin mx-auto text-[#ff0f7b]" />}><div className="animate-in fade-in slide-in-from-bottom-10 duration-700 w-full"><FutureWealthPredictor monthlySavings={netSaved} /></div></Suspense> )}
-        {activeTab === 'dreams' && ( <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin mx-auto text-[#ff0f7b]" />}><div className="animate-in fade-in slide-in-from-bottom-10 duration-700"><GoalProgress currentSavings={netSaved} /></div></Suspense> )}
+        {activeTab === 'future' && ( <Suspense fallback={<Loader2 className="h-6 w-6 animate-spin mx-auto opacity-20" />}><div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full"><FutureWealthPredictor monthlySavings={netSaved} /></div></Suspense> )}
+        {activeTab === 'dreams' && ( <Suspense fallback={<Loader2 className="h-6 w-6 animate-spin mx-auto opacity-20" />}><div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><GoalProgress currentSavings={netSaved} /></div></Suspense> )}
 
         <div className="mt-16 mb-12 px-6 text-center">
-          <div className="max-w-2xl mx-auto bg-white/5 py-8 px-10 rounded-[40px] border border-white/10 shadow-2xl backdrop-blur-md">
-            <h4 className="text-[11px] text-[#ff0f7b] font-black uppercase tracking-[0.3em] mb-6 flex items-center justify-center gap-3">
-              <span className="h-px w-10 bg-[#ff0f7b]/30" /> Safety & Privacy <span className="h-px w-10 bg-[#ff0f7b]/30" />
+          <div className="max-w-2xl mx-auto bg-surface py-8 px-10 rounded-[32px] border border-white/5 shadow-sm">
+            <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.3em] mb-6 flex items-center justify-center gap-3">
+              <span className="h-px w-8 bg-white/10" /> Safety & Privacy <span className="h-px w-8 bg-white/10" />
             </h4>
 
-            <div className="space-y-6 text-[10px] leading-relaxed font-bold uppercase tracking-widest text-left">
+            <div className="space-y-6 text-[9px] leading-relaxed font-bold uppercase tracking-widest text-left opacity-30">
               <div className="privacy-en pb-2" style={{ transition: 'opacity 0.5s ease', opacity: visibleStep >= 1 ? 1 : 0, visibility: visibleStep >= 1 ? 'visible' : 'hidden' }}>
-                <p className="text-white/80 italic mb-1.5">This data is for your information and tracking only. We do not directly access your bank accounts or transactions.</p>
+                <p className="text-white italic mb-1.5">This data is for your information and tracking only. We do not directly access your bank accounts or transactions.</p>
               </div>
             </div>
           </div>
@@ -751,51 +757,51 @@ const Dashboard = () => {
       </main>
 
       <Dialog open={showLoanModal} onOpenChange={setShowLoanModal}>
-        <DialogContent className="w-[95vw] sm:max-w-xl bg-[#0a0014] border border-[#ff0f7b]/40 rounded-[40px] p-0 overflow-hidden shadow-3xl transform-gpu">
+        <DialogContent className="w-[95vw] sm:max-w-xl bg-background border border-white/10 rounded-[32px] p-0 overflow-hidden shadow-2xl transform-gpu">
           <DialogDescription className="sr-only">Form to secure a new loan or update existing debt profile.</DialogDescription>
-          <div className="h-2 w-full bg-gradient-to-r from-purple-600 to-[#ff0f7b]" />
-          <form onSubmit={handleAddLoan} className="p-10 space-y-8 overflow-y-auto max-h-[80vh] custom-scrollbar">
-            <DialogHeader className="p-0 text-white">
-              <DialogTitle className="text-3xl font-black tracking-tighter uppercase italic text-white">
+          <div className="h-1 w-full bg-white/5" />
+          <form onSubmit={handleAddLoan} className="p-8 space-y-6 overflow-y-auto max-h-[80vh] custom-scrollbar">
+            <DialogHeader className="p-0">
+              <DialogTitle className="text-2xl font-bold tracking-tight uppercase text-white">
                 {editingLoanId ? "Update Debt Profile" : "Secure New Loan"}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-3">
-              <Label className="text-[#b3b3b3] font-black text-[9px] uppercase tracking-widest ml-1">Loan Title</Label>
+            <div className="space-y-2">
+              <Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest ml-1">Loan Title</Label>
               <Input value={loanName} onChange={e => setLoanName(e.target.value)} required className={inputStyle} placeholder="e.g. Dream Car" />
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-3"><Label className="text-[#b3b3b3] font-black text-[9px] uppercase tracking-widest">Principal (₹)</Label><Input type="number" value={loanAmount} onChange={e => setLoanAmount(e.target.value)} required className={inputStyle} /></div>
-              <div className="space-y-3"><Label className="text-[#b3b3b3] font-black text-[9px] uppercase tracking-widest">Rate (%)</Label><Input type="number" step="0.1" value={interestRate} onChange={e => setInterestRate(e.target.value)} required className={inputStyle} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Principal (₹)</Label><Input type="number" value={loanAmount} onChange={e => setLoanAmount(e.target.value)} required className={inputStyle} /></div>
+              <div className="space-y-2"><Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Rate (%)</Label><Input type="number" step="0.1" value={interestRate} onChange={e => setInterestRate(e.target.value)} required className={inputStyle} /></div>
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-3"><Label className="text-[#b3b3b3] font-black text-[9px] uppercase tracking-widest">Months</Label><Input type="number" value={tenureMonths} onChange={e => setTenureMonths(e.target.value)} required className={inputStyle} /></div>
-              <div className="space-y-3"><Label className="text-[#b3b3b3] font-black text-[9px] uppercase tracking-widest">Inception</Label><Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className={inputStyle} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Months</Label><Input type="number" value={tenureMonths} onChange={e => setTenureMonths(e.target.value)} required className={inputStyle} /></div>
+              <div className="space-y-2"><Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Inception</Label><Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className={inputStyle} /></div>
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label className="text-[#b3b3b3] font-black text-[9px] uppercase tracking-widest">Bank Name/App Name</Label>
-                <Input value={bankName} onChange={e => setBankName(e.target.value)} className={inputStyle} placeholder="e.g. HDFC Bank or KreditBee" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Bank/App Name</Label>
+                <Input value={bankName} onChange={e => setBankName(e.target.value)} className={inputStyle} placeholder="e.g. HDFC Bank" />
               </div>
-              <div className="space-y-3">
-                <Label className="text-[#b3b3b3] font-black text-[9px] uppercase tracking-widest">Monthly EMI Day</Label>
+              <div className="space-y-2">
+                <Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">EMI Day</Label>
                 <Input type="number" min="1" max="31" value={emiDate} onChange={e => setEmiDate(e.target.value)} className={inputStyle} placeholder="1-31" />
               </div>
             </div>
-            <div className="space-y-5 p-8 bg-white/5 rounded-[32px] border border-white/5 shadow-inner text-white">
-              <Label className="text-[#b3b3b3] font-black text-[9px] uppercase tracking-widest">Interest Mathematics</Label>
-              <RadioGroup value={interestType} onValueChange={setInterestType} className="flex gap-6">
-                <div className="flex items-center space-x-3 bg-[#0a0014] px-6 py-4 rounded-2xl border border-white/10 flex-1 hover:border-[#ff0f7b]/40 transition-all cursor-pointer shadow-lg">
-                  <RadioGroupItem value="REDUCING" id="red" className="text-[#ff0f7b]" /><Label htmlFor="red" className="text-white font-black uppercase text-xs">Reducing</Label>
+            <div className="space-y-4 p-6 bg-white/5 rounded-2xl border border-white/5">
+              <Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Interest Mathematics</Label>
+              <RadioGroup value={interestType} onValueChange={setInterestType} className="flex gap-4">
+                <div className="flex items-center space-x-2 bg-surface px-4 py-3 rounded-xl border border-white/5 flex-1 hover:border-white/20 transition-all cursor-pointer">
+                  <RadioGroupItem value="REDUCING" id="red" className="text-white" /><Label htmlFor="red" className="text-white font-bold uppercase text-[10px]">Reducing</Label>
                 </div>
-                <div className="flex items-center space-x-3 bg-[#0a0014] px-6 py-4 rounded-2xl border border-white/10 flex-1 hover:border-[#ff0f7b]/40 transition-all cursor-pointer shadow-lg">
-                  <RadioGroupItem value="FLAT" id="flt" className="text-[#ff0f7b]" /><Label htmlFor="flt" className="text-white font-black uppercase text-xs">Flat</Label>
+                <div className="flex items-center space-x-2 bg-surface px-4 py-3 rounded-xl border border-white/5 flex-1 hover:border-white/20 transition-all cursor-pointer">
+                  <RadioGroupItem value="FLAT" id="flt" className="text-white" /><Label htmlFor="flt" className="text-white font-bold uppercase text-[10px]">Flat</Label>
                 </div>
               </RadioGroup>
             </div>
-            <div className="flex gap-6 pt-6">
-              <Button type="button" variant="outline" onClick={() => { setShowLoanModal(false); resetLoanForm(); }} className="rounded-2xl border-white/10 h-16 flex-1 text-[#b3b3b3] font-black uppercase text-[10px] tracking-widest hover:bg-white/5">Abort</Button>
-              <Button type="submit" className="bg-gradient-to-r from-purple-600 to-[#ff0f7b] text-white rounded-2xl h-16 flex-[2] font-black text-lg shadow-2xl active:scale-[0.965] uppercase tracking-widest italic">Commit Sync</Button>
+            <div className="flex gap-4 pt-4">
+              <Button type="button" variant="ghost" onClick={() => { setShowLoanModal(false); resetLoanForm(); }} className="rounded-xl h-14 flex-1 text-text-muted font-bold uppercase text-[10px] tracking-widest hover:bg-white/5">Abort</Button>
+              <Button type="submit" className="bg-white text-background rounded-xl h-14 flex-[2] font-black text-sm hover:bg-white/90 active:scale-[0.98] uppercase tracking-widest">Commit Sync</Button>
             </div>
           </form>
         </DialogContent>

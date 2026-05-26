@@ -86,18 +86,18 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
   };
 
   const chartData = [
-    { name: t('dashboard.wealthPredictor.yourMoney', 'Principal Invested'), value: projection.totalInvested || 1, color: '#A855F7' }, // Purple
-    { name: t('dashboard.wealthPredictor.freeMoney', 'Wealth Gained'), value: projection.wealthGained || 0, color: '#EC4899' }, // Pink
+    { name: t('dashboard.wealthPredictor.yourMoney', 'Principal Invested'), value: projection.totalInvested || 1, color: '#FFFFFF' }, // Primary (White)
+    { name: t('dashboard.wealthPredictor.freeMoney', 'Wealth Gained'), value: projection.wealthGained || 0, color: '#404040' }, // Muted (Dark Gray)
   ];
 
   // UI/UX Styling Classes (Premium Dark Aesthetic)
-  const fontStack = "font-sans antialiased tracking-tight selection:bg-purple-500/20";
-  const tabularNumbers = "font-mono font-black tabular-nums tracking-tighter truncate min-w-0 max-w-full";
-  const glassEffect = "bg-white/[0.03] backdrop-blur-[20px] border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)]";
+  const fontStack = "font-sans antialiased tracking-tight selection:bg-white/10";
+  const tabularNumbers = "font-mono font-bold tabular-nums tracking-tighter truncate min-w-0 max-w-full";
+  const glassEffect = "bg-white/5 border border-white/5 shadow-sm";
   
   // Fluid Typography
-  const headingFluid = "text-[clamp(1.5rem,7vw,3.5rem)] leading-[1.1] font-extrabold tracking-tighter";
-  const labelFluid = "text-[10px] font-bold uppercase tracking-[0.2em] text-white/40";
+  const headingFluid = "text-[clamp(1.5rem,7vw,3.5rem)] leading-[1.1] font-bold tracking-tighter";
+  const labelFluid = "text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted";
   const subValueFluid = "text-sm font-medium text-white/30 truncate";
 
   const handleInvestmentChange = (val: number[]) => {
@@ -118,31 +118,26 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
       <Card className={cn(
-        "border-0 overflow-hidden relative w-full rounded-[32px] transform-gpu",
-        "bg-[#050505] text-white ring-1 ring-white/10",
+        "border-border overflow-hidden relative w-full rounded-[24px] shadow-sm transform-gpu",
+        "bg-surface text-white",
         fontStack
       )}>
-        {/* Visual Accent Polish - Pink & Purple Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-pink-600/10 pointer-events-none" />
-        <div className="absolute -top-32 -left-32 h-64 w-64 bg-purple-600/15 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-32 -right-32 h-64 w-64 bg-pink-600/15 rounded-full blur-[100px] pointer-events-none" />
-
         <CardHeader className="relative z-10 px-6 sm:px-10 pt-10 pb-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2 min-w-0 max-w-full">
               <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-purple-500 shadow-[0_0_15px_#A855F7] flex-shrink-0" />
-                <CardTitle className="text-xl sm:text-2xl font-black tracking-tighter opacity-90 uppercase truncate">
+                <div className="h-2 w-2 rounded-full bg-white opacity-40" />
+                <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-white uppercase truncate">
                   {t('WealthPredictor', 'Future Wealth')}
                 </CardTitle>
               </div>
-              <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.25em]">
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.25em]">
                 {t('dashboard.wealthPredictor.subtitle', 'Power of Compounding')}
               </p>
             </div>
             
-            <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 flex-shrink-0 backdrop-blur-md">
-              <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 whitespace-nowrap">
+            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 flex-shrink-0">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">
                 {years[0]}Y {t('dashboard.wealthPredictor.projection', 'Projection')}
               </span>
             </div>
@@ -157,11 +152,11 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
               <p className={labelFluid}>
                 {t('dashboard.wealthPredictor.projectedWealthLabel', 'Estimated Future Value')}
               </p>
-              <h2 className={cn(tabularNumbers, headingFluid, "text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/40")}>
+              <h2 className={cn(tabularNumbers, headingFluid, "text-white")}>
                 {formatShortLakhs(projection.futureValue)}
               </h2>
               <div className="flex items-center justify-center lg:justify-start gap-3">
-                <div className="h-[1px] w-8 bg-purple-500/30" />
+                <div className="h-[1px] w-8 bg-white/10" />
                 <p className={subValueFluid}>
                   {t('dashboard.wealthPredictor.projectedWealthValue', { 
                     amount: indianFormatter.format(projection.futureValue),
@@ -189,19 +184,19 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
                     animationEasing="ease-out"
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} className="hover:opacity-80 transition-opacity" />
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', backdropFilter: 'blur(10px)' }}
+                    contentStyle={{ backgroundColor: '#121212', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' }}
                     itemStyle={{ fontSize: '12px', color: '#fff', fontWeight: 'bold' }}
                     formatter={(value: number) => indianFormatter.format(value)}
                   />
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <div className="p-4 rounded-full bg-white/5 border border-white/5 shadow-2xl">
-                  <PieChartIcon className="h-6 w-6 text-purple-400 opacity-60" />
+                <div className="p-4 rounded-full bg-white/5 border border-white/5">
+                  <PieChartIcon className="h-6 w-6 text-white/10" />
                 </div>
               </div>
             </div>
@@ -209,10 +204,10 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
 
           {/* INPUT PANEL: Refined Glass Containers */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className={cn(glassEffect, "rounded-[28px] p-7 space-y-6 group transition-all hover:bg-white/5")}>
+            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:bg-white/[0.08]")}>
               <div className="flex justify-between items-center">
-                <label className="flex items-center gap-2.5 text-[10px] font-extrabold uppercase tracking-widest text-white/40 group-hover:text-purple-400 transition-colors">
-                  <Coins className="h-4 w-4 text-purple-500" /> <span>{t('dashboard.wealthPredictor.monthlyInvestment', 'Monthly Save')}</span>
+                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-white/60 transition-colors">
+                  <Coins className="h-4 w-4 text-white/20" /> <span>{t('dashboard.wealthPredictor.monthlyInvestment', 'Monthly Save')}</span>
                 </label>
                 <span className={cn(tabularNumbers, "text-xl font-bold")}>{formatShortLakhs(investment[0])}</span>
               </div>
@@ -226,10 +221,10 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
               />
             </div>
 
-            <div className={cn(glassEffect, "rounded-[28px] p-7 space-y-6 group transition-all hover:bg-white/5")}>
+            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:bg-white/[0.08]")}>
               <div className="flex justify-between items-center">
-                <label className="flex items-center gap-2.5 text-[10px] font-extrabold uppercase tracking-widest text-white/40 group-hover:text-purple-400 transition-colors">
-                  <Calendar className="h-4 w-4 text-purple-500" /> <span>{t('dashboard.wealthPredictor.duration', 'Years')}</span>
+                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-white/60 transition-colors">
+                  <Calendar className="h-4 w-4 text-white/20" /> <span>{t('dashboard.wealthPredictor.duration', 'Years')}</span>
                 </label>
                 <span className={cn(tabularNumbers, "text-xl font-bold")}>{years[0]}</span>
               </div>
@@ -243,12 +238,12 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
               />
             </div>
 
-            <div className={cn(glassEffect, "rounded-[28px] p-7 space-y-6 group transition-all hover:bg-white/5")}>
+            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:bg-white/[0.08]")}>
               <div className="flex justify-between items-center">
-                <label className="flex items-center gap-2.5 text-[10px] font-extrabold uppercase tracking-widest text-white/40 group-hover:text-pink-400 transition-colors">
-                  <TrendingUp className="h-4 w-4 text-pink-500" /> <span>{t('dashboard.wealthPredictor.expectedReturn', 'Expected Return %')}</span>
+                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-white/60 transition-colors">
+                  <TrendingUp className="h-4 w-4 text-white/20" /> <span>{t('dashboard.wealthPredictor.expectedReturn', 'Expected Return %')}</span>
                 </label>
-                <span className={cn(tabularNumbers, "text-xl font-bold text-pink-400")}>{returnRate[0]}%</span>
+                <span className={cn(tabularNumbers, "text-xl font-bold")}>{returnRate[0]}%</span>
               </div>
               <Slider 
                 value={returnRate} 
@@ -263,23 +258,23 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
 
           {/* BREAKDOWN: Hierarchy & Secondary Anchors */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className={cn(glassEffect, "rounded-[28px] p-8 flex items-center gap-6 group transition-all")}>
-              <div className="h-14 w-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 group-hover:scale-110 transition-transform">
+            <div className={cn(glassEffect, "rounded-[20px] p-8 flex items-center gap-6 group transition-all")}>
+              <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center text-text-muted border border-white/5 group-hover:scale-105 transition-transform">
                 <Coins size={24} />
               </div>
               <div>
                 <p className={labelFluid}>{t('dashboard.wealthPredictor.yourMoney', 'Your Investment')}</p>
-                <p className={cn(tabularNumbers, "text-2xl mt-0.5")}>{indianFormatter.format(projection.totalInvested)}</p>
+                <p className={cn(tabularNumbers, "text-2xl mt-0.5 tracking-tighter")}>{indianFormatter.format(projection.totalInvested)}</p>
               </div>
             </div>
 
-            <div className={cn(glassEffect, "rounded-[28px] p-8 flex items-center gap-6 group transition-all")}>
-              <div className="h-14 w-14 rounded-2xl bg-pink-500/10 flex items-center justify-center text-pink-400 border border-pink-500/20 group-hover:scale-110 transition-transform">
+            <div className={cn(glassEffect, "rounded-[20px] p-8 flex items-center gap-6 group transition-all")}>
+              <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center text-text-muted border border-white/5 group-hover:scale-105 transition-transform">
                 <TrendingUp size={24} />
               </div>
               <div>
                 <p className={labelFluid}>{t('dashboard.wealthPredictor.freeMoney', 'Wealth Gained')}</p>
-                <p className={cn(tabularNumbers, "text-2xl mt-0.5 text-pink-400")}>+{indianFormatter.format(projection.wealthGained)}</p>
+                <p className={cn(tabularNumbers, "text-2xl mt-0.5 text-white/60 tracking-tighter")}>+{indianFormatter.format(projection.wealthGained)}</p>
               </div>
             </div>
           </div>
@@ -287,12 +282,12 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
           {/* FOOTER: Professional Branding */}
           <div className="pt-8 border-t border-white/[0.05] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 opacity-30">
-              <Zap size={12} className="fill-purple-500 text-purple-500" />
-              <p className="text-[9px] font-black uppercase tracking-[0.3em]">
+              <Zap size={10} className="fill-white text-white" />
+              <p className="text-[8px] font-bold uppercase tracking-[0.3em]">
                 {t('dashboard.wealthPredictor.footerStart', 'BachatKaro Analysis Engine')}
               </p>
             </div>
-            <p className="text-[9px] text-white/20 font-medium italic">
+            <p className="text-[8px] text-white/10 font-bold uppercase tracking-widest italic">
               *Projections based on historical averages.
             </p>
           </div>
@@ -301,16 +296,16 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
 
       {/* HOW TO USE SECTION: Premium Helper Card */}
       <div className={cn(
-        "p-6 rounded-[24px] bg-gradient-to-r from-purple-900/20 to-pink-900/20 border border-white/5 backdrop-blur-sm",
-        "flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+        "p-6 rounded-[24px] bg-surface border border-border",
+        "flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm"
       )}>
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-            <HelpCircle size={20} className="text-purple-400" />
+          <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
+            <HelpCircle size={20} className="text-white/20" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white/90">{t('howToUse.title', 'How to Use Wealth Predictor')}</h4>
-            <p className="text-xs text-white/40 mt-0.5">{t('howToUse.subtitle', 'Follow these simple steps to plan your financial future')}</p>
+            <h4 className="text-sm font-bold text-white uppercase tracking-tight">{t('howToUse.title', 'How to Use Wealth Predictor')}</h4>
+            <p className="text-[10px] text-text-muted mt-1 uppercase font-bold tracking-widest">{t('howToUse.subtitle', 'Follow these simple steps to plan your financial future')}</p>
           </div>
         </div>
         
@@ -320,11 +315,11 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
             { step: '2', text: t('howToUse.step2', 'Select Years') },
             { step: '3', text: t('howToUse.step3', 'View Projection') }
           ].map((item, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-2 rounded-xl bg-black/40 border border-white/5">
-              <span className="text-[10px] font-black h-5 w-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
+            <div key={i} className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/5">
+              <span className="text-[10px] font-bold h-5 w-5 rounded-full bg-white/10 text-white/60 flex items-center justify-center border border-white/10">
                 {item.step}
               </span>
-              <span className="text-[11px] font-semibold text-white/60 whitespace-nowrap">{item.text}</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">{item.text}</span>
             </div>
           ))}
         </div>

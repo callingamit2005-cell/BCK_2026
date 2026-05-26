@@ -10,6 +10,15 @@ import { Capacitor } from '@capacitor/core';
 // ⏱️ Debounce Timer for UI Refresh
 let syncEventTimeout: NodeJS.Timeout | null = null;
 const SQLITE_TABLE_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const schemaCache: Record<string, string[]> = {};
+
+const getTableColumns = async (db: any, tableName: string) => {
+  if (schemaCache[tableName]) return schemaCache[tableName];
+  const tableInfo = await db.query(`PRAGMA table_info(${tableName})`);
+  const cols = ((tableInfo.values || []) as Array<{ name: string }>).map((v) => v.name);
+  if (cols.length > 0) schemaCache[tableName] = cols;
+  return cols;
+};
 
 /**
  * 🚀 High-Performance UI Dispatcher
@@ -31,8 +40,7 @@ export const seedLocalCacheRow = async (
   if (!db || !row || !SQLITE_TABLE_NAME.test(tableName)) return false;
 
   try {
-    const tableInfo = await db.query(`PRAGMA table_info(${tableName})`);
-    const validCols = ((tableInfo.values || []) as Array<{ name: string }>).map((v) => v.name);
+    const validCols = await getTableColumns(db, tableName);
     if (validCols.length === 0) return false;
 
     // 🛡️ [SQLITE_SEED_SERIALIZATION]
@@ -41,7 +49,7 @@ export const seedLocalCacheRow = async (
     // This prevents Android SQLite parameter errors and boolean-to-falsey bugs.
     const seedRow = { ...row };
     Object.keys(seedRow).forEach(key => {
-      if (seedRow[key] && typeof seedRow[key] === 'object' && !Array.isArray(seedRow[key])) {
+      if (seedRow[key] !== null && typeof seedRow[key] === 'object' && !Array.isArray(seedRow[key])) {
         seedRow[key] = JSON.stringify(seedRow[key]);
       } else if (typeof seedRow[key] === 'boolean') {
         seedRow[key] = seedRow[key] ? 1 : 0;
@@ -257,17 +265,20 @@ export const saveAndSync = async (tableName: string, payload: any, operation: 'I
     if (db) {
       if (operation !== 'RPC') {
         const sqlitePayload = { ...payload };
-
-        const tableInfo = await db.query(`PRAGMA table_info(${tableName})`);
-        const validCols = ((tableInfo.values || []) as Array<{ name: string }>).map((v) => v.name);
+        const validCols = await getTableColumns(db, tableName);
         
         if (validCols.length === 0) {
           throw new Error(`SQLite schema metadata missing for ${tableName}.`);
         }
 
-        if (sqlitePayload.loan_details && typeof sqlitePayload.loan_details === 'object') {
-          sqlitePayload.loan_details = JSON.stringify(sqlitePayload.loan_details);
-        }
+        // 🛡️ [SQLITE_PARAM_SERIALIZATION]
+        Object.keys(sqlitePayload).forEach(key => {
+          if (sqlitePayload[key] !== null && typeof sqlitePayload[key] === 'object' && !Array.isArray(sqlitePayload[key])) {
+            sqlitePayload[key] = JSON.stringify(sqlitePayload[key]);
+          } else if (typeof sqlitePayload[key] === 'boolean') {
+            sqlitePayload[key] = sqlitePayload[key] ? 1 : 0;
+          }
+        });
 
         const filteredPayload: Record<string, any> = {};
         Object.keys(sqlitePayload).forEach(key => {
@@ -285,15 +296,15 @@ export const saveAndSync = async (tableName: string, payload: any, operation: 'I
         const placeholders = colsArray.map(() => '?').join(', ');
         const values = Object.values(filteredPayload);
         
-        if (colsArray.length !== values.length) {
-          throw new Error(`SQL Parameter Mismatch: ${colsArray.length} columns vs ${values.length} values`);
-        }
-
+        // 🛡️ [ATOMIC_WRITE_CONTRACT]
+        // Ensure local save and sync enqueue are strictly sequential.
         await db.run(`INSERT OR REPLACE INTO ${tableName} (${cols}, sync_status, is_deleted) VALUES (${placeholders}, 'pending', 0)`, [...values]);
         console.log(`🧪 [TABLE_CONTRACT_FORENSIC] SQLite Persisted:`, { table: tableName, cols: colsArray });
       }
       
-      await enqueueSync(tableName, operation, payload);
+      const enqueued = await enqueueSync(tableName, operation, payload);
+      if (!enqueued) throw new Error("Sync Queue insertion failed.");
+      
       dispatchSyncUpdate();
       return payload;
     }

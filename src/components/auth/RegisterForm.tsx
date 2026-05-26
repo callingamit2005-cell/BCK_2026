@@ -89,9 +89,9 @@ const RegisterForm = () => {
   const gradientClass = "bg-gradient-to-r from-purple-600 to-pink-500";
 
   return (
-    <form onSubmit={handleRegister} className="space-y-5">
+    <form onSubmit={handleRegister} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-200">
       <div className="space-y-2">
-        <Label htmlFor="register-email" className="text-sm font-medium text-slate-700">Email</Label>
+        <Label htmlFor="register-email" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">Email Address</Label>
         <Input
           id="register-email"
           type="email"
@@ -99,12 +99,12 @@ const RegisterForm = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="h-12 rounded-xl border border-slate-200 px-4 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all"
+          className="h-12 bg-white/5 rounded-xl border-white/5 text-white font-bold focus:border-white/20 transition-all"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="register-password" className="text-sm font-medium text-slate-700">Password</Label>
+        <Label htmlFor="register-password" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">Password</Label>
         <Input
           id="register-password"
           type="password"
@@ -113,20 +113,16 @@ const RegisterForm = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="h-12 rounded-xl border border-slate-200 px-4 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all"
+          className="h-12 bg-white/5 rounded-xl border-white/5 text-white font-bold focus:border-white/20 transition-all"
         />
       </div>
 
-      {(() => {
-        console.log("[BUTTON_RENDER] Register Button Rendered", { loading });
-        return null;
-      })()}
       <Button
         type="submit"
         disabled={loading}
-        className={`w-full h-12 ${gradientClass} text-white rounded-xl font-semibold shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all active:scale-[0.98] disabled:opacity-50`}
+        className={`w-full h-14 bg-white text-background rounded-2xl font-black text-lg shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all disabled:opacity-20 uppercase tracking-widest`}
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
         Create Account
       </Button>
     </form>

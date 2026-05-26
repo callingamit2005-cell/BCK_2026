@@ -37,38 +37,34 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0014] p-6">
-          <div className="relative w-full max-w-md overflow-hidden rounded-[32px] border border-[rgba(255,15,123,0.35)] bg-white/5 p-8 backdrop-blur-[32px] shadow-[0_0_40px_-10px_rgba(255,15,123,0.3)]">
-            {/* Neon Bloom Effect */}
-            <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-[rgba(255,15,123,0.4)] blur-[60px]" />
-            <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-[rgba(123,31,162,0.4)] blur-[60px]" />
-
+        <div className="min-h-screen w-full flex items-center justify-center bg-background p-6 antialiased">
+          <div className="relative w-full max-w-md overflow-hidden rounded-[24px] border border-white/5 bg-surface p-8 shadow-sm">
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="mb-6 rounded-full bg-red-500/10 p-4 ring-1 ring-red-500/50">
-                <AlertTriangle className="h-12 w-12 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+              <div className="mb-6 rounded-2xl bg-white/5 p-4 border border-white/5 shadow-inner">
+                <AlertTriangle className="h-10 w-10 text-white/40" />
               </div>
 
-              <h1 className="mb-2 text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
-                SYSTEM CRITICAL
+              <h1 className="mb-2 text-2xl font-black tracking-tighter text-white uppercase">
+                Circuit Breaker Active
               </h1>
               
-              <p className="mb-6 font-mono text-sm text-white/70">
-                The application encountered an unexpected state and has activated safety protocols.
+              <p className="mb-6 text-[10px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">
+                The application encountered an unexpected state. High-integrity safety protocols have been activated.
               </p>
 
-              <div className="mb-8 w-full rounded-xl border border-white/10 bg-black/40 p-4 text-left">
-                <p className="font-mono text-xs text-red-400 break-all">
-                  {this.state.error?.message || "Unknown Error"}
+              <div className="mb-8 w-full rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left">
+                <p className="font-mono text-[10px] text-white/60 break-all leading-tight uppercase font-bold">
+                  {this.state.error?.message || "Unknown State Failure"}
                 </p>
               </div>
 
               <Button
                 onClick={this.handleReload}
-                className="group relative min-h-[50px] min-w-[44px] w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#701A75] to-[#EC4899] font-bold text-white shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-all duration-300 ease-butter-soft active:scale-[0.965] hover:shadow-[0_0_30px_rgba(236,72,153,0.6)]"
+                className="w-full h-14 bg-white text-background rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all"
               >
                 <div className="flex items-center justify-center gap-2">
-                  <RefreshCw className="h-5 w-5 transition-transform duration-700 group-hover:rotate-180" />
-                  <span>REBOOT SYSTEM</span>
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Reboot System</span>
                 </div>
               </Button>
             </div>

@@ -56,19 +56,18 @@ export const QuickSavingsGoalCard: React.FC<QuickSavingsGoalCardProps> = ({ user
   return (
     <Card
       className={cn(
-        "glass-v2 rounded-[32px] border-0 shadow-[0_0_60px_-20px_rgba(255,15,123,0.35)]",
+        "bg-surface rounded-[24px] border border-border shadow-sm",
         "text-white",
       )}
     >
-      <div className="h-1.5 w-full bg-gradient-to-r from-purple-600 to-[#ff0f7b]" />
       <CardHeader className="p-7 pb-3">
         <div className="flex items-start justify-between gap-6">
           <div className="min-w-0">
-            <CardTitle className="flex items-center gap-3 text-lg sm:text-xl font-black uppercase italic tracking-tighter font-mono">
-              <Target className="h-5 w-5 text-[#ff0f7b]" />
+            <CardTitle className="flex items-center gap-3 text-lg font-black uppercase tracking-tighter font-mono">
+              <Target className="h-5 w-5 text-white/40" />
               {t?.("dashboard.quickSavingsGoal.title", "Quick Savings Goal") ?? "Quick Savings Goal"}
             </CardTitle>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-white/60 font-mono">
+            <p className="mt-1 text-[9px] uppercase tracking-[0.25em] text-white/20 font-mono font-bold">
               {primaryGoal
                 ? (t?.("dashboard.quickSavingsGoal.subtitle", "This month vs your primary goal") ??
                     "This month vs your primary goal")
@@ -82,26 +81,26 @@ export const QuickSavingsGoalCard: React.FC<QuickSavingsGoalCardProps> = ({ user
             variant="outline"
             onClick={() => navigate("/savings")}
             className={cn(
-              "shrink-0 h-10 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10",
-              "text-white font-black text-[10px] uppercase tracking-widest",
+              "shrink-0 h-10 rounded-xl border-white/5 bg-white/5 hover:bg-white/10",
+              "text-white font-bold text-[9px] uppercase tracking-widest transition-all",
             )}
           >
             {t?.("dashboard.quickSavingsGoal.manage", "Manage") ?? "Manage"}
-            <ArrowRight className="ml-2 h-3.5 w-3.5" />
+            <ArrowRight className="ml-2 h-3 w-3 opacity-40" />
           </Button>
         </div>
       </CardHeader>
 
       <CardContent className="px-7 pb-7 space-y-5">
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-[24px] bg-white/[0.06] border border-white/10 p-4">
-            <p className="text-[9px] uppercase tracking-widest text-white/60 font-black font-mono">
+          <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-4">
+            <p className="text-[8px] uppercase tracking-widest text-white/40 font-bold font-mono">
               {t?.("dashboard.quickSavingsGoal.saved", "Saved") ?? "Saved"}
             </p>
             <p
               className={cn(
-                "mt-1 text-xl sm:text-2xl font-black font-mono",
-                safeSaved >= 0 ? "text-emerald-300" : "text-rose-300",
+                "mt-1 text-xl font-black font-mono tracking-tighter",
+                safeSaved >= 0 ? "text-white" : "text-white/60",
               )}
               data-numeric="true"
             >
@@ -109,11 +108,11 @@ export const QuickSavingsGoalCard: React.FC<QuickSavingsGoalCardProps> = ({ user
             </p>
           </div>
 
-          <div className="rounded-[24px] bg-white/[0.06] border border-white/10 p-4">
-            <p className="text-[9px] uppercase tracking-widest text-white/60 font-black font-mono">
+          <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-4">
+            <p className="text-[8px] uppercase tracking-widest text-white/40 font-bold font-mono">
               {t?.("dashboard.quickSavingsGoal.goal", "Goal") ?? "Goal"}
             </p>
-            <p className="mt-1 text-xl sm:text-2xl font-black font-mono text-white" data-numeric="true">
+            <p className="mt-1 text-xl font-black font-mono text-white tracking-tighter" data-numeric="true">
               {target > 0 ? formatCurrency(target) : "—"}
             </p>
           </div>
@@ -121,14 +120,14 @@ export const QuickSavingsGoalCard: React.FC<QuickSavingsGoalCardProps> = ({ user
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] font-black uppercase tracking-widest text-white/60 font-mono">
+            <span className="text-[8px] font-bold uppercase tracking-widest text-white/40 font-mono">
               {t?.("dashboard.quickSavingsGoal.progress", "Progress") ?? "Progress"}
             </span>
-            <span className="text-[10px] font-black text-[#ff0f7b] uppercase tracking-widest font-mono" data-numeric="true">
+            <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest font-mono" data-numeric="true">
               {target > 0 ? `${Math.round(progress)}%` : "—"}
             </span>
           </div>
-          <Progress value={progress} className="h-3 bg-white/10" />
+          <Progress value={progress} className="h-2 bg-white/5" />
         </div>
       </CardContent>
     </Card>

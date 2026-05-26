@@ -43,22 +43,50 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
   });
 
   const { data: ledgerTransactions = [], isLoading: loadingExpenses } = useQuery({
-    queryKey: ['ledger-transactions', user?.id, dateFilter.preset, dateFilter.customFrom?.getTime(), dateFilter.customTo?.getTime()],
+    queryKey: ['ledger-transactions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
 
       if (isAndroid && !isSQLiteReady) {
-        console.warn('🧪 [QUERY_TRACE] SQLite not ready. Aborting ledger fetch.');
         return [];
       }
 
       const results = await fetchUnifiedLedger(user.id, ledgerWindow);
-      console.log(`[FORENSIC_COUNT_1] fetchUnifiedLedger RETURNED: ${results.length}`);
       return results;
     },
     enabled: !!user?.id && (isAndroid ? isSQLiteReady : true),
     staleTime: 30000,
   });
+
+  // 🛡️ [UI_REALTIME_SYNC]
+  // Listen for local and remote sync events to invalidate queries instantly.
+  // Implements strict debouncing to prevent invalidation storms during batch/sync events.
+  const invalidationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      if (invalidationTimeoutRef.current) {
+        clearTimeout(invalidationTimeoutRef.current);
+      }
+      
+      invalidationTimeoutRef.current = setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: ['ledger-transactions'] });
+        void queryClient.invalidateQueries({ queryKey: ['salaries'] });
+        void queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      }, 300); // 300ms debounce window
+    };
+
+    window.addEventListener('sync_queue_updated', handleRefresh);
+    window.addEventListener('newTransaction', handleRefresh);
+    window.addEventListener('newLocalTransaction', handleRefresh);
+
+    return () => {
+      if (invalidationTimeoutRef.current) clearTimeout(invalidationTimeoutRef.current);
+      window.removeEventListener('sync_queue_updated', handleRefresh);
+      window.removeEventListener('newTransaction', handleRefresh);
+      window.removeEventListener('newLocalTransaction', handleRefresh);
+    };
+  }, [queryClient]);
 
   const loadNativeTransactions = useCallback(async () => {
     if (!user?.id || feederInProgressRef.current) return;
@@ -73,19 +101,9 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
 
       const { saveLocalTransaction } = await import('@/integrations/sqlite');
 
-      console.log(`🚀 [BRIDGE_FEEDER_START] PageSize: ${PAGE_SIZE}`);
-
       while (hasMore && currentOffset < MAX_TOTAL) {
         const res = await getNativeTransactions(user.id, user.created_at, PAGE_SIZE, currentOffset);
-        
-        // --- FORENSIC LOGGING START ---
-        console.log('[FORENSIC_BRIDGE_PAYLOAD] Raw response:', JSON.stringify(res));
-        console.log('[FORENSIC_BRIDGE_PAYLOAD] res.transactions property:', JSON.stringify(res.transactions));
-        // --- FORENSIC LOGGING END ---
-
         const transactions = res.transactions ?? [];
-        
-        console.log(`[FORENSIC_BRIDGE_PAYLOAD] Parsed transactions length: ${transactions.length}`);
 
         if (transactions.length === 0) {
           hasMore = false;
@@ -93,11 +111,12 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
         }
 
         // 🛡️ [CANONICAL_FEEDER_PIPELINE]
+        const { autoMapTransactionToGroup } = await import('@/features/auto-group/AutoGroupMapper');
         for (const tx of transactions) {
           if (isValidSmsTransaction(tx)) {
             const unified = toUnifiedNativeEntry(tx);
             // 🛡️ [SILENT_FEEDER] Use silent: true during batch ingestion
-            await saveLocalTransaction({
+            const payload = {
               id: unified.id,
               user_id: user.id,
               amount: unified.amount,
@@ -109,7 +128,13 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
               sms_hash: unified.smsHash,
               entry_source: 'sms', // Explicitly tagged
               sync_status: 'completed' // Native records are considered local truth
-            }, true);
+            };
+            await saveLocalTransaction(payload, true);
+            
+            // Auto-map if expense
+            if (payload.type === 'expense') {
+              void autoMapTransactionToGroup(payload);
+            }
           }
         }
 
@@ -123,7 +148,6 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
 
       // 🚀 [SETTLED_SIGNAL] Dispatch exactly one event after feeding is complete
       window.dispatchEvent(new Event('sync_queue_updated'));
-      console.log(`✅ [BRIDGE_FEEDER_COMPLETE]`);
 
       // ✅ FIX: Manually invalidate the ledger to force a refetch after silent hydration
       queryClient.invalidateQueries({ queryKey: ['ledger-transactions', user?.id] });
@@ -142,12 +166,10 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
     let isMounted = true;
 
     const handleNewLocal = (event: any) => {
-      console.log(`🔄 [DASHBOARD_DATA] ${event.type} event detected, invalidating ledger for instant UI update.`);
       queryClient.invalidateQueries({ queryKey: ['ledger-transactions', user?.id] });
     };
 
     const handleNewSms = async (data: any) => {
-      console.log(`[FORENSIC_TRACE] handleNewSms received:`, data);
       if (isMounted && data?.transaction) {
         try {
           const { saveLocalTransaction } = await import('@/integrations/sqlite');
@@ -155,7 +177,6 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
           
           if (isValidSmsTransaction(tx)) {
             const unified = toUnifiedNativeEntry(tx);
-            console.log(`🔄 [DASHBOARD_DATA] Ingesting single realtime SMS: ${unified.smsHash}`);
             
             await saveLocalTransaction({
               id: unified.id,
@@ -187,9 +208,7 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
       window.addEventListener('newLocalTransaction', handleNewLocal);
 
       if (Capacitor.getPlatform() === 'android') {
-        console.log(`[FORENSIC_TRACE] Registering SMS listener (SmsBridge)...`);
         smsListener = await addSmsListener('newTransaction', handleNewSms);
-        console.log(`[FORENSIC_TRACE] SMS listener registration SUCCESS.`);
       }
     };
 
@@ -286,14 +305,6 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
     }
 
     const merged = mergeUnifiedLedgerEntries(entriesToMerge).map(toDashboardTransaction);
-    
-    if (import.meta.env.DEV) {
-      console.log(`[FORENSIC_PARITY] Source: ${isAndroid ? 'Android' : 'Web'}`);
-      console.log(`[FORENSIC_PARITY] Raw Input: ${entriesToMerge.length}`);
-      console.log(`[FORENSIC_PARITY] Deduped Result: ${merged.length}`);
-      console.log(`[FORENSIC_PARITY] Efficiency: ${Math.round((1 - merged.length / (entriesToMerge.length || 1)) * 100)}%`);
-    }
-
     return merged;
   }, [ledgerTransactions, salaryTransaction, salaryData, currentMonthYear, isAndroid]);
 
@@ -315,7 +326,6 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
 
   const filteredViewData = useMemo(() => {
     const transactions = allUnifiedTransactions || [];
-    console.log(`[FORENSIC_COUNT_4] START filteredViewData. Input: ${transactions.length}, Preset: ${dateFilter.preset}`);
     
     const filtered = transactions.filter((e) => {
       if (!e?.date || !isValidDate(e.date)) return false;
@@ -342,7 +352,6 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
       return isCurrentMonth(e.date);
     });
 
-    console.log(`[FORENSIC_COUNT_5] FINAL filteredViewData: ${filtered.length}`);
     return filtered;
   }, [allUnifiedTransactions, dateFilter, now]);
 

@@ -14,7 +14,6 @@ import { CalendarIcon, Filter, Sparkles, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import ExportMenu from './ExportMenu';
 
 export type FilterPreset = 'today' | 'this_week' | 'this_month' | 'last_month' | 'custom';
 
@@ -61,11 +60,11 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
     setToOpen(false);
   };
 
-  // ==================== TRUE DARK NEON UI SYSTEM ====================
-  const neonGlass = "bg-[#0a0014]/80 backdrop-blur-xl border border-[#ff0f7b]/30 shadow-2xl rounded-[28px]";
-  const activeBtn = "bg-gradient-to-r from-[#7C3AED] via-[#EC4899] to-[#D946EF] text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] border-none";
-  const labelText = "text-white/40 font-black uppercase tracking-[0.2em] text-[10px]";
-  const applePhysics = "transition-all duration-300 ease-butter-soft active:scale-95 transform-gpu";
+  // ==================== PREMIUM MONOCHROME UI SYSTEM ====================
+  const premiumSurface = "bg-surface border border-white/5 shadow-sm rounded-[28px]";
+  const activeBtn = "bg-white text-background shadow-sm border-none";
+  const labelText = "text-text-muted font-bold uppercase tracking-[0.2em] text-[10px]";
+  const applePhysics = "transition-all duration-300 ease-out active:scale-95 transform-gpu";
 
   return (
     <>
@@ -74,45 +73,42 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
       
-      <Card className={cn(neonGlass, "overflow-hidden w-full border-[#ff0f7b]/20")}>
+      <Card className={cn(premiumSurface, "overflow-hidden w-full border-white/5")}>
         <CardContent className="p-4 sm:p-6 w-full space-y-6">
           
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 w-full">
             
             {/* Left Action Area */}
             <div className="flex items-center justify-between lg:justify-start w-full lg:w-auto gap-6">
-              {console.log('[DateFilter_Received_Count]', filteredData?.length)}
-              <ExportMenu data={filteredData} />
-              <div className="h-10 w-[1px] bg-white/10 hidden lg:block" />
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10 shadow-inner">
-                  <Filter className="h-4 w-4 text-[#ff0f7b]" />
+                <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10">
+                  <Filter className="h-4 w-4 text-white/40" />
                 </div>
                 <span className={labelText}>Filter Analytics</span>
               </div>
             </div>
 
-            {/* Right: Scrollable Preset Row - FIXED CLIPPING */}
+            {/* Right: Scrollable Preset Row */}
             <div className="w-full lg:w-auto">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex flex-wrap gap-2 bg-black/40 p-1.5 rounded-[22px] border border-white/5 shadow-inner w-full lg:w-auto">
+                <div className="flex flex-wrap gap-2 bg-white/5 p-1.5 rounded-[22px] border border-white/5 shadow-inner w-full lg:w-auto">
                   {presets.map((p) => (
                     <Button
                       key={p.key}
                       size="sm"
                       variant={value.preset === p.key ? 'default' : 'ghost'}
                       className={cn(
-                        'h-10 px-5 whitespace-nowrap rounded-[18px] text-[11px] font-black uppercase tracking-wider shrink-0',
+                        'h-10 px-5 whitespace-nowrap rounded-[18px] text-[11px] font-bold uppercase tracking-wider shrink-0',
                         applePhysics,
                         value.preset === p.key
                           ? activeBtn
-                          : 'text-white/40 hover:text-white hover:bg-white/5'
+                          : 'text-text-muted hover:text-white hover:bg-white/5'
                       )}
                       onClick={() =>
                         onChange({ preset: p.key, customFrom: value.customFrom, customTo: value.customTo })
                       }
                     >
-                      {value.preset === p.key && <Sparkles className="mr-2 h-3.5 w-3.5 text-white animate-pulse" />}
+                      {value.preset === p.key && <Sparkles className="mr-2 h-3.5 w-3.5 text-background" />}
                       {p.label}
                     </Button>
                   ))}
@@ -121,7 +117,7 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
             </div>
           </div>
 
-          {/* Custom Date Range Display - REPAIRED UI */}
+          {/* Custom Date Range Display */}
           {value.preset === 'custom' && (
             <div className="flex flex-wrap items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500 w-full p-4 bg-white/5 rounded-3xl border border-white/5">
               <Popover open={fromOpen} onOpenChange={setFromOpen}>
@@ -129,15 +125,15 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
                   <Button
                     variant="outline"
                     className={cn(
-                      "h-12 px-6 text-[11px] font-black rounded-2xl border-white/10 bg-black/40 text-white hover:bg-white/5 hover:border-[#ff0f7b]/40 flex-1 sm:flex-none",
+                      "h-12 px-6 text-[11px] font-bold rounded-2xl border-white/10 bg-surface text-white hover:bg-white/5 flex-1 sm:flex-none",
                       applePhysics
                     )}
                   >
-                    <CalendarIcon className="mr-3 h-4 w-4 text-[#ff0f7b] shrink-0" />
+                    <CalendarIcon className="mr-3 h-4 w-4 text-text-muted shrink-0" />
                     <span className="tracking-widest">{value.customFrom ? format(value.customFrom, 'dd MMM yyyy') : 'START DATE'}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-[32px] bg-[#0a0014] border border-[#ff0f7b]/30 shadow-3xl transform-gpu" align="start">
+                <PopoverContent className="w-auto p-0 rounded-[32px] bg-background border border-white/10 shadow-3xl transform-gpu" align="start">
                   <Calendar
                     mode="single"
                     selected={value.customFrom}
@@ -156,15 +152,15 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
                   <Button
                     variant="outline"
                     className={cn(
-                      "h-12 px-6 text-[11px] font-black rounded-2xl border-white/10 bg-black/40 text-white hover:bg-white/5 hover:border-[#ff0f7b]/40 flex-1 sm:flex-none",
+                      "h-12 px-6 text-[11px] font-bold rounded-2xl border-white/10 bg-surface text-white hover:bg-white/5 flex-1 sm:flex-none",
                       applePhysics
                     )}
                   >
-                    <CalendarIcon className="mr-3 h-4 w-4 text-[#ff0f7b] shrink-0" />
+                    <CalendarIcon className="mr-3 h-4 w-4 text-text-muted shrink-0" />
                     <span className="tracking-widest">{value.customTo ? format(value.customTo, 'dd MMM yyyy') : 'END DATE'}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-[32px] bg-[#0a0014] border border-[#ff0f7b]/30 shadow-3xl transform-gpu" align="start">
+                <PopoverContent className="w-auto p-0 rounded-[32px] bg-background border border-white/10 shadow-3xl transform-gpu" align="start">
                   <Calendar
                     mode="single"
                     selected={value.customTo}

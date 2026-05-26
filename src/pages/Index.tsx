@@ -188,18 +188,10 @@ const Index = () => {
 
   return (
     <div className="dark">
-      <div className="relative min-h-screen overflow-x-hidden bg-[#0a0014] font-sans text-white selection:bg-[#ff0f7b]/30">
-        {/* 🌟 TRUE DARK NEON GLASS V2 – GPU‑accelerated layers */}
+      <div className="relative min-h-screen overflow-x-hidden bg-background font-sans text-white selection:bg-white/10">
+        {/* 🌟 PREMIUM MONOCHROME DEPTH – GPU‑accelerated layers */}
         <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-          <div
-            className="absolute left-1/2 top-[-10%] h-[800px] w-full -translate-x-1/2 rounded-full bg-[#5f0a87]/10 blur-[150px] will-change-transform"
-            style={{ transform: "translateZ(0)" }}
-          />
-          <div
-            className="absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-[#ff0f7b]/10 blur-[130px] will-change-transform"
-            style={{ transform: "translateZ(0)" }}
-          />
-          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20" />
+          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5" />
         </div>
 
         <AnnouncementBar />
@@ -210,17 +202,16 @@ const Index = () => {
 
           {/* 🚀 BETA ANNOUNCEMENT SECTION */}
           <div className="mx-auto max-w-5xl px-6 py-12 text-center">
-            <div className="relative overflow-hidden rounded-[2.5rem] border border-purple-500/20 bg-purple-500/5 p-8 backdrop-blur-md">
-              <div className="absolute -top-10 -left-10 w-40 h-40 bg-purple-500/10 blur-3xl rounded-full" />
+            <div className="relative overflow-hidden rounded-[24px] border border-white/5 bg-white/[0.02] p-10 backdrop-blur-md shadow-sm">
               <div className="relative z-10">
-                <h3 className="text-2xl md:text-3xl font-black text-white mb-3">
+                <h3 className="text-2xl md:text-3xl font-black text-white mb-3 uppercase tracking-tighter">
                   BachatKaro Beta is Live 🚀
                 </h3>
-                <p className="text-slate-300 text-lg font-medium mb-2">
-                  EARLY ACCESS — FREE DURING BETA
+                <p className="text-white/40 text-lg font-bold uppercase tracking-wide mb-2">
+                  Exclusive Initial Access
                 </p>
-                <p className="text-purple-400 text-sm font-bold uppercase tracking-widest">
-                  You're not late. You're early.
+                <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.3em]">
+                  The future of Indian finance starts here.
                 </p>
               </div>
             </div>
@@ -228,130 +219,117 @@ const Index = () => {
 
           {/* Ad Section - Non-intrusive Glass */}
           <div className="mx-auto max-w-5xl px-6 py-4">
-            <AdPlaceholder className="rounded-[2rem] border-white/5 bg-white/5 backdrop-blur-md" />
+            <AdPlaceholder className="rounded-[24px] border-white/5 bg-white/5 backdrop-blur-md" />
           </div>
 
           <StatsBar />
 
           {/* 🎯 WAITLIST SECTION: Conversion Engine */}
           <section id="waitlist" className="scroll-mt-24 px-6 py-32">
-            <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[3rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-[40px] md:p-16">
-              {/* Dynamic Aura for Section */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,15,123,0.1),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(95,10,135,0.1),transparent_50%)] pointer-events-none" />
-
+            <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.01] p-8 backdrop-blur-[40px] md:p-16 shadow-sm">
               <div className="relative z-10 text-center">
-                <span className="mb-8 inline-flex items-center gap-3 rounded-full border border-[#ff0f7b]/30 bg-[#ff0f7b]/10 px-6 py-2.5 text-xs font-black uppercase tracking-[0.2em] text-[#ff7bc0] shadow-[0_0_15px_rgba(255,15,123,0.2)]">
-                  <Sparkles className="h-4 w-4 animate-pulse" />
-                  Exclusive Alpha Access
+                <span className="mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-6 py-2.5 text-[9px] font-bold uppercase tracking-[0.2em] text-white/60">
+                  <Sparkles className="h-3 w-3" />
+                  Exclusive Alpha Network
                 </span>
 
-                  <h2 className="mb-6 text-5xl font-black tracking-tighter md:text-8xl">
-                    Join the{" "}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87]">
-                      BachatKaro Family
-                    </span>
+                  <h2 className="mb-6 text-5xl font-black tracking-tighter md:text-8xl uppercase">
+                    Join the Family
                   </h2>
 
                 <div className="mb-12 flex flex-col items-center justify-center gap-2">
-                  <p className="text-sm font-bold uppercase tracking-widest text-[#b3b3b3]">
-                    Limited Early Access
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/20">
+                    Limited Availability Window
                   </p>
                   {realtimeCount && (
-                    <p className="text-pink-500 font-bold animate-pulse">
-                      {realtimeCount.toLocaleString()}+ people already joined
+                    <p className="text-white/60 font-bold uppercase tracking-widest text-xs animate-pulse">
+                      {realtimeCount.toLocaleString()}+ Members Synced
                     </p>
                   )}
                 </div>
 
                 {founderEmail ? (
                   /* ✅ SUCCESS VIEW – fully visible, rest of page remains for exploration */
-                  <div className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-700 rounded-[2.5rem] border border-[#ff0f7b]/40 bg-white/[0.06] p-10 shadow-[0_0_50px_rgba(255,15,123,0.2)] backdrop-blur-[32px]">
-                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#ff0f7b]/20 shadow-[0_0_20px_rgba(255,15,123,0.3)]">
-                      <CheckCircle2 className="h-12 w-12 text-[#ff0f7b]" />
+                  <div className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-700 rounded-[24px] border border-white/10 bg-white/[0.03] p-10 shadow-lg backdrop-blur-[32px]">
+                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/5 border border-white/10">
+                      <CheckCircle2 className="h-10 w-10 text-white/60" />
                     </div>
-                    <h3 className="mb-6 text-5xl font-black text-white leading-tight">
-                      You're on the list! 🚀
+                    <h3 className="mb-6 text-4xl font-black text-white leading-tight uppercase tracking-tighter">
+                      Verified Identity
                     </h3>
                     <div className="mb-8 space-y-3">
-                      <p className="mx-auto max-w-2xl text-2xl text-[#ff0f7b] font-black drop-shadow-[0_0_10px_rgba(255,15,123,0.3)]">
-                        You’re among our early users getting priority access.
+                      <p className="mx-auto max-w-2xl text-xl text-white/40 font-bold uppercase tracking-wide">
+                        Priority access protocols initialized.
                       </p>
                     </div>
 
-                    <div className="mt-8 mx-auto max-w-xl space-y-4 text-base text-slate-300 leading-relaxed text-left">
-                      <div className="space-y-1">
-                        <p>• Founder access is being released in controlled waves.</p>
-                        <p>• You’ll be notified as soon as your access is ready.</p>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <p>• Early access is FREE during beta.</p>
-                        <p>• Premium will launch later with founder benefits.</p>
+                    <div className="mt-8 mx-auto max-w-xl space-y-6 text-[10px] uppercase font-bold tracking-widest text-white/40 leading-relaxed text-left">
+                      <div className="space-y-3 border-l border-white/10 pl-6">
+                        <p>• Wave-based access deployment active.</p>
+                        <p>• Notification will be dispatched upon slot activation.</p>
+                        <p>• Beta cycle maintains zero-cost status.</p>
+                        <p>• Founding credentials secured for future updates.</p>
                       </div>
 
-                      <p>• We respect your inbox — no spam, ever.</p>
-
-                      <div className="pt-4 space-y-2">
-                        <p className="text-white font-bold text-sm uppercase tracking-widest">Follow our journey:</p>
-                        <div className="flex gap-4 text-xs">
-                          <a href="https://www.facebook.com/profile.php?id=61585495950118" target="_blank" rel="noopener noreferrer" className="text-[#ff0f7b] hover:underline">Facebook</a>
-                          <a href="https://x.com/bachatkaroapp" target="_blank" rel="noopener noreferrer" className="text-[#ff0f7b] hover:underline">X (Twitter)</a>
+                      <div className="pt-6 border-t border-white/5 space-y-3">
+                        <p className="text-white/20 font-bold text-[9px] uppercase tracking-[0.3em]">Operational Channels:</p>
+                        <div className="flex gap-6">
+                          <a href="https://www.facebook.com/profile.php?id=61585495950118" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-60 transition-opacity">Meta</a>
+                          <a href="https://x.com/bachatkaroapp" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-60 transition-opacity">X Terminal</a>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-10 text-left max-w-xl mx-auto">
-                      <p className="text-white font-bold text-xl">Ankit Praser</p>
-                      <p className="text-[#ff0f7b] text-xs font-black uppercase tracking-widest">Founder, BachatKaro</p>
+                    <div className="mt-10 text-left max-w-xl mx-auto border-t border-white/5 pt-8">
+                      <p className="text-white font-black text-xl uppercase tracking-tighter">Ankit Praser</p>
+                      <p className="text-white/20 text-[9px] font-bold uppercase tracking-[0.3em]">Chief Architect, BachatKaro</p>
                     </div>
 
                     <div className="mt-12 flex flex-col items-center justify-center gap-6 sm:flex-row">
                       <Link
                         to="/dashboard"
-                        className="group flex h-16 items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87] px-10 text-sm font-black uppercase tracking-[0.2em] text-white shadow-[0_0_30px_rgba(255,15,123,0.4)] active:scale-[0.965]"
-                        style={butterTransitionStyle}
+                        className="group flex h-16 items-center justify-center gap-4 rounded-xl bg-white px-10 text-[10px] font-black uppercase tracking-[0.2em] text-background shadow-lg active:scale-[0.98] transition-all"
                       >
-                        Go to Dashboard
-                        <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-2" />
+                        Enter Console
+                        <ArrowRight className="h-4 w-4" />
                       </Link>
                       <button
                         type="button"
                         onClick={() => setFounderEmail(null)}
-                        className="h-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-8 text-sm font-black uppercase tracking-[0.2em] text-[#b3b3b3] hover:text-white hover:bg-white/10 active:scale-[0.965]"
-                        style={butterTransitionStyle}
+                        className="h-16 items-center justify-center rounded-xl border border-white/5 bg-white/5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-white/40 hover:text-white hover:bg-white/10 active:scale-[0.98] transition-all"
                       >
-                        Invite Friends
+                        Refer Network
                       </button>
                     </div>
                   </div>
                 ) : (
                   /* 🚀 CALL TO ACTION VIEW */
                   <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_0.8fr] lg:text-left">
-                    <div className="rounded-[2.5rem] border border-white/10 bg-[#0a0014]/60 p-8 md:p-10">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ff7bc0] mb-6">
-                        The Founder Strategy
+                    <div className="rounded-[24px] border border-white/5 bg-white/[0.02] p-8 md:p-10 shadow-inner">
+                      <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 mb-8">
+                        The Founder Protocol
                       </p>
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         {[
                           {
-                            text: "Priority access for verified early members.",
+                            text: "Priority clearance for verified network members.",
                             icon: ShieldCheck,
                           },
                           {
-                            text: "Verified status unlocks priority Android OTA.",
+                            text: "Early-stage OTA deployment for Android endpoints.",
                             icon: Smartphone,
                           },
                           {
-                            text: "Exclusive early bird benefits for lifetime.",
+                            text: "Lifetime operational benefits for early adopters.",
                             icon: Globe,
                           },
                         ].map((item, index) => (
                           <div
                             key={index}
-                            className="flex items-start gap-5 rounded-2xl border border-white/5 bg-white/[0.03] p-5 transition-all hover:bg-white/[0.06] hover:border-[#ff0f7b]/20"
+                            className="flex items-start gap-6 rounded-xl border border-white/5 bg-white/[0.01] p-5 transition-all hover:bg-white/[0.04]"
                           >
-                            <item.icon className="mt-1 h-6 w-6 shrink-0 text-[#ff7bc0]" />
-                            <p className="text-base font-medium leading-relaxed text-slate-200">
+                            <item.icon className="h-5 w-5 shrink-0 text-white/40 mt-0.5" />
+                            <p className="text-sm font-bold uppercase tracking-wide leading-relaxed text-white/60">
                               {item.text}
                             </p>
                           </div>
@@ -359,28 +337,26 @@ const Index = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-col justify-between rounded-[2.5rem] border border-[#ff0f7b]/20 bg-white/[0.05] p-8 md:p-10 backdrop-blur-sm">
-                      <div className="space-y-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-                          Limited Availability
+                    <div className="flex flex-col justify-between rounded-[24px] border border-white/5 bg-white/[0.02] p-8 md:p-10 backdrop-blur-sm">
+                      <div className="space-y-6">
+                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20">
+                          Slot Allocation
                         </p>
-                        <h3 className="text-3xl font-black text-white leading-tight">
-                          Founder Access closes when Wave 1 fills.
+                        <h3 className="text-3xl font-black text-white leading-tight uppercase tracking-tighter">
+                          Wave 1 Access Closes Soon.
                         </h3>
-                        <p className="text-base text-slate-400">
-                          Secure your spot now and skip the 5000+ public queue
-                          later.
+                        <p className="text-sm font-bold uppercase tracking-widest text-white/40 leading-relaxed">
+                          Secure your endpoint now and bypass the global queue in subsequent cycles.
                         </p>
                       </div>
 
                       <button
                         type="button"
                         onClick={openCheckout}
-                        className="mt-12 flex h-16 w-full items-center justify-center gap-4 rounded-[1.5rem] bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87] px-8 text-sm font-black uppercase tracking-[0.2em] text-white shadow-[0_0_35px_rgba(255,15,123,0.3)] hover:scale-[1.02] active:scale-[0.965]"
-                        style={butterTransitionStyle}
+                        className="mt-12 flex h-16 w-full items-center justify-center gap-4 rounded-xl bg-white px-8 text-[10px] font-black uppercase tracking-[0.2em] text-background shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all"
                       >
-                        Secure My Spot Now
-                        <ArrowRight className="h-5 w-5" />
+                        Secure My Slot
+                        <ArrowRight className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
@@ -396,7 +372,7 @@ const Index = () => {
 
           {/* Bottom Ad / Partner Section */}
           <div className="mx-auto max-w-5xl px-6 py-20">
-            <AdPlaceholder className="rounded-[3rem] border-white/10 bg-gradient-to-br from-white/5 to-transparent backdrop-blur-xl" />
+            <AdPlaceholder className="rounded-[24px] border-white/5 bg-white/[0.02]" />
           </div>
 
           <FAQ />

@@ -21,29 +21,29 @@ const SavingsSummary = ({ goals }: SavingsSummaryProps) => {
   const completedGoals = goals.filter((g) => g.currentSaved >= g.targetAmount).length;
 
   return (
-    <div className="grid grid-cols-3 gap-3">
-      <Card className="bg-emerald-50 border-emerald-200">
-        <CardContent className="p-4 text-center">
-          <Wallet className="h-5 w-5 mx-auto mb-2 text-emerald-600" />
-          <p className="text-xs text-muted-foreground mb-1">{tSafe('savings.summary.totalSaved', 'Total Saved')}</p>
-          <p className="text-lg font-bold text-emerald-600">{formatCurrency(totalSaved)}</p>
+    <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <Card className="bg-surface border-border shadow-sm rounded-2xl overflow-hidden">
+        <CardContent className="p-4 sm:p-6 text-center">
+          <Wallet className="h-4.5 w-4.5 mx-auto mb-3 text-white/40" />
+          <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mb-1">{tSafe('savings.summary.totalSaved', 'Total Saved')}</p>
+          <p className="text-lg font-black text-white font-mono tracking-tighter">{formatCurrency(totalSaved)}</p>
         </CardContent>
       </Card>
 
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="p-4 text-center">
-          <Target className="h-5 w-5 mx-auto mb-2 text-blue-600" />
-          <p className="text-xs text-muted-foreground mb-1">{tSafe('savings.summary.totalTarget', 'Total Target')}</p>
-          <p className="text-lg font-bold text-blue-600">{formatCurrency(totalTarget)}</p>
+      <Card className="bg-surface border-border shadow-sm rounded-2xl overflow-hidden">
+        <CardContent className="p-4 sm:p-6 text-center">
+          <Target className="h-4.5 w-4.5 mx-auto mb-3 text-white/40" />
+          <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mb-1">{tSafe('savings.summary.totalTarget', 'Total Target')}</p>
+          <p className="text-lg font-black text-white/60 font-mono tracking-tighter">{formatCurrency(totalTarget)}</p>
         </CardContent>
       </Card>
 
-      <Card className="bg-amber-50 border-amber-200">
-        <CardContent className="p-4 text-center">
-          <TrendingUp className="h-5 w-5 mx-auto mb-2 text-amber-600" />
-          <p className="text-xs text-muted-foreground mb-1">{tSafe('savings.summary.completed', 'Completed')}</p>
-          <p className="text-lg font-bold text-amber-600">
-            {completedGoals}/{goals.length}
+      <Card className="bg-surface border-border shadow-sm rounded-2xl overflow-hidden">
+        <CardContent className="p-4 sm:p-6 text-center">
+          <TrendingUp className="h-4.5 w-4.5 mx-auto mb-3 text-white/40" />
+          <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mb-1">{tSafe('savings.summary.completed', 'Completed')}</p>
+          <p className="text-lg font-black text-white font-mono tracking-tighter">
+            {completedGoals}<span className="text-white/20">/</span>{goals.length}
           </p>
         </CardContent>
       </Card>

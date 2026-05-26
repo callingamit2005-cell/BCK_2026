@@ -15,15 +15,15 @@
 }
 
 :root {
-  --theme-primary: #8B5CF6;
-  --theme-secondary: #D8B4FE;
-  --theme-glow: #D8B4FE;
-  --theme-accent: #8B5CF6;
+  --theme-primary: #FFFFFF;
+  --theme-secondary: #B3B3B3;
+  --theme-glow: rgba(255, 255, 255, 0.05);
+  --theme-accent: #FFFFFF;
 }
 
 .dark {
-  --theme-primary: #8B5CF6;
-  --theme-secondary: #D8B4FE;
-  --theme-glow: #D8B4FE;
-  --theme-accent: #8B5CF6;
+  --theme-primary: #FFFFFF;
+  --theme-secondary: #B3B3B3;
+  --theme-glow: rgba(255, 255, 255, 0.05);
+  --theme-accent: #FFFFFF;
 }

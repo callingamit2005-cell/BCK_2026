@@ -33,13 +33,13 @@ const FAQ = () => {
   ];
 
   return (
-    <section id="faq" className="py-24 px-6 bg-background">
-      <div className="max-w-4xl mx-auto"> {/* 🛠️ Width thodi badhai hai */}
-        <h2 className="text-4xl md:text-6xl font-black text-center mb-6 text-white tracking-tighter">
-          {t('faq_title_1', 'Frequently Asked')} <span className="text-primary">{t('faq_title_2', 'Questions')}</span>
+    <section id="faq" className="py-24 px-6 bg-background antialiased">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-4xl md:text-6xl font-black text-center mb-6 text-white tracking-tighter uppercase">
+          {t('faq_title_1', 'Operational')} <span className="text-white/40">{t('faq_title_2', 'Queries')}</span>
         </h2>
-        <p className="text-center text-slate-400 text-lg md:text-xl mb-16 max-w-2xl mx-auto font-medium">
-          {t('faq_sub', 'Everything you need to know about BachatKaro.')}
+        <p className="text-center text-white/40 text-lg md:text-xl mb-16 max-w-2xl mx-auto font-bold uppercase tracking-wide">
+          {t('faq_sub', 'Essential documentation for BachatKaro utilization.')}
         </p>
 
         <Accordion type="single" collapsible className="space-y-4">
@@ -47,15 +47,12 @@ const FAQ = () => {
             <AccordionItem
               key={i}
               value={`faq-${i}`}
-              // 🛠️ Padding 'px-8' ki hai aur border ko thoda bold kiya hai
-              className="border-2 border-white/5 rounded-2xl px-8 bg-card/50 backdrop-blur-sm data-[state=open]:border-primary/50 data-[state=open]:bg-card transition-all duration-300"
+              className="border border-white/5 rounded-xl px-6 bg-surface/40 backdrop-blur-sm data-[state=open]:border-white/20 data-[state=open]:bg-surface transition-all duration-300"
             >
-              {/* 🛠️ Text size 'text-xl' aur 'font-bold' kiya hai */}
-              <AccordionTrigger className="text-left text-xl md:text-2xl font-bold text-white hover:no-underline py-7">
+              <AccordionTrigger className="text-left text-lg font-black text-white uppercase tracking-tighter hover:no-underline py-6">
                 {faq.question}
               </AccordionTrigger>
-              {/* 🛠️ Answer ka size 'text-lg' kiya hai readability ke liye */}
-              <AccordionContent className="text-slate-300 text-lg md:text-xl leading-relaxed pb-7">
+              <AccordionContent className="text-white/60 text-sm font-medium leading-relaxed pb-6 uppercase tracking-widest opacity-80">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

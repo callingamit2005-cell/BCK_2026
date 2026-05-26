@@ -66,77 +66,75 @@ interface RecentExpensesProps {
 const ITEMS_PER_PAGE = 7;
 
 const getPaymentIcon = (mode: string, type: string = 'expense') => {
-  if (type === 'income') return <ArrowDownLeft className="h-5 w-5 text-emerald-400" />;
+  if (type === 'income') return <ArrowDownLeft className="h-5 w-5 text-success" />;
   switch (mode?.toLowerCase()) {
     case 'cash':
-      return <Banknote className="h-5 w-5 text-pink-300" />;
+      return <Banknote className="h-5 w-5 text-text-secondary" />;
     case 'card':
-      return <CreditCard className="h-5 w-5 text-purple-300" />;
+      return <CreditCard className="h-5 w-5 text-text-secondary" />;
     case 'upi':
     case 'gpay':
     case 'paytm':
     case 'phonepe':
-      return <ArrowUpRight className="h-5 w-5 text-pink-300" />;
+      return <ArrowUpRight className="h-5 w-5 text-text-secondary" />;
     default:
-      return <Wallet className="h-5 w-5 text-white" />;
+      return <Wallet className="h-5 w-5 text-text-secondary" />;
   }
 };
 
-const MemoizedRecentExpenseRow = memo(({ expense, glassPanel, clearWhiteText, formatCurrency, onEdit, onDelete }: any) => {
+const MemoizedRecentExpenseRow = memo(({ expense, formatCurrency, onEdit, onDelete }: any) => {
   const isIncome = expense.type === 'income' || expense.direction === 'credit';
   const badgeLabel = (expense.origin === 'native-transaction' || !!expense.smsHash) ? "Verified" : "Manual";
-  const badgeColor = badgeLabel === "Verified" ? "bg-pink-500/20 border-pink-400/30 text-pink-300" : "bg-indigo-500/20 border-indigo-400/30 text-indigo-300";
+  const badgeColor = badgeLabel === "Verified" ? "bg-ai-accent/10 border-ai-accent/20 text-ai-accent" : "bg-white/5 border-white/10 text-text-secondary";
 
   return (
-    <div className={cn("group rounded-[24px] p-5 transition-all duration-500 hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden", glassPanel)}>
+    <div className="group rounded-[24px] p-5 transition-all duration-300 active:scale-[0.99] relative overflow-hidden glass-v2 bg-surface hover:bg-white/5">
       <div className="flex items-center justify-between relative z-10">
         <div className="flex-1 min-w-0 pr-4">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className={cn("text-sm font-black uppercase tracking-tight", clearWhiteText)}>
+            <span className="text-sm font-black uppercase tracking-tight text-foreground">
               {expense.category}
             </span>
-            <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest">
-              {isValidDate(expense.date) ? format(safeDate(expense.date)!, "dd MMM yyyy, hh:mm a") : "Date Unavailable"}
+            <span className="text-[10px] text-text-secondary font-semibold uppercase tracking-widest">
+              {isValidDate(expense.date) ? format(safeDate(expense.date)!, "dd MMM, hh:mm a") : "Date Unavailable"}
             </span>
-            <span className={cn("px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", badgeColor)}>
+            <span className={cn("px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest border", badgeColor)}>
               {badgeLabel}
             </span>
           </div>
-          <div className="text-[11px] text-white font-semibold truncate">
-            Payee: {expense.sender || "Unknown payee"}
+          <div className="text-[11px] text-foreground font-medium truncate">
+            {expense.sender || "Unknown payee"}
           </div>
-          <div className="flex flex-wrap items-center gap-2 mt-1 text-[10px] text-white/60 font-bold uppercase tracking-widest">
-            <span>{expense.payment_mode || (isIncome ? "Bank Credit" : "App")}</span>
+          <div className="flex flex-wrap items-center gap-2 mt-1 text-[10px] text-text-secondary font-medium uppercase tracking-widest">
+            <span className="flex items-center gap-1">
+              {getPaymentIcon(expense.payment_mode, expense.type)}
+              {expense.payment_mode || (isIncome ? "Bank Credit" : "App")}
+            </span>
           </div>
-          {expense.note && expense.note !== expense.sender && (
-            <div className="text-[10px] text-white/45 mt-2 truncate">
-              {expense.note}
-            </div>
-          )}
         </div>
 
-        <div className="flex flex-col items-end gap-2 shrink-0">
-          <div className={cn("text-lg font-black font-mono tracking-tighter", isIncome ? 'text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.6)]' : 'text-rose-400 drop-shadow-[0_0_12px_rgba(251,113,133,0.6)]')}>
+        <div className="flex flex-col items-end gap-3 shrink-0">
+          <div className={cn("text-lg font-black font-mono tracking-tighter", isIncome ? 'text-success' : 'text-foreground')}>
             {isIncome ? "+" : "-"}{formatCurrency(expense.amount)}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
             <Button
               variant="ghost"
               size="icon"
               title="Edit"
               onClick={() => onEdit(expense)}
-              className="h-10 w-10 rounded-xl bg-indigo-500/30 border border-indigo-400/50 text-indigo-200 hover:bg-indigo-500/60 hover:text-white shadow-md"
+              className="h-8 w-8 rounded-lg bg-surface border border-white/10 text-text-secondary hover:bg-white/10 hover:text-foreground shadow-sm"
             >
-              <Pencil className="h-4 w-4" />
+              <Pencil className="h-3 w-3" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               title="Delete"
               onClick={() => onDelete(expense.id)}
-              className="h-10 w-10 rounded-xl bg-rose-500/30 border border-rose-400/50 text-rose-200 hover:bg-rose-500/60 hover:text-white shadow-md"
+              className="h-8 w-8 rounded-lg bg-surface border border-white/10 text-text-secondary hover:bg-destructive/20 hover:text-destructive hover:border-destructive/30 shadow-sm"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3 w-3" />
             </Button>
           </div>
         </div>
@@ -158,7 +156,7 @@ const MemoizedRecentExpenseRow = memo(({ expense, glassPanel, clearWhiteText, fo
   );
 });
 
-const RecentExpenses = ({
+const RecentExpenses = React.memo(({
   expenses,
   loading,
   userId,
@@ -172,9 +170,6 @@ const RecentExpenses = ({
     forensicEngine.trackRender('RecentExpenses');
   }
   
-  // [FORENSIC_TRACE] Render logging
-  console.log(`[FORENSIC_TRACE] BEFORE React render update (RecentExpenses). Expenses count: ${expenses?.length}`);
-
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t } = useLanguage();
@@ -214,10 +209,9 @@ const RecentExpenses = ({
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, []);
 
-  const deepGradientBg =
-    "bg-gradient-to-br from-[#1E1B4B] via-[#701A75] to-[#EC4899]/80 backdrop-blur-3xl border border-white/20 shadow-[0_15px_40px_rgba(236,72,153,0.2)]";
-  const clearWhiteText = "text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]";
-  const glassPanel = "bg-black/20 border border-white/10 backdrop-blur-md";
+  const premiumSurface = "bg-surface border border-border shadow-sm rounded-[24px] overflow-hidden";
+  const clearWhiteText = "text-white";
+  const glassPanel = "bg-white/5 border border-white/10 backdrop-blur-md";
 
   const filteredExpenses = useMemo(
     () => [...expenses].sort((a, b) => {
@@ -358,63 +352,61 @@ const RecentExpenses = ({
   };
 
   return (
-    <Card className={cn("overflow-hidden rounded-[32px] border-none shadow-2xl relative", deepGradientBg)}>
-      <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] bg-center opacity-10 pointer-events-none" />
-      
-      <CardHeader className="relative z-10 border-b border-white/10 pb-6">
+    <Card className={cn("overflow-hidden rounded-[24px] border-border bg-surface shadow-sm relative", premiumSurface)}>
+      <CardHeader className="relative z-10 border-b border-white/5 pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20">
-              <RefreshCw className={cn("h-6 w-6 text-pink-300", loading && "animate-spin")} />
+            <div className="p-3 rounded-xl bg-white/5 border border-white/5">
+              <RefreshCw className={cn("h-5 w-5 text-text-muted", loading && "animate-spin")} />
             </div>
             <div>
-              <CardTitle className={cn("text-2xl font-black tracking-tight", clearWhiteText)}>
+              <CardTitle className={cn("text-xl font-bold tracking-tight", clearWhiteText)}>
                 {t('dashboard.recentTransactions', 'Recent Transactions')}
               </CardTitle>
-              <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">
+              <p className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em]">
                 {loading ? t('dashboard.syncing', 'Syncing Live...') : t('dashboard.realtime', 'Real-time Unified Ledger')}
               </p>
             </div>
           </div>
           <div className="flex gap-2">
-            <ExportMenu expenses={filteredExpenses} />
+            <ExportMenu data={filteredExpenses} />
             <Button
               variant="outline"
               size="icon"
               onClick={() => void handleRescan()}
               disabled={isScanning || !canRescanSms}
-              className="h-12 w-12 rounded-2xl border-white/20 bg-white/10 hover:bg-white/20 text-white shadow-xl transition-all active:scale-95"
+              className="h-10 w-10 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95"
               title="Rescan SMS"
             >
-              {isScanning ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 text-pink-300" />}
+              {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 opacity-40" />}
             </Button>
             <Button
               variant="outline"
               size="icon"
               onClick={() => setConfirmClearAll(true)}
-              className="h-12 w-12 rounded-2xl border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 shadow-xl"
+              className="h-10 w-10 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 text-white"
               title="Clear All"
             >
-              <Trash2 className="h-5 w-5" />
+              <Trash2 className="h-4 w-4 opacity-40" />
             </Button>
           </div>
         </div>
 
         {scanProgress && (
           <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-pink-500 animate-pulse w-full" />
+            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-white opacity-40 animate-pulse w-full" />
             </div>
-            <p className="text-[10px] font-black text-pink-300 mt-2 uppercase tracking-widest text-center">
-              Processing Native Bridge Engine...
+            <p className="text-[8px] font-bold text-white/40 mt-2 uppercase tracking-widest text-center">
+              Processing Native Bridge Engine
             </p>
           </div>
         )}
 
         {retentionMessage && (
-           <div className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-             <AlertTriangle className="h-3 w-3 text-pink-300" />
-             <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">
+           <div className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/5">
+             <AlertTriangle className="h-3 w-3 text-white/40" />
+             <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">
                {retentionMessage}
              </span>
            </div>
@@ -424,51 +416,48 @@ const RecentExpenses = ({
       <CardContent className="p-6 relative z-10">
         {loading && filteredExpenses.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-pink-500/20 blur-2xl rounded-full" />
-              <Loader2 className="h-12 w-12 text-pink-400 animate-spin relative z-10" />
-            </div>
-            <p className="text-sm font-black text-white/40 uppercase tracking-[0.3em] animate-pulse">
-              Hydrating Ledger...
+            <Loader2 className="h-8 w-8 text-white/20 animate-spin" />
+            <p className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] animate-pulse">
+              Hydrating Ledger
             </p>
           </div>
         ) : filteredExpenses.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-            <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-              <AlertTriangle className="h-10 w-10 text-white/20" />
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mb-6">
+              <AlertTriangle className="h-8 w-8 text-white/10" />
             </div>
-            <h3 className="text-xl font-black text-white mb-2 uppercase tracking-tight">Zero Records Found</h3>
-            <p className="text-xs font-bold text-white/40 uppercase tracking-widest max-w-[240px]">
+            <h3 className="text-lg font-black text-white mb-2 uppercase tracking-tight">Zero Records</h3>
+            <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest max-w-[240px]">
               No transactions detected for the selected period.
             </p>
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {paginatedExpenses.map((expense) => {
                 if (confirmDeleteId === expense.id) {
                    return (
-                    <div key={expense.id} className="rounded-[24px] p-6 bg-rose-500/10 border border-rose-500/30 animate-in zoom-in-95">
+                    <div key={expense.id} className="rounded-2xl p-6 bg-white/5 border border-white/10 animate-in zoom-in-95">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                          <AlertTriangle className="h-5 w-5 text-rose-400" />
-                          <p className="text-xs font-black text-white uppercase tracking-widest">Nuke this record?</p>
+                          <AlertTriangle className="h-5 w-5 text-white/40" />
+                          <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Nuke record?</p>
                         </div>
                         <div className="flex gap-2">
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => setConfirmDeleteId(null)}
-                            className="h-9 w-9 rounded-xl text-white/60 hover:text-white"
+                            className="h-9 px-4 rounded-xl text-white/40 font-bold uppercase text-[10px]"
                           >
-                            <X className="h-4 w-4" />
+                            Abort
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => void handleDeleteConfirmed(expense.id)}
-                            className="h-9 px-4 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl text-xs uppercase"
+                            className="h-9 px-4 bg-white text-background hover:bg-white/90 font-black rounded-xl text-[10px] uppercase"
                           >
-                            Delete
+                            Confirm
                           </Button>
                         </div>
                       </div>
@@ -478,36 +467,36 @@ const RecentExpenses = ({
 
                 if (editingId === expense.id) {
                    return (
-                    <div key={expense.id} className={cn("rounded-[24px] p-4 transition-all duration-300 relative overflow-hidden", glassPanel)}>
+                    <div key={expense.id} className={cn("rounded-2xl p-4 transition-all duration-300 relative overflow-hidden", glassPanel)}>
                       <div className="space-y-3 animate-in slide-in-from-top-2 relative z-10">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/50">Amount in ₹ (Rupees)</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Amount (₹)</p>
                         <Input
                           value={editAmount}
                           onChange={(e) => setEditAmount(e.target.value)}
                           type="number"
-                          placeholder="e.g. 500"
-                          className="h-14 rounded-2xl border-white/20 bg-black/40 font-black text-xl text-white placeholder:text-white/30 focus:border-pink-400"
+                          placeholder="0.00"
+                          className="h-14 rounded-xl border-white/10 bg-black/40 font-black text-xl text-white placeholder:text-white/10 focus:border-white/20"
                         />
                         <Input
                           value={editNote}
                           onChange={(e) => setEditNote(e.target.value)}
-                          placeholder={t('common.addNote', 'Add note')}
-                          className="h-14 rounded-2xl border-white/20 bg-black/40 text-white font-medium placeholder:text-white/30 focus:border-pink-400"
+                          placeholder="Add details"
+                          className="h-14 rounded-xl border-white/10 bg-black/40 text-white font-medium placeholder:text-white/10 focus:border-white/20"
                         />
                         <div className="flex justify-end gap-3 pt-1">
                           <Button
                             variant="ghost"
                             onClick={() => setEditingId(null)}
-                            className="h-12 rounded-xl text-white/70 hover:text-white hover:bg-white/10 border border-white/10"
+                            className="h-12 rounded-xl text-white/40 hover:text-white hover:bg-white/5 border border-white/10 font-bold uppercase text-[10px]"
                           >
-                            {t('common.cancel', 'Cancel')}
+                            Cancel
                           </Button>
                           <Button
                             onClick={() => void handleSave()}
                             disabled={isSaving}
-                            className="h-12 px-8 rounded-xl text-slate-900 bg-white hover:bg-slate-100 font-black shadow-lg"
+                            className="h-12 px-8 rounded-xl text-background bg-white hover:bg-white/90 font-black shadow-lg uppercase text-[10px] tracking-widest"
                           >
-                            {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Check className="h-5 w-5 mr-2" />{t('common.save', 'Save')}</>}
+                            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Commit'}
                           </Button>
                         </div>
                       </div>
@@ -530,11 +519,11 @@ const RecentExpenses = ({
             </div>
 
             {totalItems > 0 && (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-white/10">
-                <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/60">
-                  Page <span className="text-white">{currentPage}</span> / <span className="text-white">{totalPages}</span>
-                  <span className="ml-3 text-white/40">
-                    (Showing {paginatedExpenses.length} of {totalItems} items — {filterScopeLabel})
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-white/5">
+                <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/20">
+                  Page <span className="text-white/60">{currentPage}</span> / <span className="text-white/60">{totalPages}</span>
+                  <span className="ml-3 text-white/10">
+                    ({totalItems} items — {filterScopeLabel})
                   </span>
                 </div>
                 <div className="flex items-center gap-2 justify-end">
@@ -543,9 +532,8 @@ const RecentExpenses = ({
                     variant="outline"
                     disabled={currentPage <= 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="h-11 px-4 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-[10px] uppercase tracking-widest"
+                    className="h-10 px-4 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 text-white font-bold text-[9px] uppercase tracking-widest"
                   >
-                    <ChevronLeft className="h-4 w-4 mr-2" />
                     Prev
                   </Button>
                   <Button
@@ -553,10 +541,9 @@ const RecentExpenses = ({
                     variant="outline"
                     disabled={currentPage >= totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className="h-11 px-4 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-[10px] uppercase tracking-widest"
+                    className="h-10 px-4 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 text-white font-bold text-[9px] uppercase tracking-widest"
                   >
                     Next
-                    <ChevronRight className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
               </div>
@@ -565,15 +552,15 @@ const RecentExpenses = ({
         )}
       </CardContent>
       {confirmClearAll && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-           <div className={cn("max-w-md w-full rounded-[32px] p-8 border-none shadow-2xl", deepGradientBg)}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className={cn("max-w-md w-full rounded-[24px] p-8 bg-surface border border-white/10 shadow-2xl")}>
               <div className="flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 rounded-3xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center">
-                  <AlertTriangle className="h-8 w-8 text-rose-400" />
+                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                  <AlertTriangle className="h-8 w-8 text-white/20" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tight">Nuclear Option</h3>
-                  <p className="text-xs font-bold text-white/60 uppercase tracking-widest leading-relaxed">
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">Nuclear Option</h3>
+                  <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">
                     This will permanently delete ALL data from this device and the cloud. This action is irreversible.
                   </p>
                 </div>
@@ -581,13 +568,13 @@ const RecentExpenses = ({
                   <Button
                     variant="ghost"
                     onClick={() => setConfirmClearAll(false)}
-                    className="flex-1 h-14 rounded-2xl text-white font-black uppercase tracking-widest border border-white/10 hover:bg-white/5"
+                    className="flex-1 h-14 rounded-xl text-white/40 font-bold uppercase tracking-widest border border-white/10 hover:bg-white/5"
                   >
                     Abort
                   </Button>
                   <Button
                     onClick={() => void handleClearAllConfirmed()}
-                    className="flex-1 h-14 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest shadow-lg"
+                    className="flex-1 h-14 rounded-xl bg-white text-background hover:bg-white/90 font-black uppercase tracking-widest"
                   >
                     Confirm Wipe
                   </Button>
@@ -598,6 +585,6 @@ const RecentExpenses = ({
       )}
     </Card>
   );
-};
+});
 
 export default RecentExpenses;

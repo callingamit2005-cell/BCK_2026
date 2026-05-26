@@ -54,7 +54,6 @@ const escapeHtml = (text: string): string => {
 const applePhysics = "transition-all duration-300 ease-in-out active:scale-[0.965] touch-action-manipulation";
 
 const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuProps) => {
-  console.log('[ExportMenu_Received_Count]', data?.length);
   const { toast } = useToast();
   const { language } = useLanguage();
   const t = translations[language as keyof typeof translations] || translations.en;
