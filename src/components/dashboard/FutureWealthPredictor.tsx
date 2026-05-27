@@ -90,15 +90,15 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
     { name: t('dashboard.wealthPredictor.freeMoney', 'Wealth Gained'), value: projection.wealthGained || 0, color: '#404040' }, // Muted (Dark Gray)
   ];
 
-  // UI/UX Styling Classes (Premium Dark Aesthetic)
-  const fontStack = "font-sans antialiased tracking-tight selection:bg-white/10";
+  // UI/UX Styling Classes (Premium Light Aesthetic)
+  const fontStack = "font-sans antialiased tracking-tight selection:bg-foreground/10";
   const tabularNumbers = "font-mono font-bold tabular-nums tracking-tighter truncate min-w-0 max-w-full";
-  const glassEffect = "bg-white/5 border border-white/5 shadow-sm";
+  const glassEffect = "bg-background border border-border shadow-sm";
   
   // Fluid Typography
   const headingFluid = "text-[clamp(1.5rem,7vw,3.5rem)] leading-[1.1] font-bold tracking-tighter";
   const labelFluid = "text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted";
-  const subValueFluid = "text-sm font-medium text-white/30 truncate";
+  const subValueFluid = "text-sm font-medium text-text-muted truncate";
 
   const handleInvestmentChange = (val: number[]) => {
     setInvestment(val);
@@ -119,15 +119,15 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
     <div className="space-y-6 animate-in fade-in duration-700">
       <Card className={cn(
         "border-border overflow-hidden relative w-full rounded-[24px] shadow-sm transform-gpu",
-        "bg-surface text-white",
+        "bg-surface text-foreground",
         fontStack
       )}>
         <CardHeader className="relative z-10 px-6 sm:px-10 pt-10 pb-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2 min-w-0 max-w-full">
               <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-white opacity-40" />
-                <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-white uppercase truncate">
+                <div className="h-2 w-2 rounded-full bg-foreground animate-pulse" />
+                <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground uppercase truncate">
                   {t('WealthPredictor', 'Future Wealth')}
                 </CardTitle>
               </div>
@@ -136,8 +136,8 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
               </p>
             </div>
             
-            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 flex-shrink-0">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">
+            <div className="px-4 py-2 rounded-xl bg-background border border-border flex-shrink-0 shadow-sm">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap">
                 {years[0]}Y {t('dashboard.wealthPredictor.projection', 'Projection')}
               </span>
             </div>
@@ -152,11 +152,11 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
               <p className={labelFluid}>
                 {t('dashboard.wealthPredictor.projectedWealthLabel', 'Estimated Future Value')}
               </p>
-              <h2 className={cn(tabularNumbers, headingFluid, "text-white")}>
+              <h2 className={cn(tabularNumbers, headingFluid, "text-foreground")}>
                 {formatShortLakhs(projection.futureValue)}
               </h2>
               <div className="flex items-center justify-center lg:justify-start gap-3">
-                <div className="h-[1px] w-8 bg-white/10" />
+                <div className="h-[1px] w-8 bg-border" />
                 <p className={subValueFluid}>
                   {t('dashboard.wealthPredictor.projectedWealthValue', { 
                     amount: indianFormatter.format(projection.futureValue),
@@ -184,19 +184,19 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
                     animationEasing="ease-out"
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#111111' : '#E5E5E5'} />
                     ))}
                   </Pie>
                   <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#121212', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' }}
-                    itemStyle={{ fontSize: '12px', color: '#fff', fontWeight: 'bold' }}
+                    contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '16px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                    itemStyle={{ fontSize: '12px', color: '#111111', fontWeight: 'bold' }}
                     formatter={(value: number) => indianFormatter.format(value)}
                   />
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <div className="p-4 rounded-full bg-white/5 border border-white/5">
-                  <PieChartIcon className="h-6 w-6 text-white/10" />
+                <div className="p-4 rounded-full bg-background border border-border shadow-inner">
+                  <PieChartIcon className="h-6 w-6 text-text-muted" />
                 </div>
               </div>
             </div>
@@ -204,12 +204,12 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
 
           {/* INPUT PANEL: Refined Glass Containers */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:bg-white/[0.08]")}>
+            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:border-foreground/20")}>
               <div className="flex justify-between items-center">
-                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-white/60 transition-colors">
-                  <Coins className="h-4 w-4 text-white/20" /> <span>{t('dashboard.wealthPredictor.monthlyInvestment', 'Monthly Save')}</span>
+                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-foreground transition-colors">
+                  <Coins className="h-4 w-4 text-text-muted group-hover:text-foreground transition-colors" /> <span>{t('dashboard.wealthPredictor.monthlyInvestment', 'Monthly Save')}</span>
                 </label>
-                <span className={cn(tabularNumbers, "text-xl font-bold")}>{formatShortLakhs(investment[0])}</span>
+                <span className={cn(tabularNumbers, "text-xl font-bold text-foreground")}>{formatShortLakhs(investment[0])}</span>
               </div>
               <Slider 
                 value={investment} 
@@ -221,12 +221,12 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
               />
             </div>
 
-            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:bg-white/[0.08]")}>
+            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:border-foreground/20")}>
               <div className="flex justify-between items-center">
-                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-white/60 transition-colors">
-                  <Calendar className="h-4 w-4 text-white/20" /> <span>{t('dashboard.wealthPredictor.duration', 'Years')}</span>
+                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-foreground transition-colors">
+                  <Calendar className="h-4 w-4 text-text-muted group-hover:text-foreground transition-colors" /> <span>{t('dashboard.wealthPredictor.duration', 'Years')}</span>
                 </label>
-                <span className={cn(tabularNumbers, "text-xl font-bold")}>{years[0]}</span>
+                <span className={cn(tabularNumbers, "text-xl font-bold text-foreground")}>{years[0]}</span>
               </div>
               <Slider 
                 value={years} 
@@ -238,12 +238,12 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
               />
             </div>
 
-            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:bg-white/[0.08]")}>
+            <div className={cn(glassEffect, "rounded-[20px] p-7 space-y-6 group transition-all hover:border-foreground/20")}>
               <div className="flex justify-between items-center">
-                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-white/60 transition-colors">
-                  <TrendingUp className="h-4 w-4 text-white/20" /> <span>{t('dashboard.wealthPredictor.expectedReturn', 'Expected Return %')}</span>
+                <label className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted group-hover:text-foreground transition-colors">
+                  <TrendingUp className="h-4 w-4 text-text-muted group-hover:text-foreground transition-colors" /> <span>{t('dashboard.wealthPredictor.expectedReturn', 'Expected Return %')}</span>
                 </label>
-                <span className={cn(tabularNumbers, "text-xl font-bold")}>{returnRate[0]}%</span>
+                <span className={cn(tabularNumbers, "text-xl font-bold text-foreground")}>{returnRate[0]}%</span>
               </div>
               <Slider 
                 value={returnRate} 
@@ -257,37 +257,37 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
           </div>
 
           {/* BREAKDOWN: Hierarchy & Secondary Anchors */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className={cn(glassEffect, "rounded-[20px] p-8 flex items-center gap-6 group transition-all")}>
-              <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center text-text-muted border border-white/5 group-hover:scale-105 transition-transform">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={cn(glassEffect, "rounded-[20px] p-8 flex items-center gap-6 group transition-all hover:border-foreground/10")}>
+              <div className="h-14 w-14 rounded-xl bg-background flex items-center justify-center text-text-muted border border-border group-hover:scale-105 transition-transform shadow-inner">
                 <Coins size={24} />
               </div>
               <div>
                 <p className={labelFluid}>{t('dashboard.wealthPredictor.yourMoney', 'Your Investment')}</p>
-                <p className={cn(tabularNumbers, "text-2xl mt-0.5 tracking-tighter")}>{indianFormatter.format(projection.totalInvested)}</p>
+                <p className={cn(tabularNumbers, "text-2xl mt-0.5 tracking-tighter text-foreground")}>{indianFormatter.format(projection.totalInvested)}</p>
               </div>
             </div>
 
-            <div className={cn(glassEffect, "rounded-[20px] p-8 flex items-center gap-6 group transition-all")}>
-              <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center text-text-muted border border-white/5 group-hover:scale-105 transition-transform">
+            <div className={cn(glassEffect, "rounded-[20px] p-8 flex items-center gap-6 group transition-all hover:border-foreground/10")}>
+              <div className="h-14 w-14 rounded-xl bg-background flex items-center justify-center text-text-muted border border-border group-hover:scale-105 transition-transform shadow-inner">
                 <TrendingUp size={24} />
               </div>
               <div>
                 <p className={labelFluid}>{t('dashboard.wealthPredictor.freeMoney', 'Wealth Gained')}</p>
-                <p className={cn(tabularNumbers, "text-2xl mt-0.5 text-white/60 tracking-tighter")}>+{indianFormatter.format(projection.wealthGained)}</p>
+                <p className={cn(tabularNumbers, "text-2xl mt-0.5 text-text-secondary tracking-tighter")}>+{indianFormatter.format(projection.wealthGained)}</p>
               </div>
             </div>
           </div>
 
           {/* FOOTER: Professional Branding */}
-          <div className="pt-8 border-t border-white/[0.05] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 opacity-30">
-              <Zap size={10} className="fill-white text-white" />
-              <p className="text-[8px] font-bold uppercase tracking-[0.3em]">
+          <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 opacity-50">
+              <Zap size={10} className="fill-foreground text-foreground" />
+              <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-foreground">
                 {t('dashboard.wealthPredictor.footerStart', 'BachatKaro Analysis Engine')}
               </p>
             </div>
-            <p className="text-[8px] text-white/10 font-bold uppercase tracking-widest italic">
+            <p className="text-[8px] text-text-muted font-bold uppercase tracking-widest italic">
               *Projections based on historical averages.
             </p>
           </div>
@@ -296,15 +296,15 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
 
       {/* HOW TO USE SECTION: Premium Helper Card */}
       <div className={cn(
-        "p-6 rounded-[24px] bg-surface border border-border",
-        "flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm"
+        "p-8 rounded-[32px] bg-surface border border-border",
+        "flex flex-col md:flex-row items-start md:items-center justify-between gap-8 shadow-sm"
       )}>
-        <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
-            <HelpCircle size={20} className="text-white/20" />
+        <div className="flex items-center gap-5">
+          <div className="h-12 w-12 rounded-2xl bg-background flex items-center justify-center border border-border shadow-inner">
+            <HelpCircle size={24} className="text-text-secondary" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-tight">{t('howToUse.title', 'How to Use Wealth Predictor')}</h4>
+            <h4 className="text-base font-bold text-foreground uppercase tracking-tight">{t('howToUse.title', 'How to Use Wealth Predictor')}</h4>
             <p className="text-[10px] text-text-muted mt-1 uppercase font-bold tracking-widest">{t('howToUse.subtitle', 'Follow these simple steps to plan your financial future')}</p>
           </div>
         </div>
@@ -315,11 +315,11 @@ const FutureWealthPredictor = ({ monthlySavings }: FutureWealthPredictorProps) =
             { step: '2', text: t('howToUse.step2', 'Select Years') },
             { step: '3', text: t('howToUse.step3', 'View Projection') }
           ].map((item, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/5">
-              <span className="text-[10px] font-bold h-5 w-5 rounded-full bg-white/10 text-white/60 flex items-center justify-center border border-white/10">
+            <div key={i} className="flex items-center gap-4 px-5 py-3 rounded-2xl bg-background border border-border shadow-sm">
+              <span className="text-[11px] font-bold h-6 w-6 rounded-full bg-foreground text-surface flex items-center justify-center shadow-md">
                 {item.step}
               </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">{item.text}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap">{item.text}</span>
             </div>
           ))}
         </div>

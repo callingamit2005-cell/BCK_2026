@@ -85,56 +85,57 @@ const getPaymentIcon = (mode: string, type: string = 'expense') => {
 const MemoizedRecentExpenseRow = memo(({ expense, formatCurrency, onEdit, onDelete }: any) => {
   const isIncome = expense.type === 'income' || expense.direction === 'credit';
   const badgeLabel = (expense.origin === 'native-transaction' || !!expense.smsHash) ? "Verified" : "Manual";
-  const badgeColor = badgeLabel === "Verified" ? "bg-ai-accent/10 border-ai-accent/20 text-ai-accent" : "bg-white/5 border-white/10 text-text-secondary";
+  const badgeColor = badgeLabel === "Verified" 
+    ? "bg-fintech-graphite/5 border-border/40 text-fintech-graphite" 
+    : "bg-background border-border/30 text-fintech-graphite-muted";
 
   return (
-    <div className="group rounded-[24px] p-5 transition-all duration-300 active:scale-[0.99] relative overflow-hidden glass-v2 bg-surface hover:bg-white/5">
-      <div className="flex items-center justify-between relative z-10">
-        <div className="flex-1 min-w-0 pr-4">
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="text-sm font-black uppercase tracking-tight text-foreground">
-              {expense.category}
-            </span>
-            <span className="text-[10px] text-text-secondary font-semibold uppercase tracking-widest">
-              {isValidDate(expense.date) ? format(safeDate(expense.date)!, "dd MMM, hh:mm a") : "Date Unavailable"}
-            </span>
-            <span className={cn("px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest border", badgeColor)}>
-              {badgeLabel}
-            </span>
+    <div className="group rounded-[24px] sm:rounded-[28px] p-3.5 sm:p-5 transition-all duration-700 ease-butter-soft active:scale-[0.99] relative overflow-hidden bg-surface border border-border/40 hover:border-border/80 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] group/row">
+      <div className="flex items-center justify-between relative z-10 gap-3 sm:gap-5">
+        <div className="flex-1 min-w-0 flex items-center gap-3 sm:gap-5">
+          <div className="p-2.5 sm:p-3.5 bg-background rounded-xl sm:rounded-2xl border border-border/60 shadow-inner group-hover/row:scale-105 transition-transform duration-700 shrink-0">
+             {getPaymentIcon(expense.payment_mode, expense.type)}
           </div>
-          <div className="text-[11px] text-foreground font-medium truncate">
-            {expense.sender || "Unknown payee"}
-          </div>
-          <div className="flex flex-wrap items-center gap-2 mt-1 text-[10px] text-text-secondary font-medium uppercase tracking-widest">
-            <span className="flex items-center gap-1">
-              {getPaymentIcon(expense.payment_mode, expense.type)}
-              {expense.payment_mode || (isIncome ? "Bank Credit" : "App")}
-            </span>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="flex items-center gap-2 mb-1 sm:mb-1.5 overflow-hidden">
+              <span className="text-[14px] sm:text-[15px] font-black uppercase tracking-tight text-[#1a1a1a] truncate">
+                {expense.category}
+              </span>
+              <span className="hidden xs:inline-block text-[9px] sm:text-[10px] text-fintech-graphite-muted font-black uppercase tracking-[0.1em] bg-background px-2 py-0.5 rounded border border-border/40 whitespace-nowrap shrink-0">
+                {isValidDate(expense.date) ? format(safeDate(expense.date)!, "dd MMM") : "TBD"}
+              </span>
+              <span className={cn("px-2 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-[0.25em] border transition-all duration-500 whitespace-nowrap shrink-0", badgeColor)}>
+                {badgeLabel}
+              </span>
+            </div>
+            <div className="text-[12px] sm:text-[13px] text-[#1a1a1a] font-bold truncate opacity-70 leading-tight">
+              {expense.sender || "Unknown Payee"}
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-3 shrink-0">
-          <div className={cn("text-lg font-black font-mono tracking-tighter", isIncome ? 'text-success' : 'text-foreground')}>
+        <div className="flex items-center gap-3 sm:gap-6 shrink-0 ml-auto">
+          <div className={cn("text-lg sm:text-xl font-black font-mono tracking-tighter leading-none tabular-nums truncate max-w-[100px] sm:max-w-none", isIncome ? 'text-fintech-emerald-dark' : 'text-[#1a1a1a]')}>
             {isIncome ? "+" : "-"}{formatCurrency(expense.amount)}
           </div>
-          <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
+          <div className="hidden md:flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
             <Button
               variant="ghost"
               size="icon"
               title="Edit"
               onClick={() => onEdit(expense)}
-              className="h-8 w-8 rounded-lg bg-surface border border-white/10 text-text-secondary hover:bg-white/10 hover:text-foreground shadow-sm"
+              className="h-10 w-10 rounded-xl bg-background border border-border/40 text-fintech-graphite-muted hover:bg-[#1a1a1a] hover:text-white shadow-sm transition-all duration-300"
             >
-              <Pencil className="h-3 w-3" />
+              <Pencil className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               title="Delete"
               onClick={() => onDelete(expense.id)}
-              className="h-8 w-8 rounded-lg bg-surface border border-white/10 text-text-secondary hover:bg-destructive/20 hover:text-destructive hover:border-destructive/30 shadow-sm"
+              className="h-10 w-10 rounded-xl bg-background border border-border/40 text-fintech-graphite-muted hover:text-rose-500 hover:bg-rose-50 shadow-sm transition-all duration-300"
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -210,8 +211,8 @@ const RecentExpenses = React.memo(({
   }, []);
 
   const premiumSurface = "bg-surface border border-border shadow-sm rounded-[24px] overflow-hidden";
-  const clearWhiteText = "text-white";
-  const glassPanel = "bg-white/5 border border-white/10 backdrop-blur-md";
+  const clearWhiteText = "text-foreground";
+  const glassPanel = "bg-background border border-border";
 
   const filteredExpenses = useMemo(
     () => [...expenses].sort((a, b) => {
@@ -352,83 +353,74 @@ const RecentExpenses = React.memo(({
   };
 
   return (
-    <Card className={cn("overflow-hidden rounded-[24px] border-border bg-surface shadow-sm relative", premiumSurface)}>
-      <CardHeader className="relative z-10 border-b border-white/5 pb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-              <RefreshCw className={cn("h-5 w-5 text-text-muted", loading && "animate-spin")} />
+    <Card className={cn(premiumSurface, "border-border/40 shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-all duration-700 ease-butter-soft hover:shadow-[0_8px_30px_rgb(0,0,0,0.02)] overflow-hidden relative group")}>
+      <CardHeader className="p-6 sm:p-10 pb-5 sm:pb-6 border-b border-border/40 bg-background/50 relative z-10">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[#F3F4F6] border border-border/60 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 group-hover:scale-110">
+              <RefreshCw className={cn("h-5 w-5 text-[#DC2626]", loading && "animate-spin")} />
             </div>
-            <div>
-              <CardTitle className={cn("text-xl font-bold tracking-tight", clearWhiteText)}>
-                {t('dashboard.recentTransactions', 'Recent Transactions')}
+            <div className="min-w-0 flex-1">
+              <CardTitle className={cn("text-xl sm:text-2xl font-black uppercase tracking-tighter leading-none truncate", clearWhiteText)}>
+                {t('dashboard.recentTransactions', 'Verified Ledger')}
               </CardTitle>
-              <p className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em]">
-                {loading ? t('dashboard.syncing', 'Syncing Live...') : t('dashboard.realtime', 'Real-time Unified Ledger')}
+              <p className="text-[10px] sm:text-[11px] text-fintech-graphite-muted font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] mt-1.5 opacity-60 leading-none truncate">
+                {loading ? t('dashboard.syncing', 'Syncing...') : t('dashboard.realtime', 'Real-time Cycle')}
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <ExportMenu data={filteredExpenses} />
             <Button
               variant="outline"
               size="icon"
               onClick={() => void handleRescan()}
               disabled={isScanning || !canRescanSms}
-              className="h-10 w-10 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 text-white transition-all active:scale-95"
+              className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl border-border/60 bg-background hover:bg-[#1a1a1a] hover:text-white transition-all duration-500 active:scale-95 shadow-sm"
               title="Rescan SMS"
             >
-              {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 opacity-40" />}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setConfirmClearAll(true)}
-              className="h-10 w-10 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 text-white"
-              title="Clear All"
-            >
-              <Trash2 className="h-4 w-4 opacity-40" />
+              {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             </Button>
           </div>
         </div>
 
         {scanProgress && (
           <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-white opacity-40 animate-pulse w-full" />
+            <div className="h-1 w-full bg-background rounded-full overflow-hidden">
+              <div className="h-full bg-foreground opacity-20 animate-pulse w-full" />
             </div>
-            <p className="text-[8px] font-bold text-white/40 mt-2 uppercase tracking-widest text-center">
-              Processing Native Bridge Engine
+            <p className="text-[10px] font-bold text-text-secondary mt-2 uppercase tracking-widest text-center">
+              Processing Native Bridge
             </p>
           </div>
         )}
 
         {retentionMessage && (
-           <div className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/5">
-             <AlertTriangle className="h-3 w-3 text-white/40" />
-             <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">
+           <div className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-background border border-border">
+             <AlertTriangle className="h-3 w-3 text-text-secondary" />
+             <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">
                {retentionMessage}
              </span>
            </div>
         )}
       </CardHeader>
 
-      <CardContent className="p-6 relative z-10">
+      <CardContent className="p-8 relative z-10">
         {loading && filteredExpenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <Loader2 className="h-8 w-8 text-white/20 animate-spin" />
-            <p className="text-[9px] font-bold text-white/20 uppercase tracking-[0.3em] animate-pulse">
-              Hydrating Ledger
+          <div className="flex flex-col items-center justify-center py-24 space-y-6">
+            <div className="w-16 h-16 border-[4px] border-[#111111]/5 border-t-fintech-emerald-dark rounded-full animate-spin shadow-sm" />
+            <p className="text-[11px] font-black text-fintech-graphite-muted uppercase tracking-[0.3em] animate-pulse">
+              Analyzing Financial Data
             </p>
           </div>
         ) : filteredExpenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mb-6">
-              <AlertTriangle className="h-8 w-8 text-white/10" />
+          <div className="flex flex-col items-center justify-center py-24 text-center px-6">
+            <div className="w-24 h-24 rounded-[32px] bg-background border border-border/60 shadow-inner flex items-center justify-center mb-8">
+              <Sparkles className="h-10 w-10 text-fintech-graphite-muted opacity-40" />
             </div>
-            <h3 className="text-lg font-black text-white mb-2 uppercase tracking-tight">Zero Records</h3>
-            <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest max-w-[240px]">
-              No transactions detected for the selected period.
+            <h3 className="text-2xl font-black text-[#1a1a1a] mb-4 uppercase tracking-tighter">Timeline Empty</h3>
+            <p className="text-[11px] font-black text-fintech-graphite-muted uppercase tracking-[0.25em] max-w-[280px] opacity-60">
+              Your financial timeline will appear here.
             </p>
           </div>
         ) : (
@@ -437,25 +429,25 @@ const RecentExpenses = React.memo(({
               {paginatedExpenses.map((expense) => {
                 if (confirmDeleteId === expense.id) {
                    return (
-                    <div key={expense.id} className="rounded-2xl p-6 bg-white/5 border border-white/10 animate-in zoom-in-95">
+                    <div key={expense.id} className="rounded-2xl p-6 bg-background border border-border animate-in zoom-in-95">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                          <AlertTriangle className="h-5 w-5 text-white/40" />
-                          <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Nuke record?</p>
+                          <AlertTriangle className="h-5 w-5 text-text-secondary" />
+                          <p className="text-[11px] font-bold text-foreground uppercase tracking-widest">Delete record?</p>
                         </div>
                         <div className="flex gap-2">
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => setConfirmDeleteId(null)}
-                            className="h-9 px-4 rounded-xl text-white/40 font-bold uppercase text-[10px]"
+                            className="h-9 px-4 rounded-xl text-text-secondary font-bold uppercase text-[10px]"
                           >
                             Abort
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => void handleDeleteConfirmed(expense.id)}
-                            className="h-9 px-4 bg-white text-background hover:bg-white/90 font-black rounded-xl text-[10px] uppercase"
+                            className="h-9 px-4 bg-foreground text-surface hover:bg-foreground/90 font-bold rounded-xl text-[10px] uppercase"
                           >
                             Confirm
                           </Button>
@@ -469,32 +461,32 @@ const RecentExpenses = React.memo(({
                    return (
                     <div key={expense.id} className={cn("rounded-2xl p-4 transition-all duration-300 relative overflow-hidden", glassPanel)}>
                       <div className="space-y-3 animate-in slide-in-from-top-2 relative z-10">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Amount (₹)</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Amount (₹)</p>
                         <Input
                           value={editAmount}
                           onChange={(e) => setEditAmount(e.target.value)}
                           type="number"
                           placeholder="0.00"
-                          className="h-14 rounded-xl border-white/10 bg-black/40 font-black text-xl text-white placeholder:text-white/10 focus:border-white/20"
+                          className="h-14 rounded-xl border-border bg-surface font-bold text-xl text-foreground placeholder:text-text-muted focus:border-foreground"
                         />
                         <Input
                           value={editNote}
                           onChange={(e) => setEditNote(e.target.value)}
                           placeholder="Add details"
-                          className="h-14 rounded-xl border-white/10 bg-black/40 text-white font-medium placeholder:text-white/10 focus:border-white/20"
+                          className="h-14 rounded-xl border-border bg-surface text-foreground font-medium placeholder:text-text-muted focus:border-foreground"
                         />
                         <div className="flex justify-end gap-3 pt-1">
                           <Button
                             variant="ghost"
                             onClick={() => setEditingId(null)}
-                            className="h-12 rounded-xl text-white/40 hover:text-white hover:bg-white/5 border border-white/10 font-bold uppercase text-[10px]"
+                            className="h-12 rounded-xl text-text-secondary hover:text-foreground border border-border font-bold uppercase text-[10px]"
                           >
                             Cancel
                           </Button>
                           <Button
                             onClick={() => void handleSave()}
                             disabled={isSaving}
-                            className="h-12 px-8 rounded-xl text-background bg-white hover:bg-white/90 font-black shadow-lg uppercase text-[10px] tracking-widest"
+                            className="h-12 px-8 rounded-xl text-surface bg-foreground hover:bg-foreground/90 font-bold shadow-lg uppercase text-[10px] tracking-widest"
                           >
                             {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Commit'}
                           </Button>
@@ -519,10 +511,10 @@ const RecentExpenses = React.memo(({
             </div>
 
             {totalItems > 0 && (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-white/5">
-                <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/20">
-                  Page <span className="text-white/60">{currentPage}</span> / <span className="text-white/60">{totalPages}</span>
-                  <span className="ml-3 text-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-8 border-t border-border">
+                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-text-secondary">
+                  Page <span className="text-foreground">{currentPage}</span> / <span className="text-foreground">{totalPages}</span>
+                  <span className="ml-3 text-text-muted">
                     ({totalItems} items — {filterScopeLabel})
                   </span>
                 </div>
@@ -532,7 +524,7 @@ const RecentExpenses = React.memo(({
                     variant="outline"
                     disabled={currentPage <= 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="h-10 px-4 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 text-white font-bold text-[9px] uppercase tracking-widest"
+                    className="h-11 px-8 rounded-2xl border border-border/40 bg-background hover:bg-[#1a1a1a] hover:text-white text-fintech-graphite-muted font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-500 shadow-sm"
                   >
                     Prev
                   </Button>
@@ -541,7 +533,7 @@ const RecentExpenses = React.memo(({
                     variant="outline"
                     disabled={currentPage >= totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className="h-10 px-4 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 text-white font-bold text-[9px] uppercase tracking-widest"
+                    className="h-11 px-8 rounded-2xl border border-border/40 bg-background hover:bg-[#1a1a1a] hover:text-white text-fintech-graphite-muted font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-500 shadow-sm"
                   >
                     Next
                   </Button>
@@ -552,15 +544,15 @@ const RecentExpenses = React.memo(({
         )}
       </CardContent>
       {confirmClearAll && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-           <div className={cn("max-w-md w-full rounded-[24px] p-8 bg-surface border border-white/10 shadow-2xl")}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className={cn("max-w-md w-full rounded-[24px] p-8 bg-surface border border-border shadow-2xl")}>
               <div className="flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  <AlertTriangle className="h-8 w-8 text-white/20" />
+                <div className="w-16 h-16 rounded-2xl bg-background border border-border flex items-center justify-center">
+                  <AlertTriangle className="h-8 w-8 text-foreground/20" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-black text-white uppercase tracking-tight">Nuclear Option</h3>
-                  <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">
+                  <h3 className="text-xl font-bold text-foreground uppercase tracking-tight">Wipe All Data?</h3>
+                  <p className="text-[11px] font-bold text-text-secondary uppercase tracking-widest leading-relaxed">
                     This will permanently delete ALL data from this device and the cloud. This action is irreversible.
                   </p>
                 </div>
@@ -568,13 +560,13 @@ const RecentExpenses = React.memo(({
                   <Button
                     variant="ghost"
                     onClick={() => setConfirmClearAll(false)}
-                    className="flex-1 h-14 rounded-xl text-white/40 font-bold uppercase tracking-widest border border-white/10 hover:bg-white/5"
+                    className="flex-1 h-14 rounded-xl text-text-secondary font-bold uppercase tracking-widest border border-border hover:bg-background"
                   >
                     Abort
                   </Button>
                   <Button
                     onClick={() => void handleClearAllConfirmed()}
-                    className="flex-1 h-14 rounded-xl bg-white text-background hover:bg-white/90 font-black uppercase tracking-widest"
+                    className="flex-1 h-14 rounded-xl bg-foreground text-surface hover:bg-foreground/90 font-bold uppercase tracking-widest"
                   >
                     Confirm Wipe
                   </Button>

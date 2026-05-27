@@ -27,7 +27,7 @@ const AppHeader = () => {
   return (
     <header className={cn(
       "sticky top-0 z-[100] w-full transition-all duration-300",
-      "border-b border-white/5 bg-background/95"
+      "border-b border-border bg-background/95"
     )}>
       <div className="safe-x max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
@@ -39,17 +39,17 @@ const AppHeader = () => {
           >
             <div className={cn(
               "p-2.5 rounded-2xl shadow-sm transform transition-all duration-500",
-              "bg-surface border border-white/10"
+              "bg-surface border border-border"
             )}>
               <Wallet className="h-6 w-6 text-foreground" />
             </div>
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
-              Bachat<span className="text-text-muted">Karo</span>
+              Bachat<span className="text-text-secondary">Karo</span>
             </h1>
           </Link>
 
           {/* Desktop Nav - Monochrome Hierarchy */}
-          <nav className="hidden md:flex items-center gap-1 bg-surface p-1 rounded-2xl border border-white/5">
+          <nav className="hidden md:flex items-center gap-1 bg-surface p-1 rounded-2xl border border-border">
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -57,11 +57,11 @@ const AppHeader = () => {
                 className={cn(
                   'flex items-center gap-2 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all duration-300 relative group',
                   isActive(item.path)
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-text-muted hover:text-white hover:bg-white/5'
+                    ? 'bg-accent text-foreground shadow-sm'
+                    : 'text-text-secondary hover:text-foreground hover:bg-accent'
                 )}
               >
-                <item.icon className={cn("h-3.5 w-3.5 transition-transform", isActive(item.path) ? "text-white" : "text-text-muted")} />
+                <item.icon className={cn("h-3.5 w-3.5 transition-transform", isActive(item.path) ? "text-foreground" : "text-text-secondary")} />
                 <span>{item.label}</span>
               </Link>
             ))}
@@ -69,7 +69,7 @@ const AppHeader = () => {
 
           {/* Action Hub */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:block p-1 bg-surface rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+            <div className="hidden sm:block p-1 bg-surface rounded-xl border border-border hover:border-black/10 transition-colors">
               <ThemeToggle />
             </div>
 
@@ -78,7 +78,7 @@ const AppHeader = () => {
                 variant="ghost"
                 size="icon"
                 onClick={signOut}
-                className="h-11 w-11 text-text-muted hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/5"
+                className="h-11 w-11 text-text-secondary hover:text-foreground hover:bg-accent rounded-xl transition-all border border-transparent hover:border-border"
               >
                 <LogOut className="h-5 w-5" />
               </Button>

@@ -109,26 +109,27 @@ const MemoizedExpenseRow = React.memo(({ exp, isAdmin, currentUserId, members, t
   if (import.meta.env.DEV) {
     console.log(`[FORENSIC_GROUP_LEDGER] ID: ${exp.id}, Amount: ${exp.amount}`);
   }
-  console.log("[LEDGER_RERENDER_REASON] Item ID:", exp.id);
   const payerName = members.find((m: any) => m.id === exp.paid_by_member_id)?.name || exp.paid_by;
 
   return (
-    <div key={exp.id} className="p-4 bg-surface rounded-2xl border border-white/5 flex items-center justify-between shadow-sm hover:border-white/10 transition-colors">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="p-2.5 bg-white/5 rounded-xl border border-white/5">
-          <ReceiptIndianRupee className="h-4 w-4 text-white/40" />
+    <div key={exp.id} className="p-4 sm:p-6 bg-surface rounded-[24px] sm:rounded-[28px] border border-border/40 flex items-center justify-between shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:border-border/80 hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] transition-all duration-700 ease-butter-soft group/row gap-3 sm:gap-5">
+      <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0">
+        <div className="p-3 sm:p-4 bg-background rounded-xl sm:rounded-2xl border border-border/60 shadow-inner group-hover/row:scale-105 transition-transform duration-700 shrink-0">
+          <ReceiptIndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-[#525252]" />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white truncate">{exp.title}</p>
-          <p className="text-[10px] text-white/40 font-medium mt-0.5">{t("paid_by")} {payerName} • {new Date(exp.created_at).toLocaleDateString()}</p>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <p className="text-[14px] sm:text-[15px] font-black text-[#1a1a1a] truncate uppercase tracking-tight leading-tight">{exp.title}</p>
+          <p className="text-[9px] sm:text-[10px] text-fintech-graphite-muted font-black mt-1 sm:mt-2 uppercase tracking-widest sm:tracking-[0.2em] opacity-60 truncate">
+            {t("paid_by")} <span className="text-[#1a1a1a]">{payerName}</span> • {new Date(exp.created_at).toLocaleDateString()}
+          </p>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <span className="font-black text-white text-lg font-mono">{formatCurrency(Number(exp.amount))}</span>
+      <div className="flex items-center gap-3 sm:gap-6 shrink-0 ml-auto">
+        <span className="font-black text-[#1a1a1a] text-lg sm:text-xl font-mono tracking-tighter tabular-nums leading-none whitespace-nowrap">{formatCurrency(Number(exp.amount))}</span>
         {(isAdmin || exp.user_id === currentUserId) && (
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(exp)} className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5 rounded-lg"><Pencil className="h-3.5 w-3.5" /></Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(exp.id)} className="h-8 w-8 text-white/40 hover:text-rose-500 hover:bg-white/5 rounded-lg"><Trash2 className="h-3.5 w-3.5" /></Button>
+          <div className="hidden sm:flex items-center gap-2 opacity-0 group-hover/row:opacity-100 transition-all duration-500 transform translate-x-2 group-hover/row:translate-x-0">
+            <Button variant="ghost" size="icon" onClick={() => onEdit(exp)} className="h-10 w-10 text-fintech-graphite-muted hover:text-[#1a1a1a] hover:bg-background border border-transparent hover:border-border/60 rounded-xl shadow-sm transition-all duration-300"><Pencil className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => onDelete(exp.id)} className="h-10 w-10 text-fintech-graphite-muted hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl shadow-sm transition-all duration-300"><Trash2 className="h-4 w-4" /></Button>
           </div>
         )}
       </div>
@@ -686,7 +687,7 @@ const GroupExpenses = () => {
         refetchExpenses(),
         refetchSplits()
       ]);
-      toast({ title: t("settlement_success", "Settlement Recorded! ✅"), className: "bg-emerald-600 text-white" });
+      toast({ title: t("settlement_success", "Settlement securely logged."), className: "bg-[#1a1a1a] text-white border border-[#333] shadow-[0_15px_40px_rgba(0,0,0,0.15)]" });
     } catch (e: any) {
       toast({ title: "Settlement Failed", description: e.message, variant: "destructive" });
     } finally {
@@ -694,10 +695,9 @@ const GroupExpenses = () => {
     }
   };
 
-  const gradientClass = "bg-white text-background hover:bg-white/90 shadow-lg border-none active:scale-[0.98]";
-  const cardStyle = "bg-surface rounded-[24px] border border-border shadow-sm overflow-hidden";
-  const inputClass = "bg-white/5 border-white/5 text-white placeholder:text-white/20 focus:border-white/20 focus:ring-0 font-mono";
-
+  const gradientClass = "bg-[#1a1a1a] text-white hover:bg-[#111111] shadow-xl border-none active:scale-[0.98]";
+  const cardStyle = "bg-surface rounded-[32px] border border-border/40 shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-all duration-700 ease-butter-soft overflow-hidden";
+  const inputClass = "bg-background border-border/40 text-[#1a1a1a] placeholder:text-fintech-graphite-muted/40 focus:border-border/80 focus:ring-0 transition-all duration-300";
   const speechLang = useMemo(() => {
     const langMap: Record<string, string> = {
       'hi': 'hi-IN', 'ta': 'ta-IN', 'te': 'te-IN', 'mr': 'mr-IN', 
@@ -1344,7 +1344,7 @@ const GroupExpenses = () => {
       
       await queryClient.invalidateQueries({ queryKey: ["group-expenses", selectedGroupId] });
       setEditDialogExp(null);
-      toast({ title: t("updated", "Name Updated! ✏️"), className: "bg-emerald-600 text-white" });
+      toast({ title: t("updated", "Entry securely updated."), className: "bg-[#1a1a1a] text-white border border-[#333] shadow-[0_15px_40px_rgba(0,0,0,0.15)]" });
     } catch(e: any) {
       console.error("❌ [LEDGER_EDIT_FAIL]", e);
       queryClient.setQueryData(["group-expenses", selectedGroupId], previousExpenses);
@@ -1448,7 +1448,7 @@ const GroupExpenses = () => {
       setMemberName(""); 
       await queryClient.invalidateQueries({ queryKey: ["group-members", selectedGroupId] });
       queryClient.invalidateQueries({ queryKey: ["groups"], exact: false });
-      toast({ title: t("added", "Member Added! ✅"), className: "bg-emerald-600 text-white" });
+      toast({ title: t("added", "Member securely added to ledger."), className: "bg-[#1a1a1a] text-white border border-[#333] shadow-[0_15px_40px_rgba(0,0,0,0.15)]" });
     } catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); } finally { setIsAddingMember(false); }
   };
 
@@ -1630,7 +1630,7 @@ const GroupExpenses = () => {
       });
 
       console.log("🚀 [CreateGroup] Setting Selected ID:", result.group_id);      setSelectedGroupId(result.group_id); 
-      toast({ title: t("group_created", "Group Launched! 🚀"), className: "bg-emerald-600 text-white" });
+      toast({ title: t("group_created", "Group ledger securely established."), className: "bg-[#1a1a1a] text-white border border-[#333] shadow-[0_15px_40px_rgba(0,0,0,0.15)]" });
     } catch (e: any) { toast({ title: "Failed", description: e.message, variant: "destructive" }); } finally { setIsAutoSaving(false); }
   };
 
@@ -1713,11 +1713,11 @@ const GroupExpenses = () => {
           </div>
         )}
 
-        <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+        <main className="max-w-6xl mx-auto px-4 py-6 sm:py-10 space-y-6 sm:space-y-10">
           {!isAuthReady || isLoadingGroups ? (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-              <Loader2 className="h-10 w-10 text-ai-accent animate-spin" />
-              <p className="text-text-secondary font-medium animate-pulse">{t("loading", "Loading...")}</p>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+              <Loader2 className="h-12 w-12 text-foreground/10 animate-spin" />
+              <p className="text-text-muted font-bold uppercase tracking-[0.3em] text-[11px] animate-pulse">{t("loading", "Loading Group Intelligence...")}</p>
             </div>
           ) : (
             <>
@@ -1745,34 +1745,34 @@ const GroupExpenses = () => {
           />
 
           {!selectedGroupId ? (
-            <Card className="bg-surface border-dashed border-2 border-white/5 rounded-[36px] p-12 text-center mt-8 shadow-sm">     
-              <div className="bg-white/5 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-5">
-                <LayoutGrid className="h-10 w-10 text-white/20" />
+            <Card className="bg-surface border-dashed border-2 border-border/40 rounded-[48px] p-24 text-center mt-12 shadow-sm">     
+              <div className="bg-background h-28 w-28 rounded-full flex items-center justify-center mx-auto mb-10 border border-border/60 shadow-inner">
+                <LayoutGrid className="h-12 w-12 text-fintech-graphite-muted opacity-20" />
               </div>
-              <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">{t("split_smarter", "Split Smarter")}</h2>
-              <p className="text-white/40 max-w-sm mx-auto font-medium text-sm">{t("choose_group_msg", "Choose a group from the top menu or create a new one to start recording shared bills.")}</p>
+              <h2 className="text-3xl font-black text-[#1a1a1a] mb-4 uppercase tracking-tighter">{t("split_smarter", "Collaborative Finance")}</h2>
+              <p className="text-fintech-graphite-muted max-w-sm mx-auto font-black text-[11px] leading-relaxed uppercase tracking-[0.25em] opacity-60">{t("choose_group_msg", "Choose a group from the top menu or create a new one to start recording shared bills.")}</p>
             </Card>
           ) : isHydrating ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <Loader2 className="h-10 w-10 text-white/40 animate-spin" />
-              <p className="text-white/20 font-bold uppercase tracking-widest text-xs animate-pulse">{t("loading_ledger", "Restoring Ledger...")}</p>
+            <div className="flex flex-col items-center justify-center py-32 gap-6">
+              <Loader2 className="h-12 w-12 text-foreground/10 animate-spin" />
+              <p className="text-text-muted font-bold uppercase tracking-[0.3em] text-[11px] animate-pulse">{t("loading_ledger", "Reconstructing Financial Ledger...")}</p>
             </div>
           ) : (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
               {/* TOP STATS */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className={cn("p-5 flex flex-col justify-center items-center text-center", cardStyle)}>
-                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mb-1">{t("group_total")}</p>
-                  <p className="text-2xl font-bold text-white font-mono tracking-tighter">{formatCurrency(totalExpense)}</p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <Card className={cn("p-5 sm:p-8 flex flex-col justify-center items-center text-center group hover:border-border transition-all duration-700 ease-butter-soft", cardStyle)}>
+                  <p className="text-[9px] sm:text-[10px] text-fintech-graphite-muted font-black uppercase tracking-[0.2em] mb-2 sm:mb-3 group-hover:text-[#1a1a1a] transition-colors">{t("group_total")}</p>
+                  <p className="text-xl sm:text-3xl font-black text-[#1a1a1a] font-mono tracking-tighter tabular-nums leading-none truncate w-full px-1">{formatCurrency(totalExpense)}</p>
                 </Card>
-                <Card className={cn("p-5 flex flex-col justify-center items-center text-center", cardStyle)}>
-                  <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mb-1">{t("fixed_share")}</p>
-                  <p className="text-2xl font-bold text-white font-mono tracking-tighter">{formatCurrency(perPerson)}</p>
+                <Card className={cn("p-5 sm:p-8 flex flex-col justify-center items-center text-center group hover:border-border transition-all duration-700 ease-butter-soft", cardStyle)}>
+                  <p className="text-[9px] sm:text-[10px] text-fintech-graphite-muted font-black uppercase tracking-[0.2em] mb-2 sm:mb-3 group-hover:text-[#1a1a1a] transition-colors">{t("fixed_share")}</p>
+                  <p className="text-xl sm:text-3xl font-black text-[#1a1a1a] font-mono tracking-tighter tabular-nums leading-none truncate w-full px-1">{formatCurrency(perPerson)}</p>
                 </Card>
-                <div className="col-span-2 flex items-center justify-end gap-2 px-1">
-                  <div className="flex items-center justify-between w-full sm:w-auto gap-2 bg-surface p-2 rounded-[20px] border border-white/5 shadow-sm">
+                <div className="col-span-2 flex items-center justify-end gap-4 px-1">
+                  <div className="flex items-center justify-between w-full sm:w-auto gap-4 bg-surface p-4 rounded-[32px] border border-border/40 shadow-[0_4px_20px_rgb(0,0,0,0.01)]">
                     <BillRoulette members={activeMembers} />
-                    <Button onClick={() => setTripAdvisorOpen(true)} variant="outline" size="icon" className="h-12 w-12 rounded-xl border-white/5 bg-white/5 hover:bg-white/10">                      <Map className="h-5 w-5 text-text-muted" />
+                    <Button onClick={() => setTripAdvisorOpen(true)} variant="outline" size="icon" className="h-14 w-14 rounded-2xl border-border/60 bg-background hover:bg-[#1a1a1a] hover:text-white shadow-sm transition-all duration-500 active:scale-95">                      <Map className="h-6 w-6 text-fintech-graphite-muted transition-colors group-hover:text-white" />
                     </Button>
                   </div>
                 </div>
@@ -1796,7 +1796,6 @@ const GroupExpenses = () => {
                 
                 {/* LEFT: Members & Debts */}
                 <div className="space-y-6">
-                  {/* Members Card */}
                   <MemberSection
                     t={t}
                     members={members}
@@ -1815,117 +1814,137 @@ const GroupExpenses = () => {
 
                   {/* Debts Card */}
                   <Card className={cardStyle}>
-                    <CardHeader className="bg-white/5 py-4">
-                      <CardTitle className="text-xs font-black uppercase text-white/40 flex items-center gap-2 tracking-widest">
-                        <ReceiptIndianRupee className="h-4 w-4" /> {t("who_owes_whom")}
+                    <CardHeader className="bg-background/50 py-5 sm:py-6 border-b border-border/40 px-6 sm:px-8">
+                      <CardTitle className="text-[10px] sm:text-[11px] font-black uppercase text-fintech-graphite-muted flex items-center gap-4 tracking-[0.2em] sm:tracking-[0.25em]">
+                        <ReceiptIndianRupee className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-[#525252]" /> {t("who_owes_whom")}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-4 space-y-2">
+                    <CardContent className="p-6 sm:p-8 space-y-3 sm:space-y-4">
                       {debts.length > 0 ? debts.map((d, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                          <span className="font-bold text-white/80 text-xs sm:text-sm">{d.fromName}</span>
-                          <ArrowRight className="h-3 w-3 text-white/40 mx-1" />
-                          <span className="font-bold text-white/80 text-xs sm:text-sm">{d.toName}</span>
-                          <span className="font-black text-white ml-auto font-mono tracking-tighter">{formatCurrency(d.amount)}</span>
+                        <div key={i} className="flex items-center justify-between p-4 sm:p-5 bg-background/[0.03] border border-border/40 rounded-2xl shadow-sm group/debt hover:border-border/80 transition-all duration-500">
+                          <span className="font-black text-fintech-graphite-muted text-[11px] sm:text-xs uppercase tracking-tight group-hover/debt:text-[#1a1a1a] transition-colors truncate flex-1 min-w-0">{d.fromName}</span>
+                          <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-fintech-graphite-muted opacity-30 mx-2 sm:mx-3 shrink-0" />
+                          <span className="font-black text-fintech-graphite-muted text-[11px] sm:text-xs uppercase tracking-tight group-hover/debt:text-[#1a1a1a] transition-colors truncate flex-1 min-w-0 text-center">{d.toName}</span>
+                          <span className="font-black text-[#1a1a1a] ml-auto font-mono tracking-tighter tabular-nums text-base sm:text-lg leading-none shrink-0">{formatCurrency(d.amount)}</span>
                         </div>
                       )) : (
-                        <div className="text-center py-6 text-[10px] font-bold text-white/20 uppercase tracking-widest">{t("all_settled")}</div>
+                        <div className="text-center py-10 sm:py-14 bg-background/30 rounded-[28px] border border-dashed border-border/60">
+                           <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-fintech-emerald-dark opacity-10 mx-auto mb-4" />
+                           <p className="text-[10px] sm:text-[11px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em] sm:tracking-[0.25em]">{t("all_settled", "No active obligations detected.")}</p>
+                        </div>
                       )}
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* RIGHT: Entry & Feed */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-8">
                   
                   {/* Bill Entry Panel */}
                   <Card className={cardStyle}>
-                    <CardHeader className="bg-white/[0.02] py-5 border-b border-white/5 flex flex-row items-center justify-between">
+                    <CardHeader className="bg-background/50 py-5 sm:py-6 border-b border-border flex flex-row items-center justify-between px-6 sm:px-8">
                       <div>
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-lg font-black text-white uppercase tracking-tighter">{t("new_bill_entry")}</CardTitle>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <CardTitle className="text-lg sm:text-xl font-bold text-foreground uppercase tracking-tight">{t("new_bill_entry")}</CardTitle>
                           {isVoicePremiumActive && premiumDaysLeft <= 5 && premiumDaysLeft > 0 && (
-                            <span className="text-[9px] bg-white/10 text-white border border-white/10 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider animate-pulse">
-                              ⏳ {premiumDaysLeft} Days Left
+                            <span className="text-[8px] sm:text-[10px] bg-background text-foreground border border-border px-2 sm:px-3 py-0.5 sm:py-1 rounded-full font-bold uppercase tracking-widest shadow-sm animate-pulse whitespace-nowrap">
+                              ⏳ {premiumDaysLeft}d
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest mt-1">
+                        <p className="text-[10px] sm:text-[11px] text-text-muted font-bold uppercase tracking-widest mt-1 opacity-80">
                           {t("voice_hint")} 
-                          {isVoicePremiumActive && <span className="text-white font-black ml-1">{t("voice_hint_premium")}</span>}
                         </p>
                       </div>
 
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-2 sm:gap-3 items-center shrink-0">
                         {isAutoSaving && (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 rounded-full border border-white/10 hidden sm:flex">
-                            <div className="h-1.5 w-1.5 bg-white rounded-full opacity-40 animate-pulse" />
-                            <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">{t("saving_instantly")}</span>
+                          <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-background rounded-full border border-border hidden md:flex shadow-inner">
+                            <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 bg-foreground rounded-full animate-pulse" />
+                            <span className="text-[8px] sm:text-[9px] font-bold text-text-secondary uppercase tracking-widest">{t("saving_instantly")}</span>
                           </div>
                         )}
-                        <Button onClick={handleVoiceStart} className={cn("relative h-12 w-12 rounded-full shadow-md transition-all duration-300", voice.listening ? "bg-red-500 hover:bg-red-600 scale-110" : "bg-white text-background hover:bg-white/90")}>
-                          {voice.listening && <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20"></span>}
-                          {voice.listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                        <Button 
+                          onClick={handleVoiceStart} 
+                          className={cn(
+                            "relative h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.15)] transition-all duration-700 ease-butter-soft active:scale-95 overflow-hidden group", 
+                            voice.listening 
+                              ? "bg-[#FEE2E2] border-2 border-[#FECACA] scale-110 shadow-[0_0_20px_rgba(220,38,38,0.2)]" 
+                              : "bg-gradient-to-b from-[#444] via-[#1a1a1a] to-[#000] border-t border-white/10"
+                          )}
+                        >
+                          {/* Metallic Reflection Overlay */}
+                          {!voice.listening && (
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-30 pointer-events-none" />
+                          )}
+
+                          {voice.listening && <span className="absolute inset-0 rounded-full bg-[#DC2626] animate-[ping_2s_ease-in-out_infinite] opacity-10"></span>}
+                          {voice.listening ? <MicOff className="h-6 w-6 sm:h-7 sm:w-7 text-[#DC2626] opacity-90" /> : <Mic className="h-6 w-6 sm:h-7 sm:w-7 text-[#e5e5e5] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform duration-700" />}
                         </Button>
                       </div>
                     </CardHeader>
                     
-                    <CardContent className="pt-6 space-y-5">
+                    <CardContent className="p-6 sm:p-8 space-y-6 sm:space-y-8">
                       {(voice.transcript || isParsing) && (
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-3">
-                          {isParsing ? <Loader2 className="h-4 w-4 text-white/40 animate-spin" /> : <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />}
-                          <p className="text-sm italic font-medium text-white/80">{isParsing ? t("analyzing_command") : `"${voice.transcript}"`}</p>
+                        <div className="p-4 sm:p-6 bg-background rounded-[24px] border border-border flex items-start gap-4 sm:gap-5 shadow-inner animate-in zoom-in-95">
+                          <div className="p-2 sm:p-2.5 bg-surface rounded-xl border border-border shadow-sm shrink-0">
+                            {isParsing ? <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-text-secondary animate-spin" /> : <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500 animate-pulse" />}
+                          </div>
+                          <div className="min-w-0">
+                             <p className="text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-[0.15em] mb-1">{isParsing ? t("analyzing_command") : "Real-time Capturing"}</p>
+                             <p className="text-base sm:text-lg font-medium text-[#1a1a1a] leading-relaxed italic truncate">"{voice.transcript}"</p>
+                          </div>
                         </div>
                       )}
                       
-                      <div className="grid sm:grid-cols-2 gap-5">
-                        <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">{t("bill_name")}</Label><Input value={expenseTitle} onChange={e => setExpenseTitle(e.target.value)} placeholder={t("bill_name_placeholder")} className={inputClass} /></div>
-                        <div className="space-y-1.5"><Label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">{t("amount")}</Label><Input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} placeholder={t("amount_placeholder")} className={cn("text-xl font-black font-mono", inputClass)} /></div>
+                      <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-3"><Label className="text-[10px] font-black uppercase tracking-[0.15em] text-fintech-graphite-muted ml-1">{t("bill_name")}</Label><Input value={expenseTitle} onChange={e => setExpenseTitle(e.target.value)} placeholder={t("bill_name_placeholder")} className={cn("h-12 bg-background border-border/40 text-[#1a1a1a] font-bold rounded-xl focus:border-border/80 shadow-inner", inputClass)} /></div>
+                        <div className="space-y-3"><Label className="text-[10px] font-black uppercase tracking-[0.15em] text-fintech-graphite-muted ml-1">{t("amount")}</Label><Input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} placeholder={t("amount_placeholder")} className={cn("h-12 bg-background border-border/40 text-[#1a1a1a] font-bold font-mono text-xl rounded-xl focus:border-border/80 shadow-inner", inputClass)} /></div>
                       </div>
                       
-                      <div className="grid sm:grid-cols-2 gap-5">
-                        <div className="space-y-1.5">
-                          <Label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">{t("who_paid")}</Label>
+                      <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase tracking-[0.15em] text-fintech-graphite-muted ml-1">{t("who_paid")}</Label>
                           <Select value={expensePaidByMemberId} onValueChange={handlePayerChange}>
-                            <SelectTrigger className={cn("h-12 rounded-xl font-bold border-white/5 bg-white/5 text-white", inputClass)}><SelectValue placeholder={t("select_member")} /></SelectTrigger>
-                            <SelectContent className="rounded-xl bg-surface border-white/10 text-white">
-                              {activeMembers.map((m: any) => (<SelectItem key={m.id} value={m.id} className="font-bold focus:bg-white/5">{m.name}</SelectItem>))}
+                            <SelectTrigger className={cn("h-12 rounded-xl font-bold border-border/40 bg-background text-[#1a1a1a] shadow-inner focus:ring-foreground/5", inputClass)}><SelectValue placeholder={t("select_member")} /></SelectTrigger>
+                            <SelectContent className="rounded-2xl bg-surface border-border text-[#1a1a1a] shadow-2xl">
+                              {activeMembers.map((m: any) => (<SelectItem key={m.id} value={m.id} className="font-bold py-3 cursor-pointer focus:bg-background focus:text-[#1a1a1a]">{m.name}</SelectItem>))}
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-[10px] font-bold uppercase tracking-widest text-white/20 ml-1">{t("split_method")}</Label>
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase tracking-[0.15em] text-fintech-graphite-muted ml-1">{t("split_method")}</Label>
                           <Select value={splitType} onValueChange={(v: SplitType) => setSplitType(v)}>
-                            <SelectTrigger className={cn("h-12 rounded-xl font-bold border-white/5 bg-white/5 text-white", inputClass)}><SelectValue /></SelectTrigger>
-                            <SelectContent className="rounded-xl bg-surface border-white/10 text-white">
-                              <SelectItem value="equal" className="font-bold focus:bg-white/5">{t("split_equally")}</SelectItem>
-                              <SelectItem value="unequal" className="font-bold focus:bg-white/5">{t("split_unequally")}</SelectItem>
+                            <SelectTrigger className={cn("h-12 rounded-xl font-bold border-border/40 bg-background text-[#1a1a1a] shadow-inner focus:ring-foreground/5", inputClass)}><SelectValue /></SelectTrigger>
+                            <SelectContent className="rounded-2xl bg-surface border-border text-[#1a1a1a] shadow-2xl">
+                              <SelectItem value="equal" className="font-bold py-3 cursor-pointer focus:bg-background focus:text-[#1a1a1a]">{t("split_equally")}</SelectItem>
+                              <SelectItem value="unequal" className="font-bold py-3 cursor-pointer focus:bg-background focus:text-[#1a1a1a]">{t("split_unequally")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                       </div>
 
                       {splitType === "unequal" && (
-                        <div className="mt-4 p-5 bg-white/5 border border-white/5 rounded-2xl space-y-4 animate-in fade-in zoom-in-95">
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-white/20">{t("individual_shares")}</Label>
+                        <div className="mt-4 p-8 bg-background border border-border/40 rounded-[32px] space-y-8 animate-in fade-in zoom-in-95 shadow-inner">
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-2">
+                            <Label className="text-[10px] font-black uppercase tracking-[0.15em] text-fintech-graphite-muted ml-1">{t("individual_shares")}</Label>
                             {(() => {
                               const sum = Object.values(customAmounts).reduce((acc, val) => acc + Number(val || 0), 0);
                               const isMatch = sum === Number(expenseAmount || 0);
                               return (
-                                <span className={cn("text-[9px] font-bold px-3 py-1 rounded-lg border font-mono tracking-tighter", isMatch ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20')}>
-                                  Total: {formatCurrency(convertToPaisa(sum))} / {formatCurrency(convertToPaisa(expenseAmount || 0))}
+                                <span className={cn("text-[10px] font-black px-5 py-2 rounded-full border font-mono tracking-tighter shadow-sm", isMatch ? 'bg-surface text-[#1a1a1a] border-border/60' : 'bg-fintech-rose-muted text-fintech-rose-dark border-fintech-rose/20')}>
+                                  Aggregate: {formatCurrency(convertToPaisa(sum))} / {formatCurrency(convertToPaisa(expenseAmount || 0))}
                                 </span>
                               );
                             })()}
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {activeMembers.map((m: any) => (
-                              <div key={m.id} className="flex items-center justify-between gap-3 bg-background/50 p-2 rounded-xl border border-white/5 shadow-sm">
-                                <span className="text-xs font-bold text-white/80 pl-2">{m.name}</span>
-                                <div className="relative w-28">
-                                  <ReceiptIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-white/20" />
-                                  <Input type="number" placeholder="0" value={customAmounts[m.id] || ""} onChange={(e) => setCustomAmounts(prev => ({ ...prev, [m.id]: e.target.value }))} className="h-9 pl-8 rounded-lg font-black text-sm text-white border-white/5 bg-white/5 focus:border-white/20" />
+                              <div key={m.id} className="flex items-center justify-between gap-5 bg-surface p-4 rounded-2xl border border-border/60 shadow-sm group/row hover:border-border transition-all">
+                                <span className="text-xs font-black text-fintech-graphite-muted uppercase tracking-tight group-hover/row:text-[#1a1a1a] transition-colors pl-1">{m.name}</span>
+                                <div className="relative w-36">
+                                  <ReceiptIndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-fintech-graphite-muted opacity-40" />
+                                  <Input type="number" placeholder="0" value={customAmounts[m.id] || ""} onChange={(e) => setCustomAmounts(prev => ({ ...prev, [m.id]: e.target.value }))} className="h-11 pl-11 rounded-xl font-bold text-base text-[#1a1a1a] border-border/40 bg-background focus:border-border/80 shadow-inner" />
                                 </div>
                               </div>
                             ))}
@@ -1933,54 +1952,53 @@ const GroupExpenses = () => {
                         </div>
                       )}
                       
-                      <Button type="button" onClick={(e) => { e.stopPropagation(); addExpense(); }} disabled={isAutoSaving || !expenseAmount || !expensePaidByMemberId} className="w-full h-14 mt-2 font-black uppercase tracking-widest text-sm rounded-xl bg-white text-background hover:bg-white/90 shadow-lg active:scale-[0.98]">
-                        {isAutoSaving ? <Loader2 className="animate-spin h-5 w-5" /> : <span className="flex items-center gap-2"><Sparkles className="h-4 w-4"/> {t("record_expense")}</span>}
+                      <Button type="button" onClick={(e) => { e.stopPropagation(); addExpense(); }} disabled={isAutoSaving || !expenseAmount || !expensePaidByMemberId} className="w-full h-18 mt-6 font-black uppercase tracking-[0.3em] text-[11px] rounded-[24px] bg-[#1a1a1a] text-white hover:bg-[#111111] shadow-[0_15px_40px_rgba(0,0,0,0.15)] transition-all active:scale-[0.97]">
+                        {isAutoSaving ? <Loader2 className="animate-spin h-6 w-6" /> : <span className="flex items-center gap-4"><Sparkles className="h-5 w-5 opacity-40"/> {t("record_expense")}</span>}
                       </Button>
                     </CardContent>
                   </Card>
 
                   {/* Activity Feed */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between mt-4 mb-2 px-1">
-                      <h3 className="text-[10px] font-bold uppercase text-white/20 tracking-[0.2em] flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5" /> {t("activity_ledger")}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between mt-6 mb-4 px-2">
+                      <h3 className="text-[12px] font-bold uppercase text-text-muted tracking-[0.3em] flex items-center gap-3">
+                        <Clock className="h-4 w-4" /> {t("activity_ledger")}
                       </h3>
                       {expenses.length > 0 && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           
-                          {/* 🚀 FIXED: Non-blocking Bulk Delete Dialog */}
                           <Dialog open={showClearLedgerConfirm} onOpenChange={show => !isBulkDeleting && setShowClearLedgerConfirm(show)}>
                             <DialogTrigger asChild>
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
                                 disabled={isBulkDeleting}
-                                className="h-9 px-4 text-white/20 hover:text-red-400 hover:bg-red-500/5 rounded-xl font-bold text-[9px] uppercase tracking-widest border border-white/5 transition-all"
+                                className="h-11 px-6 text-fintech-graphite-muted hover:text-rose-500 hover:bg-rose-50 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] border border-border/40 transition-all duration-500 shadow-sm"
                               >
-                                {isBulkDeleting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Trash2 className="h-3 w-3 mr-1" />}
+                                {isBulkDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
                                 {t("clear_ledger")}
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="p-8 max-w-sm w-[90%] mx-auto rounded-[32px] bg-background border border-white/10 shadow-2xl">
+                            <DialogContent className="p-12 max-w-md w-[90%] mx-auto rounded-[48px] bg-surface border border-border/60 shadow-2xl">
                               <DialogHeader>
-                                <DialogTitle className="flex flex-col items-center gap-4 text-white font-black text-xl uppercase tracking-tight">
-                                  <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                                <DialogTitle className="flex flex-col items-center gap-8 text-[#1a1a1a] font-black text-3xl uppercase tracking-tighter text-center">
+                                  <div className="w-24 h-24 rounded-[32px] bg-background border border-border/60 flex items-center justify-center shadow-inner">
+                                    <AlertTriangle className="h-12 w-12 text-fintech-rose-dark opacity-40" />
                                   </div>
-                                  {t("clear_ledger_confirm_title")}
+                                  Wipe Ledger?
                                 </DialogTitle>
-                                <DialogDescription className="text-center text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed pt-2">
+                                <DialogDescription className="text-center text-fintech-graphite-muted text-[11px] font-black uppercase tracking-[0.25em] leading-relaxed pt-4 opacity-60">
                                   {t("clear_ledger_confirm_desc")}
                                 </DialogDescription>
                               </DialogHeader>
-                              <DialogFooter className="flex gap-3 mt-8">
-                                <Button variant="ghost" onClick={() => setShowClearLedgerConfirm(false)} className="rounded-xl flex-1 font-bold text-white/40 uppercase tracking-widest text-[10px] border border-white/5 hover:bg-white/5">{t("common.cancel")}</Button>
-                                <Button onClick={handleBulkDelete} className="bg-white text-background rounded-xl flex-1 font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-white/90 active:scale-95">{t("yes_clear")}</Button>
+                              <DialogFooter className="flex flex-col sm:flex-row gap-5 mt-14">
+                                <Button variant="ghost" onClick={() => setShowClearLedgerConfirm(false)} className="rounded-[20px] h-16 flex-1 font-black text-fintech-graphite-muted uppercase tracking-[0.2em] text-[10px] border border-border/40 hover:bg-background transition-all duration-500">{t("common.cancel")}</Button>
+                                <Button onClick={handleBulkDelete} className="bg-[#1a1a1a] text-white rounded-[20px] h-16 flex-1 font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-[#111111] active:scale-95 transition-all duration-500">{t("yes_clear")}</Button>
                               </DialogFooter>
                             </DialogContent>
                           </Dialog>
                           
-                          <div className="bg-white/5 rounded-xl p-1 border border-white/5 shadow-sm">
+                          <div className="bg-background rounded-xl p-1 border border-border shadow-inner">
                              <ExportMenu
                                data={expenses.map((exp: any) => {
                                  const payerName = members.find((m: any) => m.id === exp.paid_by_member_id)?.name || exp.paid_by;
@@ -1999,7 +2017,7 @@ const GroupExpenses = () => {
                       )}
                     </div>
                     
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {paginatedExpenses.length > 0 ? paginatedExpenses.map((exp: any) => (
                         <MemoizedExpenseRow
                           key={exp.id}
@@ -2012,36 +2030,35 @@ const GroupExpenses = () => {
                           onEdit={(e: any) => { setEditDialogExp(e); setEditTempTitle(e.title); }}
                           onDelete={handleDeleteExpense}
                         />
-                      )) : (                        <div className="text-center py-10 bg-white rounded-3xl border-dashed border-2 border-slate-200">
-                          <div className="bg-slate-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"><Clock className="h-5 w-5 text-slate-300" /></div>
-                          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{t("ledger_empty")}</p>
+                      )) : (                        <div className="text-center py-16 bg-surface rounded-[32px] border-dashed border-2 border-border">
+                          <div className="bg-background w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 border border-border shadow-inner"><Clock className="h-6 w-6 text-text-muted opacity-20" /></div>
+                          <p className="text-xs text-text-muted font-bold uppercase tracking-widest">{t("ledger_empty", "Your financial timeline will appear here.")}</p>
                         </div>
                       )}
                     </div>
 
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
-                      <div className="flex items-center justify-between pt-4 px-2">
+                      <div className="flex items-center justify-between pt-8 px-2 border-t border-border mt-6">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                           disabled={currentPage === 1}
-                          className="rounded-xl font-bold h-9 px-4 border-slate-200 text-slate-600"
+                          className="rounded-xl font-bold h-11 px-6 border-border bg-background text-text-secondary hover:text-foreground transition-all shadow-sm"
                         >
-                          Previous
+                          Prev Cycle
                         </Button>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                          Page {currentPage} of {totalPages}
-                        </div>
-                        <Button
+                        <div className="text-[11px] font-black uppercase tracking-[0.25em] text-fintech-graphite-muted opacity-60">
+                          Batch <span className="text-[#1a1a1a]">{currentPage}</span> / {totalPages}
+                        </div>                        <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                           disabled={currentPage === totalPages}
-                          className="rounded-xl font-bold h-9 px-4 border-slate-200 text-slate-600"
+                          className="rounded-xl font-bold h-11 px-6 border-border bg-background text-text-secondary hover:text-foreground transition-all shadow-sm"
                         >
-                          Next
+                          Next Cycle
                         </Button>
                       </div>
                     )}
@@ -2056,12 +2073,20 @@ const GroupExpenses = () => {
 
         {/* Edit Modal */}
         <Dialog open={!!editDialogExp} onOpenChange={(open) => !open && setEditDialogExp(null)}>
-          <DialogContent className="p-6 max-w-sm w-[90%] mx-auto bg-white rounded-3xl">
-            <DialogHeader><DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2"><Pencil className="h-5 w-5 text-purple-500" /> {t("edit_bill_name")}</DialogTitle></DialogHeader>
-            <div className="space-y-4 pt-4">
-              <Input value={editTempTitle} onChange={e => setEditTempTitle(e.target.value)} placeholder={t("edit_bill_placeholder")} className={cn("h-12 rounded-xl font-bold", inputClass)} />
-              <Button onClick={handleUpdateExpenseTitle} disabled={isUpdating || !editTempTitle.trim()} className={cn("w-full h-12 rounded-xl font-bold", gradientClass)}>
-                {isUpdating ? <Loader2 className="animate-spin h-5 w-5" /> : t("save_changes")}
+          <DialogContent className="p-12 max-w-md w-[90%] mx-auto bg-surface border border-border/60 rounded-[48px] shadow-2xl transform-gpu transition-all duration-700">
+            <DialogHeader><DialogTitle className="text-3xl font-black text-[#1a1a1a] uppercase tracking-tighter flex items-center gap-6">
+              <div className="p-4 rounded-[20px] bg-background border border-border/60 shadow-inner">
+                <Pencil className="h-7 w-7 text-fintech-graphite-muted" />
+              </div>
+              Update Entry
+            </DialogTitle></DialogHeader>
+            <div className="space-y-10 pt-10">
+              <div className="space-y-4">
+                <Label className="text-[11px] font-black uppercase text-fintech-graphite-muted tracking-[0.25em] ml-1">Title</Label>
+                <Input value={editTempTitle} onChange={e => setEditTempTitle(e.target.value)} placeholder={t("edit_bill_placeholder")} className={cn("h-16 rounded-[20px] bg-background border-border/40 text-[#1a1a1a] font-black text-lg focus:border-border/80 shadow-inner", inputClass)} />
+              </div>
+              <Button onClick={handleUpdateExpenseTitle} disabled={isUpdating || !editTempTitle.trim()} className="w-full h-18 bg-[#1a1a1a] text-white rounded-[24px] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl hover:bg-[#111111] active:scale-[0.97] transition-all duration-500">
+                {isUpdating ? <Loader2 className="animate-spin h-6 w-6" /> : t("save_changes")}
               </Button>
             </div>
           </DialogContent>
@@ -2069,27 +2094,30 @@ const GroupExpenses = () => {
 
         {/* Premium Paywall Modal */}
         <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
-          <DialogContent className="bg-white rounded-[2rem] p-0 max-w-sm w-[90%] mx-auto overflow-hidden border-0 shadow-2xl">
-            <div className="bg-gradient-to-br from-slate-900 to-purple-900 p-8 text-center relative overflow-hidden">
-              <Sparkles className="h-12 w-12 text-amber-400 mx-auto mb-4 animate-pulse relative z-10" />
-              <DialogTitle className="text-2xl font-black text-white mb-2 relative z-10">{t("unlock_magic_voice")}</DialogTitle>
-              <DialogDescription className="text-purple-200 text-sm font-medium relative z-10">
+          <DialogContent className="bg-surface rounded-[3rem] p-0 max-w-md w-[90%] mx-auto overflow-hidden border border-border/60 shadow-2xl">
+            <div className="bg-background p-14 text-center relative overflow-hidden border-b border-border/40 shadow-inner">
+              <div className="absolute top-0 left-0 w-full h-1 bg-[#1a1a1a] opacity-5" />
+              <div className="p-6 bg-surface rounded-[32px] border border-border/60 w-fit mx-auto mb-10 shadow-sm transition-transform duration-700 hover:scale-110">
+                <Sparkles className="h-12 w-12 text-[#1a1a1a]" />
+              </div>
+              <DialogTitle className="text-3xl font-black text-[#1a1a1a] mb-4 uppercase tracking-tighter relative z-10">{t("unlock_magic_voice")}</DialogTitle>
+              <DialogDescription className="text-fintech-graphite-muted text-[11px] font-black uppercase tracking-[0.25em] relative z-10 opacity-60">
                 {t("premium_trial_ended")}
               </DialogDescription>
             </div>
-            <div className="p-6 space-y-4 bg-white">
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center gap-3 text-sm font-bold text-slate-700"><CheckCircle2 className="h-5 w-5 text-emerald-500" /> Edit bills with voice</li>
-                <li className="flex items-center gap-3 text-sm font-bold text-slate-700"><CheckCircle2 className="h-5 w-5 text-emerald-500" /> Delete instantly via mic</li>
-                <li className="flex items-center gap-3 text-sm font-bold text-slate-700"><CheckCircle2 className="h-5 w-5 text-emerald-500" /> Priority AI processing</li>
+            <div className="p-12 space-y-10 bg-surface">
+              <ul className="space-y-6 mb-12">
+                <li className="flex items-center gap-5 text-[11px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em]"><CheckCircle2 className="h-6 w-6 text-fintech-emerald-dark opacity-20" /> Edit bills with voice</li>
+                <li className="flex items-center gap-5 text-[11px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em]"><CheckCircle2 className="h-6 w-6 text-fintech-emerald-dark opacity-20" /> Delete instantly via mic</li>
+                <li className="flex items-center gap-5 text-[11px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em]"><CheckCircle2 className="h-6 w-6 text-fintech-emerald-dark opacity-20" /> Priority AI processing</li>
               </ul>
               <Button 
                 onClick={() => { setShowPremiumModal(false); navigate("/?checkout=true"); }} 
-                className="w-full h-14 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-xl font-black text-lg shadow-lg shadow-orange-500/30 transition-all active:scale-95"
+                className="w-full h-20 bg-[#1a1a1a] text-white rounded-[28px] font-black text-xs uppercase tracking-[0.3em] shadow-[0_20px_50px_rgba(0,0,0,0.2)] hover:bg-[#111111] transition-all active:scale-[0.97] duration-500"
               >
                 {t("upgrade_now_price")}
               </Button>
-              <button onClick={() => setShowPremiumModal(false)} className="w-full text-center text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest mt-2">
+              <button onClick={() => setShowPremiumModal(false)} className="w-full text-center text-[10px] font-black text-fintech-graphite-muted hover:text-[#1a1a1a] uppercase tracking-[0.25em] mt-8 transition-colors duration-300 opacity-60">
                 {t("maybe_later")}
               </button>
             </div>

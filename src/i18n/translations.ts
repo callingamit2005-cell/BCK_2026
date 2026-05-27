@@ -380,8 +380,7 @@ export const translations: Partial<Record<Language, Partial<Record<TranslationKe
   // Hindi (detailed)
   hi: {
     'app.name': 'BachatKaro',
-...
-    'dashboard.emi.empty': 'अभी कोई EMI या बिल नहीं जोड़ा गया है।',
+    'common.loading': 'लोड हो रहा है...',
     'wealth_predictor.title': 'संपत्ति एनालिटिक्स',
     'wealth_predictor.subtitle': 'चक्रवृद्धि ब्याज और विकास अनुमान',
     'wealth_predictor.projected_wealth_label': 'अनुमानित पोर्टफोलियो मूल्यांकन',

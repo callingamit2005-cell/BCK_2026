@@ -21,29 +21,35 @@ const SavingsSummary = ({ goals }: SavingsSummaryProps) => {
   const completedGoals = goals.filter((g) => g.currentSaved >= g.targetAmount).length;
 
   return (
-    <div className="grid grid-cols-3 gap-3 sm:gap-4">
-      <Card className="bg-surface border-border shadow-sm rounded-2xl overflow-hidden">
-        <CardContent className="p-4 sm:p-6 text-center">
-          <Wallet className="h-4.5 w-4.5 mx-auto mb-3 text-white/40" />
-          <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mb-1">{tSafe('savings.summary.totalSaved', 'Total Saved')}</p>
-          <p className="text-lg font-black text-white font-mono tracking-tighter">{formatCurrency(totalSaved)}</p>
+    <div className="grid grid-cols-3 gap-4 sm:gap-6">
+      <Card className="bg-surface border-border shadow-sm rounded-[24px] overflow-hidden group hover:border-foreground/10 transition-all">
+        <CardContent className="p-6 text-center">
+          <div className="p-2.5 bg-background border border-border rounded-xl w-fit mx-auto mb-4 group-hover:scale-110 transition-transform">
+            <Wallet className="h-5 w-5 text-text-secondary" />
+          </div>
+          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">{tSafe('savings.summary.totalSaved', 'Accumulated')}</p>
+          <p className="text-xl font-bold text-foreground font-mono tracking-tighter">{formatCurrency(totalSaved)}</p>
         </CardContent>
       </Card>
 
-      <Card className="bg-surface border-border shadow-sm rounded-2xl overflow-hidden">
-        <CardContent className="p-4 sm:p-6 text-center">
-          <Target className="h-4.5 w-4.5 mx-auto mb-3 text-white/40" />
-          <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mb-1">{tSafe('savings.summary.totalTarget', 'Total Target')}</p>
-          <p className="text-lg font-black text-white/60 font-mono tracking-tighter">{formatCurrency(totalTarget)}</p>
+      <Card className="bg-surface border-border shadow-sm rounded-[24px] overflow-hidden group hover:border-foreground/10 transition-all">
+        <CardContent className="p-6 text-center">
+          <div className="p-2.5 bg-background border border-border rounded-xl w-fit mx-auto mb-4 group-hover:scale-110 transition-transform">
+            <Target className="h-5 w-5 text-text-secondary" />
+          </div>
+          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">{tSafe('savings.summary.totalTarget', 'Aggregate')}</p>
+          <p className="text-xl font-bold text-foreground font-mono tracking-tighter">{formatCurrency(totalTarget)}</p>
         </CardContent>
       </Card>
 
-      <Card className="bg-surface border-border shadow-sm rounded-2xl overflow-hidden">
-        <CardContent className="p-4 sm:p-6 text-center">
-          <TrendingUp className="h-4.5 w-4.5 mx-auto mb-3 text-white/40" />
-          <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mb-1">{tSafe('savings.summary.completed', 'Completed')}</p>
-          <p className="text-lg font-black text-white font-mono tracking-tighter">
-            {completedGoals}<span className="text-white/20">/</span>{goals.length}
+      <Card className="bg-surface border-border shadow-sm rounded-[24px] overflow-hidden group hover:border-foreground/10 transition-all">
+        <CardContent className="p-6 text-center">
+          <div className="p-2.5 bg-background border border-border rounded-xl w-fit mx-auto mb-4 group-hover:scale-110 transition-transform">
+            <TrendingUp className="h-5 w-5 text-text-secondary" />
+          </div>
+          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">{tSafe('savings.summary.completed', 'Success Rate')}</p>
+          <p className="text-xl font-bold text-foreground font-mono tracking-tighter">
+            {completedGoals}<span className="text-text-muted mx-1 opacity-40">/</span><span className="text-text-secondary">{goals.length}</span>
           </p>
         </CardContent>
       </Card>

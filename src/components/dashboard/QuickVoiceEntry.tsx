@@ -99,9 +99,9 @@ const QuickVoiceEntry = React.memo(({ onManualEntryClick }: QuickVoiceEntryProps
       window.dispatchEvent(new Event('sync_queue_updated'));
 
       toast({
-        title: "Saved Successfully!",
-        description: `${formatCurrency(savedTransaction.amount)} recorded via ${mode}`,
-        className: "bg-emerald-600 text-white",
+        title: "Safely Recorded",
+        description: `${formatCurrency(savedTransaction.amount)} saved to your financial timeline via ${mode}.`,
+        className: "bg-[#1a1a1a] text-white border border-[#333] shadow-[0_15px_40px_rgba(0,0,0,0.15)]",
       });
       return true;
     } catch (e: any) {
@@ -191,12 +191,19 @@ const QuickVoiceEntry = React.memo(({ onManualEntryClick }: QuickVoiceEntryProps
           <Button
             onClick={handleVoiceStart}
             className={cn(
-              "relative h-12 w-12 rounded-full shadow-md transition-all duration-300",
-              voice.listening ? "bg-rose-500 hover:bg-rose-600 scale-110" : primaryGradient,
+              "relative h-14 w-14 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.15)] transition-all duration-700 ease-butter-soft overflow-hidden group",
+              voice.listening 
+                ? "bg-[#FEE2E2] border-2 border-[#FECACA] scale-110 shadow-[0_0_20px_rgba(220,38,38,0.2)]" 
+                : "bg-gradient-to-b from-[#444] via-[#1a1a1a] to-[#000] border-t border-white/10",
             )}
           >
-            {voice.listening && <span className="absolute inset-0 rounded-full bg-rose-500 animate-ping opacity-20" />}
-            {voice.listening ? <MicOff className="h-5 w-5 text-white" /> : <Mic className="h-5 w-5 text-white" />}
+            {/* Metallic Reflection Overlay */}
+            {!voice.listening && (
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-30 pointer-events-none" />
+            )}
+
+            {voice.listening && <span className="absolute inset-0 rounded-full bg-[#DC2626] animate-[ping_2s_ease-in-out_infinite] opacity-10" />}
+            {voice.listening ? <MicOff className="h-6 w-6 text-[#DC2626] opacity-90" /> : <Mic className="h-6 w-6 text-[#e5e5e5] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform duration-700" />}
           </Button>
         </div>
       </CardHeader>

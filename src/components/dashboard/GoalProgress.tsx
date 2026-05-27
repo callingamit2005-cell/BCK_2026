@@ -45,8 +45,8 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
   }
 
   // UI CONSTANTS
-  const premiumSurface = "bg-surface border border-white/5 shadow-sm rounded-[32px] overflow-hidden transform-gpu";
-  const inputStyle = "h-14 rounded-2xl bg-white/5 border-white/10 focus:border-white/20 focus:ring-0 text-white font-bold transition-all placeholder:text-white/20";
+  const premiumSurface = "bg-surface border border-border shadow-sm rounded-[32px] overflow-hidden transform-gpu";
+  const inputStyle = "h-14 rounded-2xl bg-background border-border focus:border-border/20 focus:ring-0 text-[#111111] font-bold transition-all placeholder:text-[#999999]";
   const labelStyle = "text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted mb-2 ml-1";
 
   return (
@@ -54,11 +54,11 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
       <CardHeader className="relative z-10 p-8 pb-4">
         <CardTitle className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-              <Target className="h-6 w-6 text-white/40" />
+            <div className="p-3 rounded-2xl bg-background border border-border">
+              <Target className="h-6 w-6 text-[#999999]" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-white uppercase tracking-tight">
+              <span className="text-xl font-bold text-[#111111] uppercase tracking-tight">
                 {t('dreams.title', 'My Dream Goal')}
               </span>
               <span className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
@@ -71,7 +71,7 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
               variant="ghost" 
               size="icon" 
               onClick={() => setIsEditing(true)} 
-              className="text-white/40 hover:text-white hover:bg-white/10 rounded-xl h-11 w-11 transition-all"
+              className="text-[#999999] hover:text-[#111111] hover:bg-background rounded-xl h-11 w-11 transition-all"
             >
               <Pencil className="h-5 w-5" />
             </Button>
@@ -119,7 +119,7 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
 
             <Button 
               onClick={saveGoal} 
-              className="w-full h-14 rounded-2xl bg-white text-background font-bold uppercase tracking-widest hover:bg-white/90 active:scale-95 transition-all"
+              className="w-full h-14 rounded-2xl bg-[#111111] text-white font-bold uppercase tracking-widest hover:bg-[#111111]/90 active:scale-95 transition-all"
             >
               {t('dreams.saveBtn', 'Lock Goal')} 🚀
             </Button>
@@ -131,7 +131,7 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
               <span className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em] mb-2">
                 {t('dreams.tracking', 'Now Tracking')}
               </span>
-              <h3 className="text-3xl font-bold text-white uppercase tracking-tight leading-none">{goalName}</h3>
+              <h3 className="text-3xl font-bold text-[#111111] uppercase tracking-tight leading-none">{goalName}</h3>
             </div>
 
             {/* Progress Bar */}
@@ -139,28 +139,28 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
               <div className="flex justify-between items-end">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{t('dreams.saved', 'Saved')}</span>
-                  <span className="text-xl font-bold text-white font-mono">{formatCurrency(safeSavings)}</span>
+                  <span className="text-xl font-bold text-[#111111] font-mono">{formatCurrency(safeSavings)}</span>
                 </div>
                 <div className="flex flex-col text-right">
                   <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{t('dreams.target', 'Target')}</span>
-                  <span className="text-xl font-bold text-white font-mono">{formatCurrency(Number(targetAmount))}</span>
+                  <span className="text-xl font-bold text-[#111111] font-mono">{formatCurrency(Number(targetAmount))}</span>
                 </div>
               </div>
               
-              <div className="relative h-4 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 shadow-inner">
+              <div className="relative h-4 w-full bg-background rounded-full overflow-hidden border border-border shadow-inner">
                 <div 
-                  className="h-full bg-white transition-all duration-1000" 
+                  className="h-full bg-[#111111] transition-all duration-1000" 
                   style={{ width: `${progress}%` }} 
                 />
               </div>
               
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-white uppercase tracking-widest">
+                  <span className="text-[10px] font-bold text-[#111111] uppercase tracking-widest">
                     {progress >= 100 ? t('dreams.achieved', 'Goal Achieved!') : `${progress.toFixed(1)}% ${t('dreams.complete', 'Complete')}`}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic">
+                <span className="text-[10px] font-bold text-[#999999] uppercase tracking-widest italic">
                   Compounding...
                 </span>
               </div>
@@ -168,19 +168,19 @@ const GoalProgress = ({ currentSavings }: GoalProgressProps) => {
 
             {/* DETAILS GRID */}
             <div className="grid grid-cols-2 gap-4">
-               <div className="bg-white/5 rounded-[24px] p-5 border border-white/5 hover:bg-white/10 transition-colors">
+               <div className="bg-background rounded-[24px] p-5 border border-border hover:bg-surface transition-colors">
                   <div className="flex items-center gap-2 mb-2 opacity-40">
-                    <CreditCard className="h-4 w-4 text-white" />
-                    <span className="text-[9px] uppercase font-bold tracking-widest text-white">Monthly</span>
+                    <CreditCard className="h-4 w-4 text-[#111111]" />
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-[#111111]">Monthly</span>
                   </div>
-                  <p className="text-xl font-bold text-white font-mono">{formatCurrency(Number(emiAmount))}</p>
+                  <p className="text-xl font-bold text-[#111111] font-mono">{formatCurrency(Number(emiAmount))}</p>
                </div>
-               <div className="bg-white/5 rounded-[24px] p-5 border border-white/5 hover:bg-white/10 transition-colors">
+               <div className="bg-background rounded-[24px] p-5 border border-border hover:bg-surface transition-colors">
                   <div className="flex items-center gap-2 mb-2 opacity-40">
-                    <Calculator className="h-4 w-4 text-white" />
-                    <span className="text-[9px] uppercase font-bold tracking-widest text-white">Time Left</span>
+                    <Calculator className="h-4 w-4 text-[#111111]" />
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-[#111111]">Time Left</span>
                   </div>
-                  <p className="text-xl font-bold text-white font-mono">
+                  <p className="text-xl font-bold text-[#111111] font-mono">
                     {monthsToGoal === 0 ? '🎉' : `${monthsToGoal} Mo.`}
                   </p>
                </div>

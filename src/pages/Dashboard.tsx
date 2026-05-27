@@ -335,7 +335,7 @@ const Dashboard = () => {
       };
 
       await saveAndSync('salaries', payload, 'UPSERT');
-      toast({ title: "Salary saved successfully", className: "bg-[#0a0014] text-white border-[#ff0f7b]/40 shadow-lg" });
+      toast({ title: "Salary saved successfully", className: "bg-surface text-white border-white/10 shadow-sm" });
       
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['transactions'] }),
@@ -367,7 +367,7 @@ const Dashboard = () => {
 
       await saveAndSync('budgets', payload, 'UPSERT');
 
-      toast({ title: "Budget Locked!", className: "bg-[#0a0014] text-white border-[#ff0f7b]/40 shadow-lg" });
+      toast({ title: "Budget Locked!", className: "bg-surface text-white border-white/10 shadow-sm" });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['budgets'] }),
         queryClient.invalidateQueries({ queryKey: ['monthly-snapshot'] }),
@@ -495,7 +495,7 @@ const Dashboard = () => {
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       toast({
         title: "Connect to internet to delete expenses safely.",
-        className: "bg-[#0a0014] text-white border-[#ff0f7b]/40 shadow-lg",
+        className: "bg-surface text-white border-white/10 shadow-sm",
       });
       return;
     }
@@ -548,7 +548,7 @@ const Dashboard = () => {
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       toast({
         title: "Connect to internet to delete expenses safely.",
-        className: "bg-[#0a0014] text-white border-[#ff0f7b]/40 shadow-lg",
+        className: "bg-surface text-white border-white/10 shadow-sm",
       });
       return;
     }
@@ -609,23 +609,23 @@ const Dashboard = () => {
   // ==================== UI STYLING CONSTANTS ====================
   const applePhysics = "transition-all duration-500 ease-butter-soft transform-gpu active:scale-[0.98]";
   const premiumCard = "bg-surface border border-border shadow-sm rounded-[24px] overflow-hidden transform-gpu will-change-transform";
-  const inputStyle = "h-14 rounded-xl bg-white/5 border-white/5 focus:border-white/20 focus:ring-0 text-white font-mono font-bold transition-all placeholder:text-white/20";
-  const stepperBtn = "h-10 px-4 bg-white/5 border border-white/5 text-white rounded-lg font-bold transition-all hover:bg-white/10 active:scale-95";
+  const inputStyle = "h-14 rounded-xl bg-secondary border-border focus:border-black/10 focus:ring-0 text-foreground font-mono font-bold transition-all placeholder:text-black/20";
+  const stepperBtn = "h-10 px-4 bg-secondary border border-border text-foreground rounded-lg font-bold transition-all hover:bg-black/5 active:scale-95";
 
   if (!isReady) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-background text-foreground gap-4">
-        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-black/10 border-t-foreground rounded-full animate-spin" />
         <p className="font-bold uppercase tracking-widest text-[9px] opacity-40">Initializing Workspace</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full bg-background overflow-y-auto selection:bg-white/10 relative antialiased scroll-smooth custom-scrollbar">
+    <div className="min-h-screen w-full bg-background overflow-y-auto selection:bg-black/10 relative antialiased scroll-smooth custom-scrollbar">
       {/* Restore Indicator */}
       {isRestoring && (
-        <div className="fixed top-0 left-0 w-full z-[100] bg-surface border-b border-white/5 text-foreground text-[10px] font-bold uppercase tracking-[0.2em] py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top duration-500 shadow-sm">
+        <div className="fixed top-0 left-0 w-full z-[100] bg-surface border-b border-border text-foreground text-[10px] font-bold uppercase tracking-[0.2em] py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top duration-500 shadow-sm">
           <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
           <span>Restoring ledger from cloud</span>
         </div>
@@ -638,7 +638,7 @@ const Dashboard = () => {
 
         {activeTab === 'daily' && (
           <>
-            <div className="sticky top-0 sm:top-4 z-[40] -mx-6 px-6 bg-background/80 backdrop-blur-xl py-3 flex gap-3 overflow-x-auto hide-scrollbar border-b border-white/5">
+            <div className="sticky top-0 sm:top-4 z-[40] -mx-6 px-6 bg-background/95 border-b border-border py-3 flex gap-3 overflow-x-auto hide-scrollbar">
               <DateFilter value={dateFilter} onChange={setDateFilter} filteredData={filteredViewData || []} />
             </div>
 
@@ -654,21 +654,21 @@ const Dashboard = () => {
               <MonthlyComparison currentMonthTotal={filteredSpent} lastMonthTotal={lastMonthTotal} />
             </Suspense>
 
-            <div className="bg-surface p-8 relative rounded-[24px] border border-white/5">
-              <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-                <span className="w-1.5 h-1.5 bg-white rounded-full opacity-40 animate-pulse" />
-                <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">{t('common.aiActive', 'AI Active')}</span>
+            <div className="bg-surface p-8 relative rounded-[24px] border border-border">
+              <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-secondary border border-border rounded-full">
+                <span className="w-1.5 h-1.5 bg-foreground rounded-full opacity-40" />
+                <span className="text-[8px] font-bold text-text-secondary uppercase tracking-widest">{t('common.aiActive', 'AI Active')}</span>
               </div>
               <div className="flex flex-col items-center justify-center text-center">
-                <h3 className="text-white/40 text-[9px] font-bold uppercase tracking-[0.2em] mb-6">{t('dashboard.aiEngine', 'Deep Insight Engine')}</h3>
+                <h3 className="text-text-secondary text-[9px] font-bold uppercase tracking-[0.2em] mb-6">{t('dashboard.aiEngine', 'Deep Insight Engine')}</h3>
                 <div className="min-h-[80px] flex items-center justify-center mb-6 w-full">
-                  <Suspense fallback={<div className="h-20 w-full bg-white/5 animate-pulse rounded-2xl" />}>
+                  <Suspense fallback={<div className="h-20 w-full bg-secondary animate-pulse rounded-2xl" />}>
                     <SmartFinancialMentor
                       advice={activeAdvice ? { action: activeAdvice.action, reason: activeAdvice.reason, steps: activeAdvice.steps, confidence: activeAdvice.confidence } : null}
                     />
                   </Suspense>
                 </div>
-                <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest flex items-center gap-2 mt-4">
+                <p className="text-black/20 text-[8px] font-bold uppercase tracking-widest flex items-center gap-2 mt-4">
                   <BrainCircuit className="h-3 w-3" /> {t('common.hardwareAccelerated', 'Hardware Accelerated Logic')}
                 </p>
               </div>
@@ -697,7 +697,7 @@ const Dashboard = () => {
               aiAlerts={aiAlerts} 
               aiPrediction={aiPrediction} 
               t={t} 
-              neonGlass={premiumCard} 
+              premiumSurface={premiumCard} 
             />
 
             <FinancialHealthScore 
@@ -719,9 +719,9 @@ const Dashboard = () => {
 
         {activeTab === 'planning' && (
           <>
-            <MonthlySnapshotCard totalInflow={totalInflow} budgetVal={budgetVal} totalOutflow={totalOutflow} netSaved={netSaved} t={t} neonGlass={premiumCard} />
-            <IncomeEngineCard salaryInput={salaryInput} setSalaryInput={setSalaryInput} handleSaveIncome={handleSaveIncome} isSavingIncome={isSavingIncome} t={t} neonGlass={premiumCard} inputStyle={inputStyle} applePhysics={applePhysics} />
-            <SafeSpendCard budgetInput={budgetInput} setBudgetInput={setBudgetInput} handleSaveBudget={handleSaveBudget} isSavingBudget={isSavingBudget} adjustBudget={adjustBudget} t={t} neonGlass={premiumCard} inputStyle={inputStyle} applePhysics={applePhysics} stepperBtn={stepperBtn} />
+            <MonthlySnapshotCard totalInflow={totalInflow} budgetVal={budgetVal} totalOutflow={totalOutflow} netSaved={netSaved} t={t} premiumSurface={premiumCard} />
+            <IncomeEngineCard salaryInput={salaryInput} setSalaryInput={setSalaryInput} handleSaveIncome={handleSaveIncome} isSavingIncome={isSavingIncome} t={t} premiumSurface={premiumCard} inputStyle={inputStyle} applePhysics={applePhysics} />
+            <SafeSpendCard budgetInput={budgetInput} setBudgetInput={setBudgetInput} handleSaveBudget={handleSaveBudget} isSavingBudget={isSavingBudget} adjustBudget={adjustBudget} t={t} premiumSurface={premiumCard} inputStyle={inputStyle} applePhysics={applePhysics} stepperBtn={stepperBtn} />
             <DebtLedgerSection emiList={emiList} t={t} applePhysics={applePhysics} onAddLoan={() => { resetLoanForm(); setShowLoanModal(true); }} onDeleteEMI={handleDeleteEMI} onEditEMI={async (emi) => {
               const { convertToRupees } = await import('@/utils/currencyFormatter');
               setEditingLoanId(emi.id);
@@ -742,14 +742,14 @@ const Dashboard = () => {
         {activeTab === 'dreams' && ( <Suspense fallback={<Loader2 className="h-6 w-6 animate-spin mx-auto opacity-20" />}><div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><GoalProgress currentSavings={netSaved} /></div></Suspense> )}
 
         <div className="mt-16 mb-12 px-6 text-center">
-          <div className="max-w-2xl mx-auto bg-surface py-8 px-10 rounded-[32px] border border-white/5 shadow-sm">
-            <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.3em] mb-6 flex items-center justify-center gap-3">
-              <span className="h-px w-8 bg-white/10" /> Safety & Privacy <span className="h-px w-8 bg-white/10" />
+          <div className="max-w-2xl mx-auto bg-surface py-8 px-10 rounded-[32px] border border-border shadow-sm">
+            <h4 className="text-[10px] text-text-secondary font-bold uppercase tracking-[0.3em] mb-6 flex items-center justify-center gap-3">
+              <span className="h-px w-8 bg-black/10" /> Safety & Privacy <span className="h-px w-8 bg-black/10" />
             </h4>
 
             <div className="space-y-6 text-[9px] leading-relaxed font-bold uppercase tracking-widest text-left opacity-30">
               <div className="privacy-en pb-2" style={{ transition: 'opacity 0.5s ease', opacity: visibleStep >= 1 ? 1 : 0, visibility: visibleStep >= 1 ? 'visible' : 'hidden' }}>
-                <p className="text-white italic mb-1.5">This data is for your information and tracking only. We do not directly access your bank accounts or transactions.</p>
+                <p className="text-foreground italic mb-1.5">This data is for your information and tracking only. We do not directly access your bank accounts or transactions.</p>
               </div>
             </div>
           </div>
@@ -757,51 +757,51 @@ const Dashboard = () => {
       </main>
 
       <Dialog open={showLoanModal} onOpenChange={setShowLoanModal}>
-        <DialogContent className="w-[95vw] sm:max-w-xl bg-background border border-white/10 rounded-[32px] p-0 overflow-hidden shadow-2xl transform-gpu">
+        <DialogContent className="w-[95vw] sm:max-w-xl bg-background border border-border rounded-[32px] p-0 overflow-hidden shadow-2xl transform-gpu">
           <DialogDescription className="sr-only">Form to secure a new loan or update existing debt profile.</DialogDescription>
-          <div className="h-1 w-full bg-white/5" />
+          <div className="h-1 w-full bg-secondary" />
           <form onSubmit={handleAddLoan} className="p-8 space-y-6 overflow-y-auto max-h-[80vh] custom-scrollbar">
             <DialogHeader className="p-0">
-              <DialogTitle className="text-2xl font-bold tracking-tight uppercase text-white">
+              <DialogTitle className="text-2xl font-bold tracking-tight uppercase text-foreground">
                 {editingLoanId ? "Update Debt Profile" : "Secure New Loan"}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-2">
-              <Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest ml-1">Loan Title</Label>
+              <Label className="text-text-secondary font-bold text-[9px] uppercase tracking-widest ml-1">Loan Title</Label>
               <Input value={loanName} onChange={e => setLoanName(e.target.value)} required className={inputStyle} placeholder="e.g. Dream Car" />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Principal (₹)</Label><Input type="number" value={loanAmount} onChange={e => setLoanAmount(e.target.value)} required className={inputStyle} /></div>
-              <div className="space-y-2"><Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Rate (%)</Label><Input type="number" step="0.1" value={interestRate} onChange={e => setInterestRate(e.target.value)} required className={inputStyle} /></div>
+              <div className="space-y-2"><Label className="text-text-secondary font-bold text-[9px] uppercase tracking-widest">Principal (₹)</Label><Input type="number" value={loanAmount} onChange={e => setLoanAmount(e.target.value)} required className={inputStyle} /></div>
+              <div className="space-y-2"><Label className="text-text-secondary font-bold text-[9px] uppercase tracking-widest">Rate (%)</Label><Input type="number" step="0.1" value={interestRate} onChange={e => setInterestRate(e.target.value)} required className={inputStyle} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Months</Label><Input type="number" value={tenureMonths} onChange={e => setTenureMonths(e.target.value)} required className={inputStyle} /></div>
-              <div className="space-y-2"><Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Inception</Label><Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className={inputStyle} /></div>
+              <div className="space-y-2"><Label className="text-text-secondary font-bold text-[9px] uppercase tracking-widest">Months</Label><Input type="number" value={tenureMonths} onChange={e => setTenureMonths(e.target.value)} required className={inputStyle} /></div>
+              <div className="space-y-2"><Label className="text-text-secondary font-bold text-[9px] uppercase tracking-widest">Inception</Label><Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className={inputStyle} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Bank/App Name</Label>
+                <Label className="text-text-secondary font-bold text-[9px] uppercase tracking-widest">Bank/App Name</Label>
                 <Input value={bankName} onChange={e => setBankName(e.target.value)} className={inputStyle} placeholder="e.g. HDFC Bank" />
               </div>
               <div className="space-y-2">
-                <Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">EMI Day</Label>
+                <Label className="text-text-secondary font-bold text-[9px] uppercase tracking-widest">EMI Day</Label>
                 <Input type="number" min="1" max="31" value={emiDate} onChange={e => setEmiDate(e.target.value)} className={inputStyle} placeholder="1-31" />
               </div>
             </div>
-            <div className="space-y-4 p-6 bg-white/5 rounded-2xl border border-white/5">
-              <Label className="text-text-muted font-bold text-[9px] uppercase tracking-widest">Interest Mathematics</Label>
+            <div className="space-y-4 p-6 bg-secondary rounded-2xl border border-border">
+              <Label className="text-text-secondary font-bold text-[9px] uppercase tracking-widest">Interest Mathematics</Label>
               <RadioGroup value={interestType} onValueChange={setInterestType} className="flex gap-4">
-                <div className="flex items-center space-x-2 bg-surface px-4 py-3 rounded-xl border border-white/5 flex-1 hover:border-white/20 transition-all cursor-pointer">
-                  <RadioGroupItem value="REDUCING" id="red" className="text-white" /><Label htmlFor="red" className="text-white font-bold uppercase text-[10px]">Reducing</Label>
+                <div className="flex items-center space-x-2 bg-surface px-4 py-3 rounded-xl border border-border flex-1 hover:border-black/10 transition-all cursor-pointer">
+                  <RadioGroupItem value="REDUCING" id="red" className="text-foreground" /><Label htmlFor="red" className="text-foreground font-bold uppercase text-[10px]">Reducing</Label>
                 </div>
-                <div className="flex items-center space-x-2 bg-surface px-4 py-3 rounded-xl border border-white/5 flex-1 hover:border-white/20 transition-all cursor-pointer">
-                  <RadioGroupItem value="FLAT" id="flt" className="text-white" /><Label htmlFor="flt" className="text-white font-bold uppercase text-[10px]">Flat</Label>
+                <div className="flex items-center space-x-2 bg-surface px-4 py-3 rounded-xl border border-border flex-1 hover:border-black/10 transition-all cursor-pointer">
+                  <RadioGroupItem value="FLAT" id="flt" className="text-foreground" /><Label htmlFor="flt" className="text-foreground font-bold uppercase text-[10px]">Flat</Label>
                 </div>
               </RadioGroup>
             </div>
             <div className="flex gap-4 pt-4">
-              <Button type="button" variant="ghost" onClick={() => { setShowLoanModal(false); resetLoanForm(); }} className="rounded-xl h-14 flex-1 text-text-muted font-bold uppercase text-[10px] tracking-widest hover:bg-white/5">Abort</Button>
-              <Button type="submit" className="bg-white text-background rounded-xl h-14 flex-[2] font-black text-sm hover:bg-white/90 active:scale-[0.98] uppercase tracking-widest">Commit Sync</Button>
+              <Button type="button" variant="ghost" onClick={() => { setShowLoanModal(false); resetLoanForm(); }} className="rounded-xl h-14 flex-1 text-text-secondary font-bold uppercase text-[10px] tracking-widest hover:bg-black/5">Abort</Button>
+              <Button type="submit" className="bg-foreground text-background rounded-xl h-14 flex-[2] font-black text-sm hover:bg-foreground/90 active:scale-[0.98] uppercase tracking-widest">Commit Sync</Button>
             </div>
           </form>
         </DialogContent>

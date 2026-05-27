@@ -153,7 +153,7 @@ const JoinGroup = () => {
 
       <div className="w-full max-w-md relative animate-in fade-in zoom-in-95 duration-500">
         {/* High-Refraction Glass Card */}
-        <div className="bg-white/5 backdrop-blur-[32px] rounded-[40px] p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] border border-white/10 text-center space-y-8 relative overflow-hidden">
+        <div className="bg-background backdrop-blur-[32px] rounded-[40px] p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] border border-border text-center space-y-8 relative overflow-hidden">
           
           {/* Neon Bloom Header Edge */}
           <div className={`absolute top-0 left-0 right-0 h-1 ${primaryGradient} shadow-[0_0_15px_rgba(236,72,153,0.5)]`} />
@@ -161,13 +161,13 @@ const JoinGroup = () => {
           {/* Animated Icon Container */}
           <div className="flex justify-center relative">
             <div className={`absolute inset-0 blur-3xl opacity-30 scale-150 ${secondaryGradient} rounded-full`} />
-            <div className={`relative w-24 h-24 flex items-center justify-center rounded-[30px] bg-[#0a0014] border border-white/20 shadow-2xl ring-1 ring-white/10`}>
+            <div className={`relative w-24 h-24 flex items-center justify-center rounded-[30px] bg-surface border border-border shadow-2xl ring-1 ring-border`}>
               {errorStatus ? (
                 <AlertCircle className="h-10 w-10 text-rose-500 animate-bounce" />
               ) : (
-                <Users className="h-10 w-10 text-white" />
+                <Users className="h-10 w-10 text-[#111111]" />
               )}
-              <div className="absolute -top-2 -right-2 bg-white/10 backdrop-blur-md p-2 rounded-xl border border-white/20 shadow-lg">
+              <div className="absolute -top-2 -right-2 bg-surface backdrop-blur-md p-2 rounded-xl border border-border shadow-lg">
                 <Sparkles className="h-4 w-4 text-pink-400" />
               </div>
             </div>
@@ -175,21 +175,21 @@ const JoinGroup = () => {
 
           {/* Status Content */}
           <div className="space-y-4">
-            <h2 className="text-3xl font-black text-white tracking-tighter">
+            <h2 className="text-3xl font-black text-[#111111] tracking-tighter">
               {errorStatus ? "Invite Issue" : "Group Invitation"}
             </h2>
-            <div className="flex items-center justify-center gap-3 py-2 px-4 rounded-2xl bg-white/5 border border-white/5">
+            <div className="flex items-center justify-center gap-3 py-2 px-4 rounded-2xl bg-surface border border-border">
               {!errorStatus && <Loader2 className="h-4 w-4 animate-spin text-pink-500" />}
-              <p className={`text-xs font-black uppercase tracking-[0.2em] ${errorStatus ? "text-rose-400" : "text-slate-400"}`}>
+              <p className={`text-xs font-black uppercase tracking-[0.2em] ${errorStatus ? "text-rose-400" : "text-[#666666]"}`}>
                 {status}
               </p>
             </div>
           </div>
 
           {/* Enterprise Security Badge */}
-          <div className="pt-6 border-t border-white/5 flex items-center justify-center gap-2">
+          <div className="pt-6 border-t border-border flex items-center justify-center gap-2">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-[#666666] uppercase tracking-widest">
               BachatKaro Secure Onboarding
             </span>
           </div>
@@ -197,7 +197,7 @@ const JoinGroup = () => {
 
         {/* Footer Navigation Instruction */}
         {!errorStatus && (
-          <p className="mt-8 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest animate-pulse">
+          <p className="mt-8 text-center text-[11px] font-bold text-[#999999] uppercase tracking-widest animate-pulse">
             Establishing secure group connection...
           </p>
         )}
@@ -205,7 +205,7 @@ const JoinGroup = () => {
         {errorStatus && (
           <button 
             onClick={() => navigate("/")}
-            className="mt-8 w-full text-center text-sm font-bold text-white hover:text-pink-400 transition-colors"
+            className="mt-8 w-full text-center text-sm font-bold text-[#111111] hover:text-pink-400 transition-colors"
           >
             ← Return to Homepage
           </button>

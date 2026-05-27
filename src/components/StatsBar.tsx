@@ -40,10 +40,10 @@ const StatsBar = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-8">
           {stats.map((s, i) => (
             <div key={i} className="text-center group">
-              <div className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tighter tabular-nums transition-transform group-hover:scale-105 duration-500">
+              <div className="text-4xl md:text-5xl font-black text-[#111111] mb-3 tracking-tighter tabular-nums transition-transform group-hover:scale-105 duration-500">
                 {s.value}
               </div>
-              <div className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] group-hover:text-white/40 transition-colors">
+              <div className="text-[10px] font-bold text-[#999999] uppercase tracking-[0.2em] group-hover:text-[#111111] transition-colors">
                 {s.label}
               </div>
             </div>

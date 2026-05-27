@@ -79,12 +79,11 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0014] text-white p-6 md:p-8 font-sans selection:bg-[#ff0f7b]/30 relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-8 font-sans selection:bg-foreground/10 relative overflow-hidden">
       
-      {/* 1. LAYER: LUMINESCENT MESH BACKGROUND */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-5%] left-[-5%] w-[500px] h-[500px] bg-[#ff0f7b] opacity-[0.03] blur-[150px] rounded-full" />
-        <div className="absolute bottom-[-5%] right-[-5%] w-[600px] h-[600px] bg-[#5f0a87] opacity-[0.05] blur-[180px] rounded-full" />
+      {/* 1. LAYER: SUBTLE PREMIUM TEXTURE */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:32px_32px]" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -92,114 +91,114 @@ export default function Dashboard() {
         {/* 2. NAVIGATION: ENTERPRISE HEADER */}
         <header className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(255,15,123,0.3)]">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               BachatKaro
             </h1>
-            <p className="text-[#b3b3b3] text-sm mt-1">
-              {loading ? "Syncing data..." : `Namaste, ${user?.user_metadata?.full_name || 'Ankit Parasar'}!`}
+            <p className="text-text-secondary text-sm mt-1">
+              {loading ? "Syncing data..." : `Namaste, ${user?.user_metadata?.full_name || 'User'}!`}
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <button className="p-3 rounded-full bg-white/5 border border-white/10 text-[#b3b3b3] hover:text-[#ff0f7b] transition-all"><Bell size={20}/></button>
-            <button className="h-12 w-12 rounded-full border border-[#ff0f7b]/30 bg-white/5 flex items-center justify-center backdrop-blur-md shadow-lg shadow-pink-500/10">
-              <span className="text-[#ff0f7b] font-bold text-lg">{user?.email?.[0].toUpperCase() || 'A'}</span>
+            <button className="p-3 rounded-full bg-surface border border-border text-text-secondary hover:text-foreground transition-all shadow-sm"><Bell size={20}/></button>
+            <button className="h-12 w-12 rounded-full border border-border bg-surface flex items-center justify-center shadow-md active:scale-95 transition-all">
+              <span className="text-foreground font-bold text-lg">{user?.email?.[0].toUpperCase() || 'A'}</span>
             </button>
           </div>
         </header>
 
         {/* 3. CORE: MAIN METRICS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           
-          {/* HERO CARD: HIGH REFRACTION GLASS */}
-          <div className="md:col-span-2 relative group rounded-[32px] p-[1px] bg-gradient-to-br from-[#ff0f7b] to-[#5f0a87] shadow-2xl">
-            <div className="bg-[#0a0014] rounded-[31px] p-8 h-full flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#ff0f7b] opacity-10 blur-[80px] group-hover:opacity-20 transition-all duration-700" />
+          {/* HERO CARD: PREMIUM LIQUIDITY VIEW */}
+          <div className="md:col-span-2 relative group rounded-[32px] bg-surface border border-border shadow-sm overflow-hidden">
+            <div className="p-10 h-full flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-foreground/5 blur-[100px] pointer-events-none" />
               
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="h-2 w-2 rounded-full bg-[#00ffcc] animate-pulse" />
-                  <p className="text-[#b3b3b3] uppercase tracking-[0.25em] text-[10px] font-black">Net Liquidity</p>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-2 w-2 rounded-full bg-foreground animate-pulse" />
+                  <p className="text-text-secondary uppercase tracking-[0.2em] text-[11px] font-bold">Net Liquidity</p>
                 </div>
-                <h2 className="text-6xl font-mono font-bold tracking-tighter tabular-nums text-white">
+                <h2 className="text-6xl font-mono font-bold tracking-tighter tabular-nums text-foreground">
                   {loading ? "----" : formatINR(stats.balance)}
                 </h2>
               </div>
               
-              <div className="flex gap-4 mt-10">
-                <button className="flex-1 bg-white/[0.03] border border-white/10 hover:border-[#ff0f7b]/50 hover:bg-[#ff0f7b]/10 transition-all duration-300 rounded-2xl p-4 flex items-center justify-center gap-2 active:scale-[0.965] group/btn">
-                  <ArrowUpRight className="text-[#ff0f7b] group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" size={20} />
-                  <span className="font-bold text-sm uppercase tracking-wider">Income</span>
+              <div className="flex gap-4 mt-12">
+                <button className="flex-1 bg-background border border-border hover:border-foreground transition-all duration-300 rounded-2xl p-4 flex items-center justify-center gap-3 active:scale-[0.98] group/btn shadow-sm">
+                  <ArrowUpRight className="text-text-secondary group-hover:text-foreground transition-colors" size={20} />
+                  <span className="font-bold text-xs uppercase tracking-widest text-text-secondary group-hover:text-foreground">Income</span>
                 </button>
-                <button className="flex-1 bg-[#ff0f7b] hover:shadow-[0_0_40px_rgba(255,15,123,0.6)] transition-all duration-500 rounded-2xl p-4 flex items-center justify-center gap-2 text-white active:scale-[0.965]">
-                  <Plus size={22} strokeWidth={3} />
-                  <span className="font-bold text-sm uppercase tracking-widest">Expense</span>
+                <button className="flex-1 bg-foreground text-surface hover:bg-foreground/90 transition-all duration-300 rounded-2xl p-4 flex items-center justify-center gap-3 active:scale-[0.98] shadow-lg">
+                  <Plus size={22} strokeWidth={2.5} />
+                  <span className="font-bold text-xs uppercase tracking-widest">Expense</span>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* SIDE STATS: NEON STAT CARDS */}
+          {/* SIDE STATS: MINIMAL STAT CARDS */}
           <div className="space-y-6">
-            <div className="bg-white/[0.04] backdrop-blur-[32px] border border-white/[0.08] rounded-3xl p-7 hover:border-white/[0.2] transition-all group">
-              <div className="flex items-center gap-4">
-                <div className="p-3.5 rounded-2xl bg-[#00ffcc]/10 text-[#00ffcc] group-hover:scale-110 transition-transform"><ArrowDownLeft size={26}/></div>
+            <div className="bg-surface border border-border rounded-[28px] p-8 hover:border-foreground/20 transition-all group shadow-sm">
+              <div className="flex items-center gap-5">
+                <div className="p-4 rounded-2xl bg-background border border-border text-text-secondary group-hover:text-foreground transition-colors"><ArrowDownLeft size={28}/></div>
                 <div>
-                  <p className="text-[10px] text-[#b3b3b3] font-black uppercase tracking-widest">Monthly Burn</p>
-                  <p className="text-2xl font-mono mt-1 font-bold text-white">{loading ? "..." : formatINR(stats.spent)}</p>
+                  <p className="text-[11px] text-text-secondary font-bold uppercase tracking-widest">Monthly Burn</p>
+                  <p className="text-2xl font-mono mt-1 font-bold text-foreground">{loading ? "..." : formatINR(stats.spent)}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white/[0.04] backdrop-blur-[32px] border border-white/[0.08] rounded-3xl p-7 group">
-              <div className="flex items-center gap-4">
-                <div className="p-3.5 rounded-2xl bg-[#5f0a87]/30 text-[#ff0f7b] group-hover:rotate-12 transition-transform"><PieChart size={26}/></div>
+            <div className="bg-surface border border-border rounded-[28px] p-8 group shadow-sm">
+              <div className="flex items-center gap-5">
+                <div className="p-4 rounded-2xl bg-background border border-border text-text-secondary group-hover:text-foreground transition-colors"><PieChart size={28}/></div>
                 <div>
-                  <p className="text-[10px] text-[#b3b3b3] font-black uppercase tracking-widest">Savings Goal</p>
-                  <p className="text-2xl font-mono mt-1 font-bold text-white">0%</p>
+                  <p className="text-[11px] text-text-secondary font-bold uppercase tracking-widest">Savings Goal</p>
+                  <p className="text-2xl font-mono mt-1 font-bold text-foreground">0%</p>
                 </div>
               </div>
-              <div className="mt-5 w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                <div className="bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87] h-full w-[0%] transition-all duration-1000 ease-out" />
+              <div className="mt-6 w-full bg-background h-2 rounded-full overflow-hidden border border-border">
+                <div className="bg-foreground h-full w-[0%] transition-all duration-1000 ease-out" />
               </div>
             </div>
           </div>
         </div>
 
         {/* 4. ACTIVITY: TRANSACTION LEDGER */}
-        <section className="mt-12">
+        <section className="mt-16">
           <div className="flex justify-between items-end mb-8 px-2">
-            <h3 className="text-2xl font-bold flex items-center gap-3">
-              <History size={24} className="text-[#ff0f7b]" />
-              Recent Ledger
+            <h3 className="text-2xl font-bold flex items-center gap-3 text-foreground">
+              <History size={26} className="text-text-secondary" />
+              Recent Activity
             </h3>
-            <button className="text-[#b3b3b3] hover:text-[#ff0f7b] text-[10px] font-black uppercase tracking-[0.2em] transition-all border-b border-transparent hover:border-[#ff0f7b]">Audit All</button>
+            <button className="text-text-secondary hover:text-foreground text-[11px] font-bold uppercase tracking-[0.2em] transition-all border-b border-transparent hover:border-foreground">Audit All</button>
           </div>
 
           <div className="space-y-4">
             {loading ? [1,2,3].map(i => <Skeleton key={i} />) : currentMonthTransactions.length > 0 ? (
               currentMonthTransactions.map((t) => (
-                <div key={t.id} className="group bg-white/[0.02] hover:bg-white/[0.05] transition-all border border-white/[0.05] hover:border-[#ff0f7b]/30 p-6 rounded-[24px] flex items-center justify-between backdrop-blur-md active:scale-[0.99] cursor-pointer">
+                <div key={t.id} className="group bg-surface hover:bg-background transition-all border border-border hover:border-foreground/20 p-6 rounded-[24px] flex items-center justify-between shadow-sm active:scale-[0.995] cursor-pointer">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:bg-[#ff0f7b]/10 transition-all">
-                      <Wallet size={22} className="text-[#b3b3b3] group-hover:text-[#ff0f7b]" />
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-background border border-border group-hover:border-foreground/20 transition-all">
+                      <Wallet size={24} className="text-text-secondary group-hover:text-foreground" />
                     </div>
                     <div>
-                      <p className="font-bold text-base text-white group-hover:translate-x-1 transition-transform tracking-tight">{t.note}</p>
-                      <p className="text-[10px] text-[#b3b3b3] mt-1 font-black uppercase tracking-wider italic opacity-60">
+                      <p className="font-bold text-base text-foreground group-hover:translate-x-1 transition-transform tracking-tight uppercase">{t.note}</p>
+                      <p className="text-[11px] text-text-secondary mt-1 font-bold uppercase tracking-widest opacity-80">
                         {t.category} • {new Date(t.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-mono text-xl font-bold ${t.type === 'income' ? 'text-[#00ffcc] drop-shadow-[0_0_10px_rgba(0,255,204,0.4)]' : 'text-white'}`}>
-                      {t.type === 'income' ? '+' : '-'} {formatCurrency(t.amount)}
+                    <p className={`font-mono text-xl font-bold ${t.type === 'income' ? 'text-foreground' : 'text-foreground'}`}>
+                      {t.type === 'income' ? '+' : '-'} {formatINR(t.amount)}
                     </p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-20 text-center border-2 border-dashed border-white/10 rounded-[32px] bg-white/[0.01]">
-                <p className="text-[#b3b3b3] font-mono uppercase tracking-widest">No data detected in ledger</p>
+              <div className="p-20 text-center border border-dashed border-border rounded-[32px] bg-surface">
+                <p className="text-text-muted font-mono uppercase tracking-widest text-[11px] font-bold">Zero records detected in current cycle</p>
               </div>
             )}
           </div>

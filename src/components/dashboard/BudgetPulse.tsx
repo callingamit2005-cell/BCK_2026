@@ -23,69 +23,72 @@ const BudgetPulse = React.memo(({ spent, budget, className }: BudgetPulseProps) 
   // Health Logic Engine
   const health = useMemo(() => {
     if (budget === 0) return { status: 'neutral', icon: Zap, label: t('budgetPulse.noLimit', 'Limit Not Set') };
-    if (percentage >= 100) return { status: 'critical', icon: AlertTriangle, label: t('budgetPulse.exhausted', 'Budget Exhausted') };
-    if (percentage >= 85) return { status: 'danger', icon: AlertTriangle, label: t('budgetPulse.alert', 'Heartbeat Alert') };
-    return { status: 'safe', icon: CheckCircle2, label: t('budgetPulse.stable', 'Financial Health: Stable') };
+    if (percentage >= 100) return { status: 'critical', icon: AlertTriangle, label: t('budgetPulse.exhausted', 'You’ve crossed your planned limit for this category.') };
+    if (percentage >= 85) return { status: 'danger', icon: AlertTriangle, label: t('budgetPulse.alert', 'Your spending is approaching the planned limit.') };
+    return { status: 'safe', icon: CheckCircle2, label: t('budgetPulse.stable', 'Your financial rhythm is stable.') };
   }, [percentage, budget, t]);
 
   const Icon = health.icon;
 
   return (
     <div className={cn(
-      "w-full max-w-[95%] md:max-w-xl mx-auto transition-all duration-500 ease-butter-soft transform-gpu",
+      "w-full max-w-[95%] md:max-w-xl mx-auto transition-all duration-700 ease-butter-soft transform-gpu",
       className
     )}>
       {/* Main Container: Premium Surface */}
       <div className={cn(
-        "relative overflow-hidden rounded-[24px] p-6 border transition-all duration-700",
-        "bg-surface border-border shadow-sm",
-        isDanger && "border-red-500/50"
+        "relative overflow-hidden rounded-[32px] p-8 border transition-all duration-1000",
+        "bg-surface border-border/40 shadow-[0_8px_30px_rgb(0,0,0,0.02)]",
+        isDanger && "border-fintech-rose-dark/20 bg-fintech-rose-muted/30 shadow-[0_8px_30px_rgba(159,18,57,0.05)]"
       )}>
         
-        {/* Heartbeat Pulse - GPU Optimized */}
+        {/* Heartbeat Pulse - Emotionally Intelligent Breathing Animation */}
         {budget > 0 && (
-          <div className="absolute top-6 right-6">
-            <div className="relative flex h-4 w-4">
+          <div className="absolute top-8 right-8">
+            <div className="relative flex h-6 w-6">
               <span className={cn(
-                "absolute inline-flex h-full w-full rounded-full opacity-75 transform-gpu will-change-[transform,opacity]",
-                isDanger ? "animate-pulse bg-red-500" : "bg-white opacity-20"
+                "absolute inline-flex h-full w-full rounded-full opacity-30 transform-gpu will-change-[transform,opacity]",
+                isDanger ? "animate-[pulse_3s_ease-in-out_infinite] bg-[#DC2626]" : "bg-fintech-graphite-muted opacity-10"
               )} />
               <span className={cn(
-                "relative inline-flex rounded-full h-4 w-4 transition-colors duration-500",
-                isDanger ? "bg-red-500" : "bg-white/40"
+                "relative inline-flex rounded-full h-6 w-6 transition-colors duration-1000 shadow-sm",
+                isDanger ? "bg-[#DC2626]" : "bg-fintech-graphite-muted/20"
               )} />
             </div>
           </div>
         )}
 
-        <div className="flex items-center gap-5">
-          {/* Status Icon Badge */}
+        <div className="flex items-center gap-6">
+          {/* Circular Premium Icon Container - Reference Style */}
           <div className={cn(
-            "p-4 rounded-2xl transition-all duration-500 transform-gpu active:scale-[0.98]",
-            "bg-white/5 border border-white/5 text-white/40"
+            "h-16 w-16 rounded-full flex items-center justify-center transition-all duration-700 transform-gpu active:scale-95 border shrink-0 shadow-sm",
+            isDanger ? "bg-[#FEE2E2] border-[#FECACA]" : "bg-background border-border/60"
           )}>
-            <Icon className={cn("h-6 w-6 will-change-transform")} />
+            <Icon className={cn(
+              "h-7 w-7 transition-all duration-700 ease-butter-soft",
+              isDanger ? "text-[#DC2626] animate-[pulse_4s_ease-in-out_infinite]" : "text-[#1a1a1a]"
+            )} />
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-end mb-2">
+            <div className="flex justify-between items-end mb-3">
               <h4 className={cn(
-                "font-bold text-[10px] sm:text-[11px] uppercase tracking-[0.2em] transition-colors",
-                isDanger ? "text-red-400" : "text-white/60"
+                "font-black text-[11px] sm:text-[12px] tracking-[0.05em] transition-colors duration-700 leading-snug",
+                isDanger ? "text-[#DC2626]" : "text-fintech-graphite-muted"
               )}>
                 {health.label}
               </h4>
-              <span className="font-mono text-[10px] font-bold text-white/40">
+              <span className="font-mono text-[12px] font-black text-fintech-graphite-muted opacity-60">
                 {Math.round(percentage)}%
               </span>
             </div>
 
-            {/* Micro-Progress Bar */}
-            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+            {/* Micro-Progress Bar - Premium Weight */}
+            <div className="h-3 w-full bg-background rounded-full overflow-hidden border border-border/40 p-[2px]">
               <div 
                 className={cn(
-                  "h-full transition-all duration-1000 ease-butter-soft transform-gpu will-change-[width]",
-                  isDanger ? "bg-red-500" : "bg-white"
+                  "h-full rounded-full transition-all duration-1000 ease-butter-soft transform-gpu will-change-[width]",
+                  isDanger ? "bg-[#DC2626]" : "bg-[#1a1a1a]"
                 )}
                 style={{ width: `${Math.min(percentage, 100)}%` }}
               />
@@ -93,15 +96,15 @@ const BudgetPulse = React.memo(({ spent, budget, className }: BudgetPulseProps) 
           </div>
         </div>
 
-        {/* Dynamic Insight Overlay */}
-        <div className="mt-5 flex justify-between items-center bg-white/5 rounded-2xl p-4 border border-white/5">
-          <div>
-            <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mb-1">{t('common.spent', 'Spent')}</p>
-            <p className="text-sm font-black text-white font-mono tracking-tighter">{formatCurrency(spent)}</p>
+        {/* Dynamic Insight Overlay - Refined spacing */}
+        <div className="mt-6 sm:mt-8 flex justify-between items-center bg-background/50 rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 border border-border/40 shadow-inner">
+          <div className="min-w-0 flex-1">
+            <p className="text-[9px] sm:text-[10px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em] sm:tracking-[0.25em] mb-1.5 sm:mb-2 truncate">{t('common.spent', 'Spent')}</p>
+            <p className="text-lg sm:text-xl font-black text-[#1a1a1a] font-mono tracking-tighter leading-none tabular-nums truncate">{formatCurrency(spent)}</p>
           </div>
-          <div className="text-right">
-            <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mb-1">{t('common.budget', 'Limit')}</p>
-            <p className="text-sm font-black text-white/60 font-mono tracking-tighter">{formatCurrency(budget)}</p>
+          <div className="min-w-0 flex-1 text-right">
+            <p className="text-[9px] sm:text-[10px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em] sm:tracking-[0.25em] mb-1.5 sm:mb-2 truncate">{t('common.budget', 'Limit')}</p>
+            <p className="text-lg sm:text-xl font-black text-fintech-graphite-muted font-mono tracking-tighter leading-none tabular-nums truncate">{formatCurrency(budget)}</p>
           </div>
         </div>
       </div>

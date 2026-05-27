@@ -19,46 +19,73 @@ export default {
     },
     extend: {
       colors: {
-        border: "rgba(255, 255, 255, 0.06)",
-        input: "rgba(255, 255, 255, 0.06)",
-        ring: "#FFFFFF",
-        background: "#050505", // Premium AMOLED Black
-        foreground: "#FFFFFF", // Primary Text
-        surface: "#121212", // Surface / Card Background
-        "surface-elevated": "#181818",
-        "text-secondary": "#B3B3B3",
-        "text-muted": "#808080",
-        "ai-accent": "#FFFFFF", // Monochrome AI Accent
-        success: "#FFFFFF", // Premium Monochrome Success
-        warning: "#B3B3B3", // Premium Monochrome Warning
-        expense: "#FFFFFF", // Premium Monochrome Expense
+        border: "rgba(0, 0, 0, 0.06)",
+        input: "rgba(0, 0, 0, 0.06)",
+        ring: "#111111",
+        background: "#FAFAFA", // Premium Light Foundation
+        foreground: "#111111", // Primary Text
+        surface: "#FFFFFF", // Card Background
+        "surface-elevated": "#F5F5F5",
+        "text-secondary": "#666666",
+        "text-muted": "#999999",
+        "ai-accent": "#111111", // Monochrome AI Accent
+        success: "#111111", // Premium Monochrome Success
+        warning: "#666666", // Premium Monochrome Warning
+        expense: "#111111", // Premium Monochrome Expense
+        // Premium Fintech Semantic Palette
+        fintech: {
+          emerald: {
+            DEFAULT: "#10b981",
+            muted: "#ecfdf5",
+            dark: "#065f46",
+          },
+          amber: {
+            DEFAULT: "#f59e0b",
+            muted: "#fffbeb",
+            dark: "#92400e",
+          },
+          sapphire: {
+            DEFAULT: "#3b82f6",
+            muted: "#eff6ff",
+            dark: "#1e40af",
+          },
+          rose: {
+            DEFAULT: "#f43f5e",
+            muted: "#fff1f2",
+            dark: "#9f1239",
+          },
+          graphite: {
+            DEFAULT: "#1a1a1a",
+            muted: "#737373",
+          }
+        },
         primary: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#050505",
+          DEFAULT: "#111111",
+          foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#121212",
-          foreground: "#FFFFFF",
+          DEFAULT: "#F5F5F5",
+          foreground: "#111111",
         },
         destructive: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#050505",
+          DEFAULT: "#111111",
+          foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#121212",
-          foreground: "#B3B3B3",
+          DEFAULT: "#F5F5F5",
+          foreground: "#666666",
         },
         accent: {
-          DEFAULT: "rgba(255, 255, 255, 0.05)",
-          foreground: "#FFFFFF",
+          DEFAULT: "rgba(0, 0, 0, 0.03)",
+          foreground: "#111111",
         },
         popover: {
-          DEFAULT: "#121212",
-          foreground: "#FFFFFF",
+          DEFAULT: "#FFFFFF",
+          foreground: "#111111",
         },
         card: {
-          DEFAULT: "#121212",
-          foreground: "#FFFFFF",
+          DEFAULT: "#FFFFFF",
+          foreground: "#111111",
         },
       },
       fontFamily: {

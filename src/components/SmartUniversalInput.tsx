@@ -110,9 +110,9 @@ export default function SmartUniversalInput() {
       window.dispatchEvent(new Event('sync_queue_updated'));
 
       toast({
-        title: "Saved Successfully!",
-        description: `${formatCurrency(savedTransaction.amount)} recorded via ${resolvedPaymentMode}`,
-        className: "bg-emerald-600 text-white border-none shadow-lg",
+        title: "Safely Recorded",
+        description: `${formatCurrency(savedTransaction.amount)} saved to your financial timeline via ${resolvedPaymentMode}.`,
+        className: "bg-[#1a1a1a] text-white border border-[#333] shadow-[0_15px_40px_rgba(0,0,0,0.15)]",
       });
 
       if (isManual) {
@@ -217,9 +217,9 @@ export default function SmartUniversalInput() {
   };
 
   const applePhysics = "transition-all duration-300 ease-butter-soft active:scale-[0.98] touch-action-manipulation";
-  const mainCard = "bg-surface border border-border shadow-lg rounded-[24px]";
+  const mainCard = "bg-surface border border-border shadow-lg rounded-[28px]";
   const inputBase =
-    "bg-white/5 border border-white/5 rounded-xl px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-all font-mono";
+    "bg-background border border-border rounded-xl px-4 text-foreground placeholder:text-text-muted focus:outline-none focus:border-foreground transition-all font-mono";
 
   return (
     <div className="w-full relative">
@@ -231,17 +231,17 @@ export default function SmartUniversalInput() {
         transactionNote={`BachatKaro: Pay to ${activeTab === 'manual' ? mTitle : (parsedData?.description || "Merchant")}`}
         onPaymentReturn={handlePaymentReturn}
       />
-      <div className={cn("w-full max-w-xl mx-auto p-1", mainCard)}>
-      <div className="flex bg-background/50 rounded-[20px] p-1 mb-2 border border-white/5">
+      <div className={cn("w-full max-w-xl mx-auto p-1.5", mainCard)}>
+      <div className="flex bg-background rounded-[22px] p-1 mb-2 border border-border">
         {(["voice", "paste", "manual"] as TabType[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "flex-1 py-3 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all",
+              "flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all",
               activeTab === tab
-                ? "bg-white text-background shadow-sm"
-                : "text-text-muted hover:text-white hover:bg-white/5",
+                ? "bg-surface text-foreground shadow-sm border border-border"
+                : "text-text-secondary hover:text-foreground",
             )}
           >
             {tab}
@@ -251,39 +251,44 @@ export default function SmartUniversalInput() {
 
       <div className="p-6">
         {activeTab === "voice" && (
-          <div className="flex flex-col items-center py-10 animate-in fade-in zoom-in-95 duration-300">
+          <div className="flex flex-col items-center py-8 animate-in fade-in zoom-in-95 duration-300">
             <div className="relative mb-10">
               <div
                 className={cn(
-                  "absolute inset-0 rounded-full bg-white/5 blur-2xl transition-all duration-700",
+                  "absolute inset-0 rounded-full bg-foreground/5 blur-2xl transition-all duration-700",
                   isListening ? "scale-150 opacity-100" : "scale-0 opacity-0",
                 )}
               />
               <button
                 onClick={toggleListening}
                 className={cn(
-                  "relative h-28 w-24 rounded-[32px] flex items-center justify-center shadow-lg overflow-hidden",
+                  "relative h-32 w-28 rounded-[48px] flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-700 ease-butter-soft group",
                   isListening
-                    ? "bg-white text-background animate-pulse"
-                    : "bg-surface border border-white/10 text-white",
+                    ? "bg-[#FEE2E2] border-2 border-[#FECACA] scale-110 shadow-[0_0_30px_rgba(220,38,38,0.2)]"
+                    : "bg-gradient-to-b from-[#444] via-[#1a1a1a] to-[#000] border-t border-white/10 text-[#e5e5e5] hover:brightness-110",
                   applePhysics,
                 )}
               >
+                {/* Metallic Reflection Overlay */}
+                {!isListening && (
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-30 pointer-events-none" />
+                )}
+                
                 {isListening ? (
-                  <MicOff size={36} />
+                  <MicOff size={40} className="text-[#DC2626] animate-[pulse_2s_ease-in-out_infinite]" />
                 ) : (
-                  <Mic size={36} />
+                  <Mic size={40} className="drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] transition-transform duration-700 group-hover:scale-110" />
                 )}
               </button>
             </div>
-            <h3 className="text-white text-[10px] font-bold uppercase tracking-[0.3em] mb-2 opacity-60">
+            <h3 className="text-foreground text-[11px] font-bold uppercase tracking-[0.25em] mb-2">
               {isListening ? "Listening..." : "Tap to Speak"}
             </h3>
-            <p className="text-white/20 text-[9px] font-bold uppercase tracking-widest text-center">
+            <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest text-center max-w-[200px]">
               "Spent 500 on Petrol via Card"
             </p>
             {inputText && (
-              <div className="mt-8 p-5 bg-white/5 rounded-2xl border border-white/10 w-full italic text-white/60 text-center text-sm font-medium">
+              <div className="mt-8 p-5 bg-background rounded-2xl border border-border w-full italic text-text-secondary text-center text-sm font-medium">
                 "{inputText}"
               </div>
             )}
@@ -299,7 +304,7 @@ export default function SmartUniversalInput() {
                 placeholder="Paste Bank SMS here..."
                 className={cn("w-full min-h-[180px] pt-6", inputBase)}
               />
-              <div className="absolute top-5 right-5 text-white/20">
+              <div className="absolute top-5 right-5 text-text-muted">
                 <ClipboardPaste size={24} />
               </div>
             </div>
@@ -309,55 +314,55 @@ export default function SmartUniversalInput() {
         {activeTab === "manual" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
             <div className="relative">
-              <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 h-6 w-6" />
+              <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted h-6 w-6" />
               <input
                 type="number"
                 value={mAmount}
                 onChange={(e) => setMAmount(e.target.value)}
                 placeholder="0.00"
-                className={cn("w-full h-20 pl-14 text-4xl font-black focus:border-white/20", inputBase)}
+                className={cn("w-full h-20 pl-14 text-4xl font-bold focus:border-foreground", inputBase)}
               />
             </div>
 
             <div className="relative">
-              <AlignLeft className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 h-5 w-5" />
+              <AlignLeft className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted h-5 w-5" />
               <input
                 type="text"
                 value={mTitle}
                 onChange={(e) => setMTitle(e.target.value)}
                 placeholder="Where did you spend?"
-                className={cn("w-full h-14 pl-12 font-bold focus:border-white/20", inputBase)}
+                className={cn("w-full h-14 pl-12 font-bold focus:border-foreground", inputBase)}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[9px] font-bold uppercase text-white/20 tracking-widest ml-1">
+                <label className="text-[10px] font-bold uppercase text-text-secondary tracking-widest ml-1">
                   Payment
                 </label>
                 <select
                   value={mPaymentMode}
                   onChange={(e) => setMPaymentMode(e.target.value)}
-                  className={cn("w-full h-12 text-xs font-bold appearance-none focus:border-white/20", inputBase)}
+                  className={cn("w-full h-12 text-xs font-bold appearance-none focus:border-foreground", inputBase)}
                 >
                   {PAYMENT_MODES.map((mode) => (
-                    <option key={mode} value={mode} className="bg-surface">
+                    <option key={mode} value={mode} className="bg-surface text-foreground">
                       {mode}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-bold uppercase text-white/20 tracking-widest ml-1">
+                <label className="text-[10px] font-bold uppercase text-text-secondary tracking-widest ml-1">
                   Category
                 </label>
                 <select
                   value={mCategory}
                   onChange={(e) => setMCategory(e.target.value)}
-                  className={cn("w-full h-12 text-xs font-bold appearance-none focus:border-white/20", inputBase)}
+                  className={cn("w-full h-12 text-xs font-bold appearance-none focus:border-foreground", inputBase)}
                 >
                   {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat} className="bg-surface">
+                    <option key={cat} value={cat} className="bg-surface text-foreground">
                       {cat}
                     </option>
                   ))}
@@ -381,9 +386,9 @@ export default function SmartUniversalInput() {
                 }
                 disabled={isSaving || !mAmount}
                 className={cn(
-                  "flex-1 h-16 bg-white/5 border border-white/5 rounded-xl flex items-center justify-center gap-3 text-white/60 font-bold uppercase tracking-widest shadow-lg",
+                  "flex-1 h-16 bg-background border border-border rounded-xl flex items-center justify-center gap-3 text-foreground font-bold uppercase tracking-widest shadow-sm transition-all",
                   applePhysics,
-                  (isSaving || !mAmount) && "opacity-20",
+                  (isSaving || !mAmount) && "opacity-30",
                 )}
               >
                 {isSaving ? <Loader2 className="animate-spin h-5 w-5" /> : <><Check size={20} /> Add</>}
@@ -393,9 +398,9 @@ export default function SmartUniversalInput() {
                 onClick={() => setIsPaySheetOpen(true)}
                 disabled={isSaving || !mAmount}
                 className={cn(
-                  "flex-[1.5] h-16 bg-white text-background rounded-xl flex items-center justify-center gap-3 font-black uppercase tracking-widest shadow-xl",
+                  "flex-[1.5] h-16 bg-foreground text-surface rounded-xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest shadow-lg transition-all",
                   applePhysics,
-                  (isSaving || !mAmount) && "opacity-20",
+                  (isSaving || !mAmount) && "opacity-30",
                 )}
               >
                 <Smartphone size={22} /> Pay & Add
@@ -406,27 +411,24 @@ export default function SmartUniversalInput() {
 
         {parsedData && parsedData.amount && activeTab !== "manual" && (
           <div className="mt-8 animate-in fade-in slide-in-from-bottom-6 duration-500">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Sparkles size={60} className="text-white" />
+            <div className="bg-background border border-border rounded-2xl p-6 space-y-6 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-5">
+                <Sparkles size={60} className="text-foreground" />
               </div>
 
-              <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 flex items-center gap-2">
-                  <Sparkles size={14} /> Intelligence Active
+              <div className="flex justify-between items-center border-b border-border pb-4">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground flex items-center gap-2">
+                  <Sparkles size={14} /> AI EXTRACTION ACTIVE
                 </span>
                 <div className="flex items-center gap-2">
                   <span className={cn(
-                    "text-[8px] font-bold uppercase px-2 py-0.5 rounded-full border",
-                    parsedData.confidence > 0.8 ? "text-emerald-400 border-emerald-400/20 bg-emerald-400/5" :
-                    parsedData.confidence > 0.5 ? "text-amber-400 border-amber-400/20 bg-amber-400/5" :
-                    "text-rose-400 border-rose-400/20 bg-rose-400/5"
+                    "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border border-border bg-surface text-text-secondary"
                   )}>
                     Accuracy: {Math.round(parsedData.confidence * 100)}%
                   </span>
                   <button
                     onClick={() => setInputText("")}
-                    className="text-white/20 hover:text-white transition-colors"
+                    className="text-text-muted hover:text-foreground transition-colors"
                   >
                     <X size={20} />
                   </button>
@@ -435,32 +437,32 @@ export default function SmartUniversalInput() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[8px] text-white/20 uppercase font-bold tracking-widest mb-1">
+                  <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mb-1">
                     Detected
                   </p>
-                  <p className="text-3xl font-black text-white font-mono tracking-tighter">
+                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
                     {formatCurrency(parsedData.amount)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[8px] text-white/20 uppercase font-bold tracking-widest mb-1">
+                  <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mb-1">
                     Mode
                   </p>
-                  <span className="px-3 py-1 rounded-lg bg-white/5 text-white/60 text-[9px] font-bold uppercase border border-white/10">
+                  <span className="px-3 py-1 rounded-lg bg-surface text-foreground text-[10px] font-bold uppercase border border-border">
                     {parsedData.paymentMode}
                   </span>
                 </div>
               </div>
 
-              <div className="flex gap-3 items-center p-3 bg-white/5 rounded-xl border border-white/5">
-                <div className="h-10 w-10 rounded-lg bg-white/5 flex items-center justify-center text-white/40 border border-white/5">
+              <div className="flex gap-3 items-center p-4 bg-surface rounded-xl border border-border">
+                <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center text-text-secondary border border-border">
                   <Wallet size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white uppercase tracking-wide truncate">
+                  <p className="text-sm font-bold text-foreground uppercase tracking-tight truncate">
                     {parsedData.description}
                   </p>
-                  <p className="text-[9px] text-white/20 font-bold uppercase tracking-widest">
+                  <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest">
                     {parsedData.category}
                   </p>
                 </div>
@@ -469,16 +471,11 @@ export default function SmartUniversalInput() {
               {activeTab === "voice" ? (
                 <div className="flex flex-col items-center gap-3 py-2">
                   <div className="flex items-center justify-center gap-3">
-                    <Loader2 className="animate-spin h-3.5 w-3.5 text-white/40" />
-                    <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest animate-pulse">
-                      Auto-saving in 1.5s
+                    <Loader2 className="animate-spin h-3.5 w-3.5 text-text-secondary" />
+                    <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest animate-pulse">
+                      Auto-saving record
                     </span>
                   </div>
-                  {parsedData.confidence < 0.6 && (
-                    <p className="text-[8px] text-amber-400/40 font-bold uppercase tracking-widest text-center">
-                      Low confidence. Verify details or edit.
-                    </p>
-                  )}
                 </div>
               ) : (
                 <div className="flex gap-4">
@@ -486,9 +483,9 @@ export default function SmartUniversalInput() {
                     onClick={() => void handleSave(parsedData)}
                     disabled={isSaving}
                     className={cn(
-                      "flex-1 h-14 bg-white/5 border border-white/5 rounded-xl flex items-center justify-center gap-3 text-white/60 font-bold uppercase tracking-widest shadow-lg",
+                      "flex-1 h-14 bg-surface border border-border rounded-xl flex items-center justify-center gap-3 text-text-secondary font-bold uppercase tracking-widest shadow-sm transition-all",
                       applePhysics,
-                      isSaving && "opacity-20",
+                      isSaving && "opacity-30",
                     )}
                   >
                     {isSaving ? <Loader2 className="animate-spin h-5 w-5" /> : <><Save size={20} /> Save</>}
@@ -498,9 +495,9 @@ export default function SmartUniversalInput() {
                     onClick={() => setIsPaySheetOpen(true)}
                     disabled={isSaving}
                     className={cn(
-                      "flex-[1.5] h-14 bg-white text-background rounded-xl flex items-center justify-center gap-3 font-black uppercase tracking-widest shadow-xl",
+                      "flex-[1.5] h-14 bg-foreground text-surface rounded-xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest shadow-lg transition-all",
                       applePhysics,
-                      isSaving && "opacity-20",
+                      isSaving && "opacity-30",
                     )}
                   >
                     <Smartphone size={20} /> Pay & Save
@@ -512,16 +509,18 @@ export default function SmartUniversalInput() {
         )}
 
         {!parsedData && !isListening && activeTab !== "manual" && (
-          <div className="mt-8 flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/5 shadow-inner">
-            <AlertCircle className="h-5 w-5 text-white/20 mt-0.5 shrink-0" />
+          <div className="mt-8 flex items-start gap-5 p-7 bg-background/50 rounded-[32px] border border-border/40 shadow-inner">
+            <div className="h-10 w-10 rounded-full bg-[#DBEAFE] border border-[#BFDBFE] flex items-center justify-center shrink-0 shadow-sm">
+               <AlertCircle className="h-5 w-5 text-[#DC2626]" />
+            </div>
             <div>
-              <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-1">
-                Pro Tip
+              <p className="text-[11px] text-[#1a1a1a] font-black uppercase tracking-[0.2em] mb-1.5">
+                Forensic Trace Tip
               </p>
-              <p className="text-[9px] text-white/20 leading-relaxed font-bold uppercase tracking-wide">
+              <p className="text-[11px] text-fintech-graphite-muted leading-relaxed font-bold uppercase tracking-tight opacity-70">
                 {activeTab === "voice"
-                  ? "Talk naturally like you're telling a friend. We'll extract amount and merchant instantly."
-                  : "Copy your Bank SMS and paste it here. We'll do the rest."}
+                  ? "Speak naturally like describing a transaction. Logic will extract values instantly."
+                  : "Insert your Bank SMS into this terminal. Forensic engine will reconstruct the record."}
               </p>
             </div>
           </div>

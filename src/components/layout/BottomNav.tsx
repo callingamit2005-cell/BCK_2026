@@ -37,7 +37,7 @@ const BottomNav = () => {
   return (
     <>
       <nav
-        className="safe-x safe-bottom md:hidden fixed bottom-0 left-0 right-0 z-[100] w-full min-h-[84px] bg-background border-t border-white/5 flex items-center justify-around px-3 pt-2 pb-3"
+        className="safe-x safe-bottom md:hidden fixed bottom-0 left-0 right-0 z-[100] w-full min-h-[84px] bg-surface border-t border-border flex items-center justify-around px-3 pt-2 pb-3 shadow-[0_-4px_16px_rgba(0,0,0,0.04)]"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
       >
         {navItems.map((item) => {
@@ -49,7 +49,7 @@ const BottomNav = () => {
           
           if (item.isCenter) {
             return (
-              <div key="center-fab" className={cn("relative -top-5 flex items-center justify-center", applePhysics)}>
+              <div key="center-fab" className={cn("relative -top-6 flex items-center justify-center", applePhysics)}>
                 {/* 3. Toggle Logic */}
                 <button
                   type="button"
@@ -57,13 +57,13 @@ const BottomNav = () => {
                   aria-expanded={isOpen}
                   aria-label={isOpen ? "Close add transaction panel" : "Open add transaction panel"}
                   className={cn(
-                    "relative z-10 flex flex-col items-center justify-center w-[60px] h-[60px] rounded-full bg-surface border border-white/10 touch-manipulation"
+                    "relative z-10 flex flex-col items-center justify-center w-[64px] h-[64px] rounded-full bg-foreground border border-border shadow-lg touch-manipulation active:scale-95 transition-transform duration-200"
                   )}
                 >
-                  <item.icon className={cn("h-7 w-7 text-white transition-transform duration-300", isOpen ? "rotate-45" : "rotate-0")} />
+                  <item.icon className={cn("h-7 w-7 text-surface transition-transform duration-300", isOpen ? "rotate-45" : "rotate-0")} />
                 </button>
                 
-                <span className="absolute -bottom-6 text-[9px] font-bold uppercase tracking-widest text-text-muted">
+                <span className="absolute -bottom-7 text-[10px] font-bold uppercase tracking-widest text-text-secondary">
                   {item.label}
                 </span>
               </div>
@@ -79,19 +79,19 @@ const BottomNav = () => {
               }}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center justify-center min-w-[56px] min-h-[52px] gap-1 rounded-2xl group",
+                "flex flex-col items-center justify-center min-w-[64px] min-h-[52px] gap-1.5 rounded-2xl group",
                 applePhysics
               )}
             >
               <div className={cn(
-                "p-1.5 rounded-xl transition-all duration-300",
-                active ? "text-white" : "text-text-muted group-hover:text-text-secondary"
+                "p-2 rounded-xl transition-all duration-300",
+                active ? "text-foreground bg-background" : "text-text-secondary group-hover:text-foreground"
               )}>
                 <item.icon className={cn("h-5 w-5")} />
               </div>
               <span className={cn(
-                "text-[8px] font-bold uppercase tracking-[0.2em] transition-colors",
-                active ? "text-white" : "text-text-muted"
+                "text-[10px] font-bold uppercase tracking-[0.1em] transition-colors",
+                active ? "text-foreground" : "text-text-secondary"
               )}>
                 {item.label}
               </span>

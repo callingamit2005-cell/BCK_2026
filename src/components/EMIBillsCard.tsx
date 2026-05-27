@@ -43,57 +43,60 @@ const BillItem = React.memo<{
   }, [onDelete, bill.id]);
 
   return (
-    <li className="flex items-center justify-between py-3.5 px-3 hover:bg-white/5 rounded-xl transition-colors border border-transparent hover:border-white/5">
+    <li className="flex items-center justify-between py-4 px-4 hover:bg-background rounded-2xl transition-all duration-300 border border-transparent hover:border-border/60 group">
       <div className="flex-1 min-w-0">
-        <div className="font-bold text-white truncate">{bill.name}</div>
-        <div className="text-[10px] text-white/40 flex items-center gap-1 mt-0.5 font-bold uppercase tracking-widest">
-          <span>{t('emiBills.dueLabel', 'Due')}:</span>
-          <span>{new Date(bill.dueDate).toLocaleDateString('en-IN')}</span>
+        <div className="font-black text-[#1a1a1a] truncate text-[15px]">{bill.name}</div>
+        <div className="text-[10px] text-[#737373] flex items-center gap-1.5 mt-1 font-black uppercase tracking-widest">
+          <span className="opacity-70">{t('emiBills.dueLabel', 'Due')}:</span>
+          <span className="text-[#525252]">{new Date(bill.dueDate).toLocaleDateString('en-IN')}</span>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <span
           className={cn(
-            "font-black font-mono tracking-tighter text-lg mr-2",
+            "font-black font-mono tracking-tighter text-xl mr-2 transition-colors duration-300",
             bill.status === 'paid'
-              ? 'text-white/40'
-              : 'text-white'
+              ? 'text-[#737373] opacity-50'
+              : 'text-[#1a1a1a]'
           )}
         >
           {formatCurrency(bill.amount)}
         </span>
 
-        {/* Edit button */}
-        <button
-          onClick={handleEdit}
-          className="p-2 text-white/20 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-          aria-label={t('emiBills.editAria', 'Edit')}
-          title={t('emiBills.edit', 'Edit')}
-        >
-          <Pencil className="h-4 w-4" />
-        </button>
+        {/* Action Buttons Container */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {/* Edit button */}
+          <button
+            onClick={handleEdit}
+            className="p-2 text-[#737373] hover:text-[#1a1a1a] hover:bg-surface rounded-xl border border-transparent hover:border-border/60 transition-all"
+            aria-label={t('emiBills.editAria', 'Edit')}
+            title={t('emiBills.edit', 'Edit')}
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
 
-        {/* Delete button */}
-        <button
-          onClick={handleDelete}
-          className="p-2 text-white/20 hover:text-rose-500 hover:bg-white/5 rounded-lg transition-colors"
-          aria-label={t('emiBills.deleteAria', 'Delete')}
-          title={t('emiBills.delete', 'Delete')}
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+          {/* Delete button */}
+          <button
+            onClick={handleDelete}
+            className="p-2 text-[#737373] hover:text-red-600 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-100 transition-all"
+            aria-label={t('emiBills.deleteAria', 'Delete')}
+            title={t('emiBills.delete', 'Delete')}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
 
         {bill.status === 'unpaid' && onPay && (
           <button
-            className="ml-1 px-4 py-2 bg-white text-background rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-white/90 transition-all active:scale-[0.98]"
+            className="ml-2 px-6 h-10 bg-[#1a1a1a] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-[#1a1a1a]/90 transition-all active:scale-[0.96]"
             onClick={handlePay}
           >
             {t('emiBills.pay', 'Pay')}
           </button>
         )}
         {bill.status === 'paid' && (
-          <span className="ml-1 flex items-center gap-1 text-[9px] text-white/40 font-bold uppercase tracking-widest bg-white/5 px-2 py-1 rounded-lg border border-white/5">
-            <CheckCircle className="h-3 w-3" />
+          <span className="ml-2 flex items-center gap-1.5 text-[10px] text-[#737373] font-black uppercase tracking-widest bg-background px-3 py-1.5 rounded-xl border border-border/60">
+            <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
             {t('emiBills.paid', 'Paid')}
           </span>
         )}
@@ -122,14 +125,14 @@ const EMIBillsCard: React.FC<EMIBillsCardProps> = ({
   const billList = useMemo(() => {
     if (bills.length === 0) {
       return (
-        <div className="text-white/20 text-[10px] font-bold uppercase tracking-widest py-10 text-center bg-white/5 border border-dashed border-white/10 rounded-xl">
+        <div className="text-[#737373] text-[11px] font-black uppercase tracking-[0.2em] py-14 text-center bg-background/40 border border-dashed border-border/80 rounded-2xl">
           {t('emiBills.noBills', 'No EMI bills found.')}
         </div>
       );
     }
 
     return (
-      <ul className="space-y-1">
+      <ul className="space-y-2">
         {bills.map((bill) => (
           <BillItem
             key={bill.id}
@@ -144,17 +147,17 @@ const EMIBillsCard: React.FC<EMIBillsCardProps> = ({
   }, [bills, onPay, onEdit, onDelete, t]);
 
   return (
-    <div className="bg-surface rounded-[24px] border border-border shadow-sm p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
-            <CheckCircle className="h-5 w-5 text-white/40" />
+    <div className="bg-surface rounded-[24px] border border-border/60 shadow-sm p-8 group">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="bg-background p-3 rounded-2xl border border-border/80 shadow-sm transition-transform duration-500 group-hover:scale-105">
+            <CheckCircle className="h-5 w-5 text-[#525252]" />
           </div>
           <div>
-            <h3 className="text-xl font-black text-white uppercase tracking-tighter">
+            <h3 className="text-xl font-black text-[#1a1a1a] uppercase tracking-tighter">
               {t('emiBills.title', 'Fixed Bills')}
             </h3>
-            <p className="text-[9px] text-white/20 font-bold uppercase tracking-[0.2em] mt-0.5">
+            <p className="text-[10px] text-[#737373] font-black uppercase tracking-[0.25em] mt-1 opacity-80">
               {t('emiBills.description', 'Commitment Audit')}
             </p>
           </div>
@@ -162,7 +165,7 @@ const EMIBillsCard: React.FC<EMIBillsCardProps> = ({
         {onAddEmiLoan && (
           <button
             onClick={onAddEmiLoan}
-            className="flex items-center justify-center gap-2 px-6 h-12 bg-white text-background rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-white/90 transition-all w-full sm:w-auto active:scale-[0.98]"
+            className="flex items-center justify-center gap-2.5 px-8 h-12 bg-[#1a1a1a] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-[#1a1a1a]/90 transition-all w-full sm:w-auto active:scale-[0.96] hover:shadow-2xl"
           >
             <Plus className="h-4 w-4" />
             {t('emiBills.addEmiLoan', 'Add Loan Details')}

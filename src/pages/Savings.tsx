@@ -132,20 +132,20 @@ const Savings = () => {
   const primaryBtn = "bg-white text-background hover:bg-white/90 shadow-sm border-none active:scale-[0.98]";
 
   return (
-    <div className="min-h-screen bg-background pb-32 md:pb-12 antialiased selection:bg-white/10">
-      <header className="sticky top-0 z-50 bg-background/95 border-b border-white/5">
+    <div className="min-h-screen bg-background pb-32 md:pb-12 antialiased selection:bg-[#111111]/10">
+      <header className="sticky top-0 z-50 bg-background/95 border-b border-border">
         <div className="max-w-4xl mx-auto flex items-center justify-between p-4 sm:p-6">
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => navigate('/dashboard')}
-              className="h-11 w-11 text-text-muted hover:text-white hover:bg-white/5 rounded-xl border border-transparent transition-all active:scale-[0.98]"
+              className="h-11 w-11 text-text-muted hover:text-[#111111] hover:bg-surface rounded-xl border border-transparent transition-all active:scale-[0.98]"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5 text-white uppercase">
+              <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5 text-[#111111] uppercase">
                 <PiggyBank className="h-6 w-6 text-text-muted" />
                 {tSafe('savings.page.title', 'Savings Goals')}
               </h1>
@@ -162,13 +162,13 @@ const Savings = () => {
           </div>
         )}
 
-        <div className="bg-surface rounded-[24px] p-2 sm:p-3 shadow-sm border border-white/5">
+        <div className="bg-surface rounded-[24px] p-2 sm:p-3 shadow-sm border border-border">
           <CardHeader className="px-6 pt-6 pb-2">
             <div className="flex items-center gap-2 mb-1.5">
               <PlusCircle className="h-3.5 w-3.5 text-text-muted" />
               <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">Initialization</span>
             </div>
-            <CardTitle className="text-2xl font-bold text-white uppercase tracking-tight">
+            <CardTitle className="text-2xl font-bold text-[#111111] uppercase tracking-tight">
                New Ambition
             </CardTitle>
           </CardHeader>
@@ -189,19 +189,19 @@ const Savings = () => {
 
         {loading && goals.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-8 h-8 border-2 border-white/10 border-t-white rounded-full animate-spin" />
-            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest animate-pulse">Syncing Vault</p>
+            <div className="w-8 h-8 border-2 border-border border-t-[#111111] rounded-full animate-spin" />
+            <p className="text-[10px] font-bold text-[#111111]/20 uppercase tracking-widest animate-pulse">Syncing Vault</p>
           </div>
         )}
 
         {!loading && goals.length === 0 && (
-          <Card className="border-dashed border-2 bg-white/[0.02] border-white/5 rounded-[32px] overflow-hidden">
+          <Card className="border-dashed border-2 bg-surface border-border rounded-[32px] overflow-hidden">
             <CardContent className="flex flex-col items-center justify-center py-20 text-center px-10">
-              <div className="bg-white/5 p-6 rounded-3xl mb-6 border border-white/5">
-                <Target className="h-10 w-10 text-white/10" />
+              <div className="bg-surface p-6 rounded-3xl mb-6 border border-border">
+                <Target className="h-10 w-10 text-[#111111]/10" />
               </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">No active ambitions</h3>
-              <p className="text-white/40 text-sm max-w-xs leading-relaxed font-medium">
+              <h3 className="text-xl font-bold text-[#111111] uppercase tracking-tight">No active ambitions</h3>
+              <p className="text-text-muted text-sm max-w-xs leading-relaxed font-medium">
                 {tSafe('savings.no_goals', "You haven't set any savings goals yet. Start by creating your first ambition above.")}
               </p>
             </CardContent>

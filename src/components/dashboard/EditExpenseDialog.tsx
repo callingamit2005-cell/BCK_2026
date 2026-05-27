@@ -118,7 +118,7 @@ const EditExpenseDialog = ({ expense, open, onOpenChange }: EditExpenseDialogPro
 
       if (error) throw error;
 
-      toast({ title: 'Updated Successfully', description: 'Transaction details saved.', className: "bg-emerald-600 text-white border-none shadow-lg" });
+      toast({ title: 'Updated Successfully', description: 'Transaction details saved.', className: "bg-foreground text-surface border-none shadow-lg" });
       queryClient.invalidateQueries({ queryKey });
       onOpenChange(false);
     } catch (err: any) {
@@ -126,74 +126,73 @@ const EditExpenseDialog = ({ expense, open, onOpenChange }: EditExpenseDialogPro
       setSubmitError(err.message || 'Update failed');
       toast({ title: 'Error', description: 'Failed to update transaction.', variant: 'destructive' });
     } finally {
-      setIsSubmitting(false);
+      setIsDeleting(false);
       abortControllerRef.current = null;
     }
   }, [isSubmitting, expense, user, amount, isFormValid, paymentMode, category, queryClient, toast, onOpenChange]);
 
   // ==================== PREMIUM LIGHT UI SYSTEM ====================
-  const gradientHeader = "bg-gradient-to-r from-[#7C3AED] via-[#EC4899] to-[#D946EF]";
-  const inputStyle = "h-14 rounded-[16px] bg-slate-50 border-slate-200 text-slate-900 focus:border-[#EC4899] focus:ring-[#EC4899]/10 font-bold transition-all";
-  const labelStyle = "text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1";
+  const inputStyle = "h-14 rounded-xl bg-background border-border text-foreground focus:border-foreground focus:ring-foreground/5 font-bold transition-all shadow-inner";
+  const labelStyle = "text-[10px] font-bold uppercase tracking-widest text-text-secondary ml-1";
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md w-[95%] bg-white rounded-[32px] overflow-hidden p-0 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-md w-[95%] bg-surface rounded-[32px] overflow-hidden p-0 border-none shadow-2xl">
         <DialogDescription className="sr-only">Edit details of your transaction, including amount, payment mode, and category.</DialogDescription>
         {/* Accent Top Bar */}
-        <div className={cn("h-2 w-full", gradientHeader)} />
+        <div className={cn("h-2 w-full bg-foreground opacity-5")} />
         
-        <div className="p-6 sm:p-8 space-y-6">
+        <div className="p-8 sm:p-10 space-y-8">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tighter flex items-center gap-3">
-              <div className="p-2.5 rounded-[14px] bg-purple-50 text-purple-600 border border-purple-100 shadow-sm">
-                <Pencil className="h-5 w-5" />
+            <DialogTitle className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-4 uppercase">
+              <div className="p-3 rounded-2xl bg-background text-text-secondary border border-border shadow-sm">
+                <Pencil className="h-6 w-6" />
               </div>
-              Edit Transaction
+              Modify Entry
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Amount Input */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-amount" className={labelStyle}>Amount (₹)</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="edit-amount" className={labelStyle}>Liquidity Change (₹)</Label>
               <Input
                 id="edit-amount"
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className={cn("text-xl tracking-tight", inputStyle)}
+                className={cn("text-2xl tracking-tighter font-mono", inputStyle)}
                 disabled={isSubmitting}
                 required
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-5">
               {/* Payment Select */}
-              <div className="space-y-2">
-                <Label className={labelStyle}>Mode</Label>
+              <div className="space-y-2.5">
+                <Label className={labelStyle}>Medium</Label>
                 <Select value={paymentMode} onValueChange={setPaymentMode} disabled={isSubmitting}>
                   <SelectTrigger className={inputStyle}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl bg-white border-slate-200 shadow-xl text-slate-900">
+                  <SelectContent className="rounded-2xl bg-surface border-border shadow-2xl text-foreground">
                     {PAYMENT_MODES.map((m) => (
-                      <SelectItem key={m} value={m} className="font-bold py-3 cursor-pointer text-slate-900 focus:text-purple-700">{m}</SelectItem>
+                      <SelectItem key={m} value={m} className="font-bold py-3 cursor-pointer text-foreground focus:bg-background focus:text-foreground">{m}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Category Select */}
-              <div className="space-y-2">
-                <Label className={labelStyle}>Category</Label>
+              <div className="space-y-2.5">
+                <Label className={labelStyle}>Matrix</Label>
                 <Select value={category} onValueChange={setCategory} disabled={isSubmitting}>
                   <SelectTrigger className={inputStyle}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl bg-white border-slate-200 shadow-xl text-slate-900">
+                  <SelectContent className="rounded-2xl bg-surface border-border shadow-2xl text-foreground">
                     {CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c} className="font-bold py-3 cursor-pointer text-slate-900 focus:text-purple-700">{c}</SelectItem>
+                      <SelectItem key={c} value={c} className="font-bold py-3 cursor-pointer text-foreground focus:bg-background focus:text-foreground">{c}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -201,31 +200,31 @@ const EditExpenseDialog = ({ expense, open, onOpenChange }: EditExpenseDialogPro
             </div>
 
             {submitError && (
-              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-xs font-bold uppercase tracking-wider animate-in fade-in">
+              <div className="p-5 rounded-[20px] bg-background border border-border text-foreground text-[11px] font-bold uppercase tracking-widest animate-in fade-in shadow-inner">
                 ⚠️ {submitError}
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-border">
               <Button 
                 type="button" 
                 variant="ghost" 
                 onClick={() => onOpenChange(false)}
-                className="flex-1 h-14 rounded-[20px] font-black uppercase tracking-widest text-[11px] text-slate-400 hover:bg-slate-50 transition-all"
+                className="flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px] text-text-secondary hover:text-foreground hover:bg-background transition-all shadow-sm"
                 disabled={isSubmitting}
               >
-                Cancel
+                Abort
               </Button>
               <Button 
                 type="submit" 
-                className={cn("flex-1 h-14 rounded-[20px] font-black uppercase tracking-widest text-[11px] transition-all active:scale-95", gradientHeader)}
+                className={cn("flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px] transition-all active:scale-95 bg-foreground text-surface hover:bg-foreground/90 shadow-xl")}
                 disabled={isSubmitting || !isFormValid}
               >
                 {isSubmitting ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Committing...</>
                 ) : (
-                  <><Check className="mr-2 h-4 w-4" /> Save Changes</>
+                  <><Check className="mr-2 h-4 w-4" /> Save Record</>
                 )}
               </Button>
             </div>

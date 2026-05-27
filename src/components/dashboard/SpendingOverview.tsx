@@ -22,16 +22,16 @@ interface SpendingOverviewProps {
   loading: boolean;
 }
 
-// Enterprise‑grade gradient colors (purple/pink family)
-const GRADIENT_COLORS = [
-  '#8b5cf6', // purple-600
-  '#ec4899', // pink-500
-  '#a855f7', // purple-500
-  '#f43f5e', // rose-500
-  '#6366f1', // indigo-500
-  '#d946ef', // fuchsia-500
-  '#c084fc', // purple-400
-  '#f472b6', // pink-400
+// Enterprise‑grade monochrome palette
+const MONOCHROME_COLORS = [
+  '#111111', // foreground
+  '#666666', // text-secondary
+  '#999999', // text-muted
+  '#333333',
+  '#4D4D4D',
+  '#808080',
+  '#B3B3B3',
+  '#CCCCCC',
 ];
 
 const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
@@ -45,7 +45,7 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
       .map(([name, value], index) => ({
         name,
         value,
-        color: GRADIENT_COLORS[index % GRADIENT_COLORS.length],
+        color: MONOCHROME_COLORS[index % MONOCHROME_COLORS.length],
       }))
       .sort((a, b) => b.value - a.value); // sort descending
   }, [expenses]);
@@ -61,7 +61,7 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
       .map(([name, value], index) => ({
         name,
         value,
-        color: GRADIENT_COLORS[(index + 3) % GRADIENT_COLORS.length], // shift index for variety
+        color: MONOCHROME_COLORS[(index + 3) % MONOCHROME_COLORS.length], // shift index for variety
       }))
       .sort((a, b) => b.value - a.value);
   }, [expenses]);
@@ -87,27 +87,27 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
 
   if (loading) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+          <h2 className="text-xl font-bold text-foreground">
             Spending Overview
           </h2>
-          <div className="h-px flex-1 bg-slate-100" />
+          <div className="h-px flex-1 bg-border" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <Card className="bg-white rounded-2xl shadow-xl shadow-purple-100/20 border border-slate-100">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="bg-surface rounded-2xl shadow-sm border border-border">
             <CardContent className="h-64 flex items-center justify-center">
-              <div className="animate-pulse space-y-3 w-3/4">
-                <div className="h-4 bg-slate-200 rounded w-3/4 mx-auto"></div>
-                <div className="h-32 bg-slate-100 rounded-lg"></div>
+              <div className="animate-pulse space-y-4 w-3/4">
+                <div className="h-4 bg-background rounded w-3/4 mx-auto"></div>
+                <div className="h-32 bg-background rounded-xl"></div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white rounded-2xl shadow-xl shadow-purple-100/20 border border-slate-100">
+          <Card className="bg-surface rounded-2xl shadow-sm border border-border">
             <CardContent className="h-64 flex items-center justify-center">
-              <div className="animate-pulse space-y-3 w-3/4">
-                <div className="h-4 bg-slate-200 rounded w-3/4 mx-auto"></div>
-                <div className="h-32 bg-slate-100 rounded-lg"></div>
+              <div className="animate-pulse space-y-4 w-3/4">
+                <div className="h-4 bg-background rounded w-3/4 mx-auto"></div>
+                <div className="h-32 bg-background rounded-xl"></div>
               </div>
             </CardContent>
           </Card>
@@ -118,18 +118,18 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
 
   if (categoryData.length === 0) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+          <h2 className="text-xl font-bold text-foreground">
             Spending Overview
           </h2>
-          <div className="h-px flex-1 bg-slate-100" />
+          <div className="h-px flex-1 bg-border" />
         </div>
-        <Card className="bg-white rounded-2xl shadow-xl shadow-purple-100/20 border border-slate-100">
-          <CardContent className="py-16 text-center text-slate-400">
-            <Wallet className="h-16 w-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg font-medium">No spending data yet</p>
-            <p className="text-sm">Add expenses to see your overview</p>
+        <Card className="bg-surface rounded-2xl shadow-sm border border-border">
+          <CardContent className="py-20 text-center text-text-secondary">
+            <Wallet className="h-16 w-16 mx-auto mb-6 text-text-muted" />
+            <p className="text-lg font-bold text-foreground mb-1 uppercase tracking-tight">Zero Records</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest">Add transactions to generate intelligence</p>
           </CardContent>
         </Card>
       </div>
@@ -137,35 +137,35 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+        <h2 className="text-xl font-bold text-foreground">
           Spending Overview
         </h2>
-        <div className="h-px flex-1 bg-slate-100" />
+        <div className="h-px flex-1 bg-border" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Chart – Category Distribution */}
-        <Card className="bg-white rounded-2xl shadow-xl shadow-purple-100/20 border border-slate-100 overflow-hidden">
-          <CardHeader className="pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-pink-50">
-            <CardTitle className="text-base font-bold text-slate-700">
-              Category Distribution
+        <Card className="bg-surface rounded-[24px] shadow-sm border border-border overflow-hidden">
+          <CardHeader className="pb-4 border-b border-border bg-background">
+            <CardTitle className="text-sm font-bold text-foreground uppercase tracking-widest">
+              Category Matrix
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-5">
-            <div className="flex flex-col md:flex-row items-center gap-5">
-              <ChartContainer config={categoryChartConfig} className="h-56 w-56 flex-shrink-0">
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center gap-8">
+              <ChartContainer config={categoryChartConfig} className="h-64 w-64 flex-shrink-0">
                 <PieChart>
                   <Pie
                     data={categoryData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={48}
-                    outerRadius={80}
-                    paddingAngle={3}
+                    innerRadius={60}
+                    outerRadius={96}
+                    paddingAngle={2}
                     dataKey="value"
-                    strokeWidth={2}
+                    strokeWidth={4}
                     stroke="hsl(var(--background))"
                   >
                     {categoryData.map((entry, index) => (
@@ -176,7 +176,7 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
                     content={
                       <ChartTooltipContent
                         formatter={(value) => (
-                          <span className="font-mono font-bold">{formatCurrency(Number(value))}</span>
+                          <span className="font-mono font-bold text-foreground">{formatCurrency(Number(value))}</span>
                         )}
                       />
                     }
@@ -184,30 +184,30 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
                 </PieChart>
               </ChartContainer>
 
-              <div className="flex-1 space-y-3 w-full">
-                {categoryData.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
+              <div className="flex-1 space-y-4 w-full">
+                {categoryData.slice(0, 5).map((item) => (
+                  <div key={item.name} className="flex items-center justify-between text-[12px]">
+                    <div className="flex items-center gap-3">
                       <div
-                        className="w-3 h-3 rounded-full shadow-sm"
+                        className="w-3.5 h-3.5 rounded-sm shadow-sm"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="text-slate-600 font-medium">{item.name}</span>
+                      <span className="text-text-secondary font-bold uppercase tracking-tight">{item.name}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold text-slate-900">
+                    <div className="flex items-center gap-4">
+                      <span className="font-bold text-foreground font-mono">
                         {formatCurrency(item.value)}
                       </span>
-                      <span className="text-xs font-mono text-slate-400 w-10 text-right">
+                      <span className="text-[10px] font-bold font-mono text-text-muted w-10 text-right">
                         {((item.value / total) * 100).toFixed(0)}%
                       </span>
                     </div>
                   </div>
                 ))}
-                <div className="pt-3 mt-3 border-t border-slate-100">
-                  <div className="flex items-center justify-between text-sm font-bold text-slate-900">
-                    <span>Total</span>
-                    <span className="text-base">{formatCurrency(total)}</span>
+                <div className="pt-4 mt-4 border-t border-border">
+                  <div className="flex items-center justify-between text-sm font-bold text-foreground uppercase tracking-widest">
+                    <span>Aggregate</span>
+                    <span className="text-lg font-mono">{formatCurrency(total)}</span>
                   </div>
                 </div>
               </div>
@@ -216,50 +216,50 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
         </Card>
 
         {/* Bar Chart – Payment Mode Totals */}
-        <Card className="bg-white rounded-2xl shadow-xl shadow-purple-100/20 border border-slate-100 overflow-hidden">
-          <CardHeader className="pb-2 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-pink-50">
-            <CardTitle className="text-base font-bold text-slate-700">
-              Payment Mode Totals
+        <Card className="bg-surface rounded-[24px] shadow-sm border border-border overflow-hidden">
+          <CardHeader className="pb-4 border-b border-border bg-background">
+            <CardTitle className="text-sm font-bold text-foreground uppercase tracking-widest">
+              Payment Velocity
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <ChartContainer config={paymentChartConfig} className="h-64 w-full">
               <BarChart
                 data={paymentModeData}
                 layout="vertical"
-                margin={{ top: 0, right: 16, bottom: 0, left: 0 }}
+                margin={{ top: 0, right: 32, bottom: 0, left: 0 }}
               >
                 <CartesianGrid
-                  strokeDasharray="3 3"
+                  strokeDasharray="4 4"
                   horizontal={true}
                   vertical={false}
-                  className="stroke-slate-200"
+                  className="stroke-border"
                 />
                 <XAxis
                   type="number"
                   tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
                   axisLine={false}
                   tickLine={false}
-                  className="text-xs fill-slate-400"
+                  className="text-[10px] font-bold fill-text-muted uppercase"
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  width={80}
-                  className="text-xs fill-slate-600 font-medium"
+                  width={90}
+                  className="text-[11px] fill-text-secondary font-bold uppercase tracking-tight"
                 />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
                       formatter={(value) => (
-                        <span className="font-mono font-bold">{formatCurrency(Number(value))}</span>
+                        <span className="font-mono font-bold text-foreground">{formatCurrency(Number(value))}</span>
                       )}
                     />
                   }
                 />
-                <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={20}>
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                   {paymentModeData.map((entry, index) => (
                     <Cell key={`bar-${index}`} fill={entry.color} />
                   ))}

@@ -106,37 +106,37 @@ const LoginForm = () => {
       <Button 
         type="button"
         onClick={handleGoogleLogin}
-        className="w-full h-13 bg-white/5 border border-white/5 text-white font-bold rounded-2xl flex items-center justify-center gap-3 hover:bg-white/10 transition-all shadow-sm group active:scale-[0.98]"
+        className="w-full h-14 bg-background border border-border text-text-secondary font-bold rounded-xl flex items-center justify-center gap-3 hover:text-foreground hover:border-foreground transition-all shadow-sm group active:scale-[0.98]"
       >
-        <img src="https://www.google.com/favicon.ico" className="w-5 h-5 group-hover:scale-110 transition-transform grayscale brightness-200" alt="G" />
+        <img src="https://www.google.com/favicon.ico" className="w-5 h-5 group-hover:scale-110 transition-transform grayscale opacity-70 group-hover:opacity-100 group-hover:grayscale-0" alt="G" />
         {t('auth_continue_google', 'Continue with Google')}
       </Button>
 
       <div className="relative flex items-center justify-center">
-        <span className="absolute inset-x-0 h-px bg-white/5"></span>
-        <span className="relative px-4 text-[10px] font-bold text-white/20 bg-background uppercase tracking-widest">
+        <span className="absolute inset-x-0 h-px bg-border"></span>
+        <span className="relative px-4 text-[10px] font-bold text-text-muted bg-surface uppercase tracking-widest">
           {t('auth_or_email', 'Or login with email')}
         </span>
       </div>
 
       <form onSubmit={handleLogin} className="space-y-6">
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest flex items-center gap-2">
-            <Mail size={12} className="text-white/40" />
+          <Label className="text-[10px] font-bold text-text-secondary ml-1 uppercase tracking-widest flex items-center gap-2">
+            <Mail size={12} className="text-text-muted" />
             {t('auth_email', 'Email Address')}
           </Label>
           <Input
             type="email"
-            placeholder="amit@example.com"
+            placeholder="name@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-12 bg-white/5 rounded-xl border-white/5 text-white font-bold focus:border-white/20 transition-all"
+            className="h-12 bg-background rounded-xl border-border text-foreground font-bold focus:border-foreground transition-all"
           />
         </div>
 
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest flex items-center gap-2">
-            <Lock size={12} className="text-white/40" />
+          <Label className="text-[10px] font-bold text-text-secondary ml-1 uppercase tracking-widest flex items-center gap-2">
+            <Lock size={12} className="text-text-muted" />
             {t('auth_password', 'Password')}
           </Label>
           <Input
@@ -144,7 +144,7 @@ const LoginForm = () => {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-12 bg-white/5 rounded-xl border-white/5 text-white font-bold focus:border-white/20 transition-all"
+            className="h-12 bg-background rounded-xl border-border text-foreground font-bold focus:border-foreground transition-all"
           />
         </div>
 
@@ -159,12 +159,12 @@ const LoginForm = () => {
                 console.log("[BUTTON_DISABLED_STATE] Turnstile Success");
                 setIsHuman(true);
             }}
-            theme="dark"
+            theme="light"
           />
         </div>
 
         {error && (
-          <div className="text-[10px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-shake uppercase tracking-widest">
+          <div className="text-[10px] font-bold text-foreground bg-background border border-border rounded-xl p-4 animate-shake uppercase tracking-widest shadow-sm">
             ⚠️ {error}
           </div>
         )}
@@ -172,7 +172,7 @@ const LoginForm = () => {
         <Button
           type="submit"
           disabled={loading || !isHuman}
-          className={`w-full h-14 bg-white text-background rounded-2xl font-black text-lg shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all disabled:opacity-20 uppercase tracking-widest`}
+          className={`w-full h-16 bg-foreground text-surface rounded-2xl font-bold text-base shadow-2xl hover:bg-foreground/90 active:scale-[0.98] transition-all disabled:opacity-30 uppercase tracking-[0.2em]`}
         >
           {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <LogIn className="mr-2 h-5 w-5" />}
           {t('auth_login_button', 'Sign In')}

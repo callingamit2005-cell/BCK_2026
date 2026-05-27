@@ -74,20 +74,22 @@ const IdentitySetupView: React.FC<IdentitySetupViewProps> = ({
     inputRenderCount++;
     
     useEffect(() => {
-        console.log("[IDENTITY_SETUP_MOUNT]");
+        if (import.meta.env.DEV) console.log("[IDENTITY_SETUP_MOUNT]");
         
         const logInputPos = () => {
-            if (inputRef.current) {
+            if (import.meta.env.DEV && inputRef.current) {
                 const rect = inputRef.current.getBoundingClientRect();
                 console.log("[INPUT_POSITION]", { top: rect.top, bottom: rect.bottom, height: rect.height });
             }
         };
 
         const handleResize = () => {
-            console.log("[VIEWPORT_RESIZE]", { 
-                innerHeight: window.innerHeight, 
-                visualHeight: window.visualViewport?.height 
-            });
+            if (import.meta.env.DEV) {
+              console.log("[VIEWPORT_RESIZE]", { 
+                  innerHeight: window.innerHeight, 
+                  visualHeight: window.visualViewport?.height 
+              });
+            }
             logInputPos();
         };
 
@@ -95,7 +97,7 @@ const IdentitySetupView: React.FC<IdentitySetupViewProps> = ({
         logInputPos();
 
         return () => {
-            console.log("[IDENTITY_SETUP_UNMOUNT]");
+            if (import.meta.env.DEV) console.log("[IDENTITY_SETUP_UNMOUNT]");
             window.visualViewport?.removeEventListener('resize', handleResize);
         };
     }, []);
@@ -103,53 +105,45 @@ const IdentitySetupView: React.FC<IdentitySetupViewProps> = ({
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-left space-y-2">
-                <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter">Missing Payment ID</h2>
-                <p className="text-[#b3b3b3] text-[10px] font-bold uppercase tracking-[0.1em] leading-relaxed">
-                    {selectedTarget?.name} hasn’t added a validated UPI ID yet.
+                <h2 className="text-2xl font-bold text-foreground uppercase tracking-tight">Setup Payment ID</h2>
+                <p className="text-text-secondary text-[11px] font-bold uppercase tracking-[0.1em] leading-relaxed">
+                    {selectedTarget?.name} needs a validated UPI ID to receive payments.
                 </p>
             </div>
-            <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-                <div className="space-y-2">
-                    <Label className="text-[9px] font-black uppercase text-white/40 tracking-widest ml-1">Enter UPI ID (VPA)</Label>
+            <div className="p-6 rounded-[24px] bg-surface border border-border space-y-5 shadow-sm">
+                <div className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase text-text-secondary tracking-widest ml-1">Enter UPI ID (VPA)</Label>
                     <Input 
                         ref={inputRef}
                         value={upiInput} 
                         onChange={(e) => { 
-                            console.log("[UPI_INPUT_CHANGE]", { len: e.target.value.length, val: e.target.value });
                             setUpiInput(e.target.value); 
                             setSetupError(null); 
                         }} 
-                        onFocus={() => {
-                            console.log("[UPI_INPUT_FOCUS]");
-                            if (window.visualViewport) {
-                                console.log("[KEYBOARD_OPEN_PROBABLE] height:", window.visualViewport.height);
-                            }
-                        }}
-                        onBlur={() => console.log("[UPI_INPUT_BLUR]")}
                         placeholder="e.g. name@oksbi" 
-                        className="h-12 bg-black/20 border-white/10 text-white placeholder:text-white/10 font-bold focus:ring-purple-500/50" 
+                        className="h-14 bg-background border-border text-foreground placeholder:text-text-muted font-bold focus:ring-foreground rounded-xl" 
                     />
                     <div className="flex items-center gap-2 px-1">
-                        <Info className="h-3 w-3 text-purple-400" />
-                        <p className="text-[7px] font-bold text-white/30 uppercase tracking-widest">Must match format: user@handle (No emails)</p>
+                        <Info className="h-3.5 w-3.5 text-text-muted" />
+                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Format: user@handle</p>
                     </div>
                 </div>
                 {setupError && (
-                    <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center gap-3 animate-in fade-in zoom-in-95">
-                        <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
-                        <p className="text-[10px] font-bold text-rose-500 uppercase tracking-tight">{setupError}</p>
+                    <div className="p-4 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center gap-3 animate-in fade-in zoom-in-95">
+                        <AlertCircle className="h-4 w-4 text-foreground shrink-0" />
+                        <p className="text-[11px] font-bold text-foreground uppercase tracking-tight">{setupError}</p>
                     </div>
                 )}
-                <Button onClick={handleSaveIdentity} disabled={isSavingIdentity || !isValidUPI(upiInput)} className="w-full h-12 bg-gradient-to-r from-purple-600 to-[#ff0f7b] text-white font-black uppercase text-[10px] tracking-[0.2em] rounded-xl shadow-lg active:scale-95 transition-all disabled:opacity-30">
-                    {isSavingIdentity ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify & Save UPI ID"}
-                </Button>
+                <button onClick={handleSaveIdentity} disabled={isSavingIdentity || !isValidUPI(upiInput)} className="w-full h-14 bg-foreground text-surface font-bold uppercase text-[11px] tracking-[0.2em] rounded-xl shadow-lg active:scale-95 transition-all disabled:opacity-30 hover:bg-foreground/90">
+                    {isSavingIdentity ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify & Save ID"}
+                </button>
             </div>
             {!isSelf && (
                 <div className="flex flex-col gap-3">
-                    <Button variant="ghost" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Hi ${selectedTarget?.name}, please add your UPI ID on BachatKaro so I can settle our debts! ✨`)}`, "_blank")} className="h-12 text-purple-400 font-bold uppercase text-[9px] tracking-widest border border-purple-500/20 rounded-xl">
-                        Request Payment Setup via WhatsApp
+                    <Button variant="ghost" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Hi ${selectedTarget?.name}, please add your UPI ID on BachatKaro so I can settle our debts! ✨`)}`, "_blank")} className="h-14 text-text-secondary font-bold uppercase text-[10px] tracking-widest border border-border rounded-xl hover:text-foreground hover:bg-background">
+                        Request via WhatsApp
                     </Button>
-                    <button onClick={() => setView('selector')} className="text-[8px] font-black text-white/20 hover:text-white uppercase tracking-widest text-center">Cancel & Pick Someone Else</button>
+                    <button onClick={() => setView('selector')} className="text-[10px] font-bold text-text-muted hover:text-foreground uppercase tracking-widest text-center py-2 transition-colors">Cancel & Go Back</button>
                 </div>
             )}
         </div>
@@ -571,51 +565,49 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
 
   // 5. Render Fragments
   const SelectorView = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-3">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-4">
         <div className="flex items-center gap-2 px-1">
-            <Users className="h-3.5 w-3.5 text-purple-400" />
-            <p className="text-[#b3b3b3] text-[9px] font-black uppercase tracking-[0.2em]">Group Settlements</p>
+            <Users className="h-4 w-4 text-text-secondary" />
+            <p className="text-text-secondary text-[10px] font-bold uppercase tracking-[0.2em]">Settlement Engine</p>
         </div>
         {availableP2PTargets.length > 0 ? (
-          <div className="grid grid-cols-1 gap-2.5">
+          <div className="grid grid-cols-1 gap-3">
             {availableP2PTargets.map((target) => (
               <button 
                 key={target.id}
                 onClick={() => {
-                    console.log("[CLICK_1] Member Button Tapped:", target.name);
                     handleTargetSelect(target);
                 }}
-                className="w-full group flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/50 active:bg-purple-500/10 transition-all"
+                className="w-full group flex items-center justify-between p-5 rounded-[22px] bg-surface border border-border hover:border-foreground active:scale-[0.98] transition-all shadow-sm"
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 font-black text-xs">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-foreground font-bold text-sm">
                     {target.name[0]}
                   </div>
                   <div className="text-left">
-                    <p className="text-white text-xs font-bold">{target.name}</p>
-                    <p className="text-[#ff0f7b] text-[10px] font-black font-mono">{formatCurrency(target.amount)}</p>
+                    <p className="text-foreground text-sm font-bold uppercase tracking-tight">{target.name}</p>
+                    <p className="text-text-secondary text-[11px] font-bold font-mono">{formatCurrency(target.amount)}</p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-white/20 group-hover:text-purple-400" />
+                <ChevronRight className="h-5 w-5 text-text-muted group-hover:text-foreground transition-colors" />
               </button>
             ))}
           </div>
         ) : (
-          <div className="p-5 rounded-xl bg-white/5 border border-dashed border-white/10 text-center">
-             <p className="text-white/20 text-[9px] font-bold uppercase tracking-widest">No pending settlements</p>
+          <div className="p-8 rounded-[24px] bg-background border border-dashed border-border text-center">
+             <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest">No pending settlements detected</p>
           </div>
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center gap-2 px-1">
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-            <p className="text-[#b3b3b3] text-[9px] font-black uppercase tracking-[0.2em]">Platform Options</p>
+            <Sparkles className="h-4 w-4 text-text-secondary" />
+            <p className="text-text-secondary text-[10px] font-bold uppercase tracking-[0.2em]">Platform Intelligence</p>
         </div>
         <button 
           onClick={() => {
-            console.log("[CLICK_1] Merchant Button Tapped");
             handleTargetSelect({
                 id: 'vip_membership',
                 name: 'VIP Membership',
@@ -623,21 +615,21 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
                 amount: 100 
             });
           }}
-          className="w-full group relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-600/15 border border-amber-500/30 active:border-amber-400/50 transition-all"
+          className="w-full group relative overflow-hidden p-5 rounded-[24px] bg-foreground text-surface border border-foreground active:scale-[0.98] transition-all shadow-lg"
         >
           <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <ShieldCheck className="h-5 w-5 text-amber-400" />
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-surface/10 border border-surface/20 flex items-center justify-center">
+                <ShieldCheck className="h-6 w-6 text-surface" />
               </div>
               <div className="text-left">
-                <p className="text-white text-xs font-black uppercase italic">Founder VIP Membership</p>
-                <p className="text-amber-200/60 text-[8px] font-bold uppercase">Unlock AI Power • Lifetime Access</p>
+                <p className="text-surface text-sm font-bold uppercase tracking-wider">Founder VIP Upgrade</p>
+                <p className="text-surface/60 text-[10px] font-bold uppercase tracking-tight">Unlock AI Power • Lifetime access</p>
               </div>
             </div>
             <div className="text-right">
-                <p className="text-white font-black text-base font-mono">₹1</p>
-                <ArrowRight className="h-4 w-4 text-amber-400 ml-auto" />
+                <p className="text-surface font-bold text-lg font-mono tracking-tighter">₹1</p>
+                <ArrowRight className="h-4 w-4 text-surface/40 ml-auto" />
             </div>
           </div>
         </button>
@@ -646,36 +638,36 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
   );
 
   const PayAppsView = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {isDetecting ? (
-             <div className="flex flex-col items-center justify-center py-8 gap-3">
-                <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest">Detecting payment apps...</p>
+             <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <Loader2 className="w-8 h-8 text-foreground animate-spin" />
+                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.3em] animate-pulse">Detecting Secure Transports</p>
              </div>
         ) : (
-            <div className="space-y-5">
+            <div className="space-y-6">
                 {recommendedApp && (
                     <button 
                         onClick={() => {
                             console.log("[CLICK_1] Recommended App Tapped:", recommendedApp.name);
                             handleUPILaunch(recommendedApp);
                         }}
-                        className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 active:bg-white/5 transition-all"
+                        className="w-full flex items-center justify-between p-5 rounded-[22px] bg-surface border border-foreground/20 hover:border-foreground active:scale-[0.98] transition-all shadow-md"
                     >
-                        <div className="flex items-center gap-3.5">
-                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                                <Smartphone className="h-5 w-5 text-white" />
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-background border border-border flex items-center justify-center">
+                                <Smartphone className="h-6 w-6 text-foreground" />
                             </div>
                             <div className="text-left">
-                                <p className="text-white text-xs font-bold uppercase">{recommendedApp.name}</p>
-                                <p className="text-text-muted text-[8px] font-bold uppercase">Recommended</p>
+                                <p className="text-foreground text-sm font-bold uppercase tracking-wider">{recommendedApp.name}</p>
+                                <p className="text-text-secondary text-[10px] font-bold uppercase tracking-widest">Recommended App</p>
                             </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-text-muted" />
+                        <ChevronRight className="h-5 w-5 text-text-muted" />
                     </button>
                 )}
                 {otherApps.length > 0 && (
-                    <div className="grid grid-cols-2 gap-3.5">
+                    <div className="grid grid-cols-2 gap-4">
                         {otherApps.map(app => (
                             <button 
                                 key={app.id} 
@@ -683,69 +675,69 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
                                     console.log("[CLICK_1] Other App Tapped:", app.name);
                                     handleUPILaunch(app);
                                 }} 
-                                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 active:bg-white/10 transition-all"
+                                className="flex flex-col items-center gap-3 p-5 rounded-[22px] bg-surface border border-border hover:border-foreground active:scale-[0.98] transition-all shadow-sm"
                             >
-                                <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center">
-                                    <Smartphone className="h-4 w-4 text-white" />
+                                <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center">
+                                    <Smartphone className="h-5 w-5 text-text-secondary" />
                                 </div>
-                                <p className="text-white text-[9px] font-bold uppercase tracking-widest">{app.name}</p>
+                                <p className="text-foreground text-[10px] font-bold uppercase tracking-[0.2em]">{app.name}</p>
                             </button>
                         ))}
                     </div>
                 )}
             </div>
         )}
-        <div className="bg-white/5 rounded-xl p-4 border border-white/5 flex items-start gap-3.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-white/40 shrink-0 mt-0.5" />
-            <p className="text-text-muted text-[7px] font-bold leading-relaxed uppercase tracking-widest">Safe & Secure Settlement via NPCI-regulated UPI apps.</p>
+        <div className="bg-background rounded-2xl p-5 border border-border flex items-start gap-4 shadow-inner">
+            <ShieldCheck className="h-5 w-5 text-foreground/40 shrink-0 mt-0.5" />
+            <p className="text-text-secondary text-[10px] font-bold leading-relaxed uppercase tracking-widest">Safe & Secure Settlement via NPCI-regulated UPI protocols.</p>
         </div>
     </div>
   );
 
   const VerificationView = () => (
-    <div className="flex flex-col items-center text-center space-y-6 py-6 animate-in zoom-in-95 duration-500">
-        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
-          <CheckCircle2 className="h-10 w-10 text-white" />
+    <div className="flex flex-col items-center text-center space-y-8 py-8 animate-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 bg-background rounded-full flex items-center justify-center border border-border shadow-inner">
+          <CheckCircle2 className="h-12 w-12 text-foreground" />
         </div>
         
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-white uppercase tracking-tight">Payment Sent?</h2>
-          <p className="text-text-muted text-[11px] font-bold uppercase tracking-[0.2em] leading-relaxed max-w-[240px]">
-            Please confirm if you completed the transfer of <br/>
-            <span className="text-white text-base block mt-1 font-mono">{formatCurrency(selectedTarget?.amount || 0)}</span>
+        <div className="space-y-3">
+          <h2 className="text-2xl font-bold text-foreground uppercase tracking-tight">Payment Sent?</h2>
+          <p className="text-text-secondary text-[12px] font-bold uppercase tracking-[0.15em] leading-relaxed max-w-[280px]">
+            Please confirm the transfer of <br/>
+            <span className="text-foreground text-2xl block mt-2 font-mono tracking-tighter">{formatCurrency(selectedTarget?.amount || 0)}</span>
           </p>
         </div>
 
-        <div className="flex flex-col w-full gap-3 pt-4 px-4">
+        <div className="flex flex-col w-full gap-4 pt-6 px-4">
           <Button 
             onClick={() => handleFinalVerification(true)}
-            className="h-14 bg-white text-background rounded-2xl font-bold uppercase text-xs tracking-[0.2em] shadow-sm active:scale-95 transition-transform hover:bg-white/90"
+            className="h-16 bg-foreground text-surface rounded-[20px] font-bold uppercase text-xs tracking-[0.25em] shadow-xl active:scale-95 transition-transform hover:bg-foreground/90"
           >
             Yes, Mark as Paid
           </Button>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
               <Button 
                 variant="ghost"
                 onClick={handleRetryPayment}
-                className="h-12 bg-white/5 border border-white/10 text-text-muted hover:text-white font-bold uppercase text-[9px] tracking-[0.2em] rounded-xl"
+                className="h-14 bg-surface border border-border text-text-secondary hover:text-foreground font-bold uppercase text-[10px] tracking-[0.2em] rounded-[18px] shadow-sm transition-all"
               >
-                Retry
+                Retry App
               </Button>
               <Button 
                 variant="ghost"
                 onClick={() => handleFinalVerification(false)}
-                className="h-12 bg-white/5 border border-white/10 text-text-secondary hover:text-white font-bold uppercase text-[9px] tracking-[0.2em] rounded-xl"
+                className="h-14 bg-surface border border-border text-text-secondary hover:text-foreground font-bold uppercase text-[10px] tracking-[0.2em] rounded-[18px] shadow-sm transition-all"
               >
                 Cancel
               </Button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 px-8 py-3 bg-white/5 rounded-2xl border border-white/5">
-            <ShieldCheck className="h-4 w-4 text-white/40 shrink-0" />
-            <p className="text-text-muted text-[8px] font-bold leading-relaxed uppercase tracking-widest text-left">
-                Your balances will update instantly after you confirm. Ledger integrity is guaranteed.
+        <div className="flex items-center gap-3 px-6 py-4 bg-background rounded-[22px] border border-border">
+            <ShieldCheck className="h-5 w-5 text-foreground/20 shrink-0" />
+            <p className="text-text-muted text-[10px] font-bold leading-relaxed uppercase tracking-widest text-left">
+                Your balances will update instantly after confirmation. Integrity guaranteed.
             </p>
         </div>
     </div>
@@ -755,17 +747,19 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
 
   return (
     <div className="fixed inset-0 z-[100] bg-background overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
-      <div className="h-1 w-full bg-white/5 shrink-0" />
-      <div className="px-6 pt-6 pb-4 flex justify-between items-center shrink-0">
+      <div className="h-1 w-full bg-border shrink-0" />
+      <div className="px-6 pt-8 pb-4 flex justify-between items-center shrink-0">
         <div className="text-left">
-          <h2 className="text-xl font-bold text-white uppercase tracking-tight">
+          <h2 className="text-xl font-bold text-foreground uppercase tracking-tight">
             {view === 'selector' ? 'Choose Payment' : view === 'identity_setup' ? 'Identity Setup' : view === 'pay_apps' ? 'Settle Up' : 'Verification'}
           </h2>
-          <p className="text-text-muted text-[8px] font-bold uppercase tracking-[0.15em] mt-0.5">
+          <p className="text-text-secondary text-[10px] font-bold uppercase tracking-[0.15em] mt-1">
             {view === 'selector' ? 'Settle Member or Upgrade' : selectedTarget?.name}
           </p>
         </div>
-        <button onClick={() => onOpenChange(false)} className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-text-muted active:bg-white/10 active:scale-90 transition-all hover:text-white"><X size={18} /></button>
+        <button onClick={() => onOpenChange(false)} className="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-secondary active:scale-90 transition-all hover:text-foreground shadow-sm">
+          <X size={20} />
+        </button>
       </div>
       
       {/* 🛡️ [STABILIZED_SCROLL_HIERARCHY] */}
@@ -785,16 +779,16 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
               />
           )}
           {view === 'pay_apps' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
+            <div className="space-y-8">
+              <div className="flex items-center justify-between bg-surface p-6 rounded-[24px] border border-border shadow-sm">
                 <div className="text-left">
-                  <p className="text-text-muted text-[7px] font-bold uppercase tracking-widest">Amount to Pay</p>
-                  <p className="text-white text-xl font-bold font-mono">{formatCurrency(selectedTarget?.amount || 0)}</p>
+                  <p className="text-text-secondary text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Total to Settle</p>
+                  <p className="text-foreground text-3xl font-bold font-mono tracking-tighter">{formatCurrency(selectedTarget?.amount || 0)}</p>
                 </div>
                 <button onClick={() => {
                     console.log("[VIEW_TRANSITION] Changing target from pay_apps");
                     setView('selector');
-                }} className="px-3 py-1.5 rounded-lg bg-white/5 text-[7px] font-bold text-text-muted hover:text-white uppercase tracking-widest border border-white/5 transition-all">Change</button>
+                }} className="px-4 py-2 rounded-xl bg-background text-[10px] font-bold text-text-secondary hover:text-foreground uppercase tracking-widest border border-border transition-all shadow-sm">Change</button>
               </div>
               <PayAppsView />
             </div>

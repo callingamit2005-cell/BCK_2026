@@ -77,46 +77,46 @@ const MonthlyTrendBarChart = ({ transactions, isLoading }: MonthlyTrendBarChartP
   console.log("MonthlyTrendBarChart: Render State", { isDataEmpty, isLoading });
 
   return (
-    <Card className="bg-black/40 border border-white/10 shadow-xl rounded-[24px] overflow-hidden" style={{ minHeight: '240px' }}>
+    <Card className="bg-surface border border-border shadow-sm rounded-[24px] overflow-hidden" style={{ minHeight: '240px' }}>
       <CardHeader className="p-5 pb-0">
-        <CardTitle className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">
+        <CardTitle className="text-[#111111] text-[10px] font-black uppercase tracking-[0.2em]">
           Monthly Spending Trend
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 flex items-center justify-center" style={{ height: 180 }}>
         {isLoading ? (
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="h-5 w-5 animate-spin text-white/20" />
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Loading Engine...</span>
+            <Loader2 className="h-5 w-5 animate-spin text-[#999999]" />
+            <span className="text-[10px] font-black text-[#999999] uppercase tracking-widest">Loading Engine...</span>
           </div>
         ) : isDataEmpty ? (
           <div className="flex flex-col items-center gap-1 opacity-20">
-            <span className="text-[10px] font-black text-white uppercase tracking-widest">No spending data yet</span>
+            <span className="text-[10px] font-black text-[#111111] uppercase tracking-widest">No spending data yet</span>
           </div>
         ) : (
           <div style={{ height: "100%", width: "100%", display: "flex", justifyContent: "center" }}>
             {isAndroid ? (
               <BarChart width={320} height={180} data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }} 
+                  tick={{ fill: '#999999', fontSize: 10, fontWeight: 'bold' }} 
                   dy={10}
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }}
+                  tick={{ fill: '#999999', fontSize: 10, fontWeight: 'bold' }}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                  cursor={{ fill: 'rgba(0,0,0,0.05)' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg shadow-2xl">
-                          <p className="text-[10px] font-black text-white/40 uppercase mb-1">{payload[0].payload.name}</p>
+                        <div className="bg-white border border-border p-2 rounded-lg shadow-2xl">
+                          <p className="text-[10px] font-black text-[#999999] uppercase mb-1">{payload[0].payload.name}</p>
                           <p className="text-xs font-black text-[#ff0f7b]">{formatCurrency(payload[0].value as number)}</p>
                         </div>
                       );
@@ -133,7 +133,7 @@ const MonthlyTrendBarChart = ({ transactions, isLoading }: MonthlyTrendBarChartP
                   {chartData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={index === chartData.length - 1 ? '#ff0f7b' : 'rgba(255,255,255,0.1)'} 
+                      fill={index === chartData.length - 1 ? '#ff0f7b' : 'rgba(0,0,0,0.1)'} 
                     />
                   ))}
                 </Bar>
@@ -141,26 +141,26 @@ const MonthlyTrendBarChart = ({ transactions, isLoading }: MonthlyTrendBarChartP
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
                   <XAxis 
                     dataKey="name" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }} 
+                    tick={{ fill: '#999999', fontSize: 10, fontWeight: 'bold' }} 
                     dy={10}
                   />
                   <YAxis 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }}
+                    tick={{ fill: '#999999', fontSize: 10, fontWeight: 'bold' }}
                   />
                   <Tooltip
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                    cursor={{ fill: 'rgba(0,0,0,0.05)' }}
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
                         return (
-                          <div className="bg-[#1a1a1a] border border-white/10 p-2 rounded-lg shadow-2xl">
-                            <p className="text-[10px] font-black text-white/40 uppercase mb-1">{payload[0].payload.name}</p>
+                          <div className="bg-white border border-border p-2 rounded-lg shadow-2xl">
+                            <p className="text-[10px] font-black text-[#999999] uppercase mb-1">{payload[0].payload.name}</p>
                             <p className="text-xs font-black text-[#ff0f7b]">{formatCurrency(payload[0].value as number)}</p>
                           </div>
                         );
@@ -177,7 +177,7 @@ const MonthlyTrendBarChart = ({ transactions, isLoading }: MonthlyTrendBarChartP
                     {chartData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={index === chartData.length - 1 ? '#ff0f7b' : 'rgba(255,255,255,0.1)'} 
+                        fill={index === chartData.length - 1 ? '#ff0f7b' : 'rgba(0,0,0,0.1)'} 
                       />
                     ))}
                   </Bar>

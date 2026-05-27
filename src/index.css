@@ -6,26 +6,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 2%; /* #050505 */
-    --foreground: 0 0% 100%;
-    --card: 0 0% 7%; /* #121212 */
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 2%;
-    --secondary: 0 0% 7%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 7%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 0 0% 100%;
-    --accent-foreground: 0 0% 2%;
-    --destructive: 0 0% 100%;
-    --destructive-foreground: 0 0% 2%;
-    --border: 0 0% 100% / 0.06;
-    --input: 0 0% 100% / 0.06;
-    --ring: 0 0% 100%;
-    --radius: 1rem;
+    --background: 0 0% 98%; /* #FAFAFA */
+    --foreground: 0 0% 7%; /* #111111 */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+    --primary: 0 0% 7%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%; /* #F5F5F5 */
+    --secondary-foreground: 0 0% 7%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%; /* #666666 */
+    --accent: 0 0% 7%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 0% 7%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 0% / 0.06;
+    --input: 0 0% 0% / 0.06;
+    --ring: 0 0% 7%;
+    --radius: 1.25rem;
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-right: env(safe-area-inset-right, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
@@ -40,11 +40,11 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     scroll-behavior: smooth;
-    background: #050505;
+    background: #FAFAFA;
   }
 
   * {
-    @apply border-border selection:bg-white/10 selection:text-white;
+    @apply border-border selection:bg-black/5 selection:text-black;
     box-sizing: border-box;
   }
 
@@ -59,7 +59,7 @@
     width: 100%;
     min-height: 100%;
     min-height: 100dvh;
-    background: #050505;
+    background: #FAFAFA;
   }
 
   body {
@@ -95,7 +95,7 @@
   }
 
   ::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(0, 0, 0, 0.3);
     opacity: 1;
   }
 
@@ -140,8 +140,8 @@
   /* Premium Monochrome Glass */
   .glass-v2 {
     @apply relative overflow-hidden;
-    background: #121212;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   /* Premium Typography */
@@ -180,7 +180,7 @@
 
   .glass-v2 {
     backdrop-filter: none;
-    background: #1A1C1F;
+    background: #FFFFFF;
   }
 
   .stagger-fade {
@@ -197,7 +197,7 @@
   @apply bg-background;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-white/20 rounded-full;
+  @apply bg-black/10 rounded-full;
 }
 
 @media (max-width: 767px) {

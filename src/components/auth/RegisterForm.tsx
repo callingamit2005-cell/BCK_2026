@@ -91,7 +91,7 @@ const RegisterForm = () => {
   return (
     <form onSubmit={handleRegister} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-200">
       <div className="space-y-2">
-        <Label htmlFor="register-email" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">Email Address</Label>
+        <Label htmlFor="register-email" className="text-[10px] font-bold text-text-secondary ml-1 uppercase tracking-widest">Email Address</Label>
         <Input
           id="register-email"
           type="email"
@@ -99,12 +99,12 @@ const RegisterForm = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="h-12 bg-white/5 rounded-xl border-white/5 text-white font-bold focus:border-white/20 transition-all"
+          className="h-12 bg-background rounded-xl border-border text-foreground font-bold focus:border-foreground transition-all"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="register-password" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">Password</Label>
+        <Label htmlFor="register-password" className="text-[10px] font-bold text-text-secondary ml-1 uppercase tracking-widest">Password</Label>
         <Input
           id="register-password"
           type="password"
@@ -113,16 +113,16 @@ const RegisterForm = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="h-12 bg-white/5 rounded-xl border-white/5 text-white font-bold focus:border-white/20 transition-all"
+          className="h-12 bg-background rounded-xl border-border text-foreground font-bold focus:border-foreground transition-all"
         />
       </div>
 
       <Button
         type="submit"
         disabled={loading}
-        className={`w-full h-14 bg-white text-background rounded-2xl font-black text-lg shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all disabled:opacity-20 uppercase tracking-widest`}
+        className={`w-full h-16 bg-foreground text-surface rounded-2xl font-bold text-base shadow-2xl hover:bg-foreground/90 active:scale-[0.98] transition-all disabled:opacity-30 uppercase tracking-[0.2em] mt-2`}
       >
-        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+        {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
         Create Account
       </Button>
     </form>

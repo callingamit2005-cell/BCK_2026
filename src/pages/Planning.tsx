@@ -137,23 +137,25 @@ export default function Planning() {
 
   // UI SYSTEM
   const applePhysics = "transition-all duration-300 ease-butter-soft active:scale-95 transform-gpu";
-  const neonGlass = "bg-[#0a0014]/80 backdrop-blur-xl border border-[#ff0f7b]/30 shadow-[0_20px_50px_-12px_rgba(255,15,123,0.3)] rounded-[32px] overflow-hidden transform-gpu";
-  const inputStyle = "flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 font-mono text-white text-xl focus:outline-none focus:border-[#ff0f7b]/50 transition-all";
-  const stepperBtn = cn("h-12 flex-1 flex items-center justify-center bg-[rgba(255,15,123,0.15)] border border-[#ff0f7b]/20 text-[#ff0f7b] rounded-xl font-black text-xs uppercase tracking-widest", applePhysics);
+  const premiumCard = "bg-surface border border-border shadow-sm rounded-[32px] overflow-hidden transform-gpu transition-all hover:border-foreground/10";
+  const inputStyle = "flex-1 bg-background border border-border rounded-2xl p-4 font-mono text-foreground text-xl focus:outline-none focus:border-foreground transition-all";
+  const stepperBtn = cn("h-12 flex-1 flex items-center justify-center bg-background border border-border text-text-secondary hover:text-foreground hover:border-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all shadow-sm", applePhysics);
 
   return (
-    <div className="max-w-xl mx-auto p-6 space-y-10 bg-[#0a0014] min-h-screen pb-32 pt-8">
+    <div className="max-w-xl mx-auto p-6 space-y-10 bg-background min-h-screen pb-32 pt-8">
       
       <div className="text-center space-y-2 mb-4 animate-in fade-in slide-in-from-top-4 duration-700">
-        <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic">Planning Engine</h1>
-        <p className="text-[10px] text-white/30 font-bold uppercase tracking-[0.3em]">Configure Monthly Vitals</p>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight uppercase">Planning Engine</h1>
+        <p className="text-[11px] text-text-secondary font-bold uppercase tracking-[0.3em]">Configure Monthly Vitals</p>
       </div>
 
       {/* 1. Income */}
-      <div className={cn(neonGlass, "p-8 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100")}>
+      <div className={cn(premiumCard, "p-8 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100")}>
         <div className="flex items-center gap-3 mb-2">
-          <IndianRupee className="h-5 w-5 text-indigo-400" />
-          <label className="text-[#b3b3b3] text-[10px] font-black uppercase tracking-[0.2em]">Monthly Salary</label>
+          <div className="p-2.5 rounded-xl bg-background border border-border">
+            <IndianRupee className="h-5 w-5 text-foreground" />
+          </div>
+          <label className="text-text-secondary text-[11px] font-bold uppercase tracking-[0.2em]">Monthly Liquidity</label>
         </div>
         <div className="flex gap-4">
           <input 
@@ -165,31 +167,33 @@ export default function Planning() {
             disabled={isSavingIncome}
             onClick={() => handleUpsert('salaries', 'amount', convertToPaisa(income))} 
             className={cn(
-              "bg-gradient-to-r from-[#7C3AED] to-[#EC4899] p-4 rounded-2xl shadow-lg hover:shadow-pink-500/20 disabled:opacity-50",
+              "bg-foreground text-surface p-5 rounded-2xl shadow-lg hover:bg-foreground/90 disabled:opacity-50 transition-all",
               applePhysics
             )}
           >
-            {isSavingIncome ? <Loader2 className="animate-spin text-white" /> : <Save className="text-white h-6 w-6" />}
+            {isSavingIncome ? <Loader2 className="animate-spin h-6 w-6" /> : <Save className="h-6 w-6" />}
           </button>
         </div>
       </div>
 
       {/* 2. Budget */}
-      <div className={cn(neonGlass, "p-8 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200")}>
+      <div className={cn(premiumCard, "p-8 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200")}>
         <div className="flex items-center gap-3 mb-2">
-          <Wallet className="h-5 w-5 text-cyan-400" />
-          <label className="text-[#b3b3b3] text-[10px] font-black uppercase tracking-[0.2em]">Safe-Spend Limit</label>
+          <div className="p-2.5 rounded-xl bg-background border border-border">
+            <Wallet className="h-5 w-5 text-foreground" />
+          </div>
+          <label className="text-text-secondary text-[11px] font-bold uppercase tracking-[0.2em]">Safe-Spend Limit</label>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center gap-4">
             <input 
               type="number" value={budget} onChange={(e) => setBudget(Number(e.target.value))}
-              className={cn(inputStyle, "text-center text-2xl")}
+              className={cn(inputStyle, "text-center text-3xl font-bold")}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex gap-2">
               <button onClick={() => adjustBudget(-100)} className={stepperBtn}>-100</button>
               <button onClick={() => adjustBudget(100)} className={stepperBtn}>+100</button>
@@ -205,37 +209,39 @@ export default function Planning() {
           disabled={isSavingBudget}
           onClick={() => handleUpsert('budgets', 'monthly_budget', convertToPaisa(budget))} 
           className={cn(
-            "w-full bg-gradient-to-r from-cyan-600 to-blue-600 h-16 rounded-2xl text-white font-black uppercase tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 mt-4 disabled:opacity-50",
+            "w-full bg-foreground text-surface h-16 rounded-2xl text-[11px] font-bold uppercase tracking-[0.25em] shadow-xl flex items-center justify-center gap-3 mt-6 disabled:opacity-50 hover:bg-foreground/90 transition-all",
             applePhysics
           )}
         >
-          {isSavingBudget ? <Loader2 className="animate-spin text-white" /> : <><Save size={20} /> Set Monthly Limit</>}
+          {isSavingBudget ? <Loader2 className="animate-spin" /> : <><Save size={20} /> Deploy Monthly Limit</>}
         </button>
       </div>
 
       {/* 3. Quick View - Future Wealth Integration Point */}
-      <div className={cn(neonGlass, "p-8 space-y-4")}>
+      <div className={cn(premiumCard, "p-8 space-y-6")}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-purple-400" />
-            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Active Obligations</span>
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-background border border-border">
+              <CreditCard className="h-5 w-5 text-foreground" />
+            </div>
+            <span className="text-[11px] font-bold text-text-secondary uppercase tracking-widest">Active Obligations</span>
           </div>
         </div>
         
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-             <p className="text-[9px] font-bold text-white/30 uppercase mb-1">EMIs</p>
-             <p className="text-xl font-black text-white">{emiList.length}</p>
+          <div className="bg-background p-5 rounded-2xl border border-border shadow-inner">
+             <p className="text-[10px] font-bold text-text-muted uppercase mb-1.5 tracking-widest">EMIs</p>
+             <p className="text-2xl font-bold text-foreground font-mono">{emiList.length}</p>
           </div>
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-             <p className="text-[9px] font-bold text-white/30 uppercase mb-1">Subs</p>
-             <p className="text-xl font-black text-white">{subscriptionList.length}</p>
+          <div className="bg-background p-5 rounded-2xl border border-border shadow-inner">
+             <p className="text-[10px] font-bold text-text-muted uppercase mb-1.5 tracking-widest">Subs</p>
+             <p className="text-2xl font-bold text-foreground font-mono">{subscriptionList.length}</p>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 text-center opacity-50">
-        <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest leading-relaxed px-8 italic">
+      <div className="mt-8 text-center opacity-70">
+        <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest leading-relaxed px-8 italic">
           Values saved here update your offline ledger instantly and sync with cloud.
         </p>
       </div>

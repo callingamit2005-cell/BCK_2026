@@ -78,7 +78,7 @@ const DeleteExpenseDialog = ({ expenseId, open, onOpenChange }: DeleteExpenseDia
       toast({ 
         title: 'Deleted Successfully', 
         description: 'Transaction has been removed.',
-        className: 'bg-emerald-600 text-white border-none shadow-lg' 
+        className: 'bg-foreground text-surface border-none shadow-lg' 
       });
       queryClient.invalidateQueries({ queryKey });
       onOpenChange(false);
@@ -92,66 +92,68 @@ const DeleteExpenseDialog = ({ expenseId, open, onOpenChange }: DeleteExpenseDia
     }
   }, [isDeleting, expenseId, user, queryClient, toast, onOpenChange]);
 
-  // ==================== VISIBILITY SYSTEM (NO TEXT LEFT BEHIND) ====================
-  const deepGradientBg = "bg-gradient-to-br from-[#1E1B4B] via-[#701A75] to-[#EC4899]/90 backdrop-blur-3xl border border-white/20 shadow-[0_20px_50px_rgba(236,72,153,0.3)]";
+  // ==================== PREMIUM LIGHT UI SYSTEM ====================
+  const premiumCard = "bg-surface border border-border shadow-2xl rounded-[32px] overflow-hidden transform-gpu";
   
   // 🛠️ The visibility anchors
-  const clearWhiteText = "text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"; 
-  const brightDescription = "text-white/90 font-medium tracking-wide leading-relaxed drop-shadow-sm";
-  const neonWarningBox = "bg-rose-500/20 border border-rose-500/40 rounded-[20px] p-4 flex items-start gap-3 backdrop-blur-md";
+  const clearText = "text-foreground"; 
+  const secondaryText = "text-text-secondary font-medium tracking-tight leading-relaxed";
+  const alertBox = "bg-background border border-border rounded-[24px] p-5 flex items-start gap-4 shadow-inner";
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className={cn("rounded-[32px] overflow-hidden p-6 sm:p-8 max-w-md mx-auto transition-all duration-500", deepGradientBg)}>
+      <AlertDialogContent className={cn("p-0 max-w-md mx-auto transition-all duration-500", premiumCard)}>
         
         {/* Top Accent Bar */}
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-rose-500 to-pink-500" />
+        <div className="h-2 w-full bg-foreground opacity-5" />
 
-        <AlertDialogHeader className="space-y-4">
-          <AlertDialogTitle className={cn("text-2xl font-black tracking-tighter flex items-center gap-4", clearWhiteText)}>
-            <div className="p-3 rounded-2xl bg-rose-500/20 border border-rose-500/30 shadow-inner backdrop-blur-md">
-              <Trash2 className="h-6 w-6 text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
+        <div className="p-8 sm:p-10 space-y-8">
+          <AlertDialogHeader className="space-y-5">
+            <AlertDialogTitle className={cn("text-2xl font-bold tracking-tight flex items-center gap-4 uppercase", clearText)}>
+              <div className="p-3 rounded-2xl bg-background border border-border shadow-sm">
+                <Trash2 className="h-6 w-6 text-text-secondary" />
+              </div>
+              Delete Record?
+            </AlertDialogTitle>
+            <AlertDialogDescription className={cn("mt-2 text-base", secondaryText)}>
+              This will permanently erase this transaction from your records and cloud synchronization. This action is irreversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {/* Visibility-Fixed Error Display */}
+          {deleteError && (
+            <div className={alertBox} role="alert">
+              <AlertTriangle className="h-5 w-5 text-text-muted shrink-0 mt-0.5" />
+              <p className={cn("text-sm font-bold uppercase tracking-widest", clearText)}>
+                {deleteError}
+              </p>
             </div>
-            Delete Expense?
-          </AlertDialogTitle>
-          <AlertDialogDescription className={cn("mt-2 text-[15px]", brightDescription)}>
-            This will permanently erase this transaction from your records. This action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+          )}
 
-        {/* Visibility-Fixed Error Display */}
-        {deleteError && (
-          <div className={neonWarningBox} role="alert">
-            <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5 drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-            <p className={cn("text-sm font-black uppercase tracking-wider", clearWhiteText)}>
-              {deleteError}
-            </p>
-          </div>
-        )}
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-4 pt-4">
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="h-14 px-8 rounded-2xl border border-border bg-background text-text-secondary font-bold hover:bg-surface hover:text-foreground transition-all disabled:opacity-50 active:scale-95 uppercase tracking-widest text-[11px] shadow-sm"
+            >
+              Cancel
+            </AlertDialogCancel>
 
-        <AlertDialogFooter className="mt-8 flex flex-col sm:flex-row gap-3">
-          <AlertDialogCancel
-            disabled={isDeleting}
-            className="h-12 px-6 rounded-[20px] border border-white/20 bg-white/5 text-white font-black hover:bg-white/10 hover:text-white transition-all disabled:opacity-50 active:scale-95 uppercase tracking-widest text-[11px]"
-          >
-            Cancel
-          </AlertDialogCancel>
-
-          <AlertDialogAction
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="h-12 px-8 rounded-[20px] bg-gradient-to-r from-rose-500 to-pink-600 text-white font-black shadow-[0_0_20px_rgba(244,63,94,0.4)] hover:shadow-[0_0_30px_rgba(244,63,94,0.6)] border-none transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center uppercase tracking-widest text-[11px]"
-          >
-            {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              'Confirm Delete'
-            )}
-          </AlertDialogAction>
-        </AlertDialogFooter>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="h-14 px-8 rounded-2xl bg-foreground text-surface font-bold shadow-xl hover:bg-foreground/90 border-none transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center uppercase tracking-widest text-[11px]"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Wiping...
+                </>
+              ) : (
+                'Confirm Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );

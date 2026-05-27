@@ -118,18 +118,18 @@ const WaitlistCheckoutModal = ({ open, onOpenChange, onSuccess }: WaitlistChecko
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95%] max-w-md overflow-hidden border-none bg-transparent p-0 shadow-none sm:w-full">
-        <div className="relative overflow-hidden rounded-[24px] border border-white/5 bg-surface shadow-2xl backdrop-blur-3xl">
+        <div className="relative overflow-hidden rounded-[24px] border border-border bg-surface shadow-2xl backdrop-blur-3xl">
           <div className="relative z-10 space-y-8 p-6 sm:p-10">
             <div className="space-y-4 text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-white/40" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-[#666666]" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#666666]">
                   Priority Access Protocol
                 </span>
               </div>
 
-              <DialogTitle className="text-2xl sm:text-3xl font-black uppercase tracking-tighter text-white">Secure Slot Activation</DialogTitle>
-              <DialogDescription className="px-2 text-[10px] font-bold uppercase tracking-widest text-white/40 leading-relaxed">
+              <DialogTitle className="text-2xl sm:text-3xl font-black uppercase tracking-tighter text-[#111111]">Secure Slot Activation</DialogTitle>
+              <DialogDescription className="px-2 text-[10px] font-bold uppercase tracking-widest text-[#666666] leading-relaxed">
                 Initialize your founding credentials for early system deployment.
               </DialogDescription>
             </div>
@@ -141,10 +141,10 @@ const WaitlistCheckoutModal = ({ open, onOpenChange, onSuccess }: WaitlistChecko
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-all hover:bg-white/[0.04]"
+                  className="flex flex-col items-center justify-center rounded-xl border border-border bg-surface p-4 transition-all hover:bg-background"
                 >
-                  <item.icon className="mb-2 h-4 w-4 text-white/40" />
-                  <span className="text-center text-[8px] font-bold uppercase leading-tight tracking-widest text-white/20">
+                  <item.icon className="mb-2 h-4 w-4 text-[#666666]" />
+                  <span className="text-center text-[8px] font-bold uppercase leading-tight tracking-widest text-[#999999]">
                     {item.label}
                   </span>
                 </div>
@@ -153,7 +153,7 @@ const WaitlistCheckoutModal = ({ open, onOpenChange, onSuccess }: WaitlistChecko
 
             <form onSubmit={handleCheckout} className="space-y-8">
               <div className="space-y-3">
-                <label className="ml-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">
+                <label className="ml-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[#999999]">
                   Dispatch Address
                 </label>
                 <input
@@ -162,14 +162,14 @@ const WaitlistCheckoutModal = ({ open, onOpenChange, onSuccess }: WaitlistChecko
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="operator@network.com"
-                  className="h-14 w-full rounded-xl bg-background border border-white/5 px-6 text-white font-mono text-sm outline-none transition-all placeholder:text-white/10 focus:border-white/20 shadow-inner"
+                  className="h-14 w-full rounded-xl bg-background border border-border px-6 text-[#111111] font-mono text-sm outline-none transition-all placeholder:text-[#999999] focus:border-border shadow-inner"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="relative flex h-16 w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-white text-background shadow-lg transition-all active:scale-[0.98] disabled:opacity-20 uppercase font-black tracking-widest text-xs"
+                className="relative flex h-16 w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-[#111111] text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-20 uppercase font-black tracking-widest text-xs"
               >
                 {isProcessing ? (
                   <div className="flex items-center gap-3">
@@ -182,20 +182,20 @@ const WaitlistCheckoutModal = ({ open, onOpenChange, onSuccess }: WaitlistChecko
               </button>
 
               <div className="space-y-6">
-                <div className="rounded-xl border border-white/5 bg-white/[0.01] p-6 text-center">
-                  <p className="mb-4 text-[9px] font-black uppercase tracking-[0.3em] text-white">
+                <div className="rounded-xl border border-border bg-surface p-6 text-center">
+                  <p className="mb-4 text-[9px] font-black uppercase tracking-[0.3em] text-[#111111]">
                     Protocol Benefits
                   </p>
-                  <ul className="space-y-3 text-[8px] font-bold tracking-[0.15em] text-white/40 uppercase">
+                  <ul className="space-y-3 text-[8px] font-bold tracking-[0.15em] text-[#666666] uppercase">
                     <li>• Wave-0 Entry Authorization</li>
                     <li>• Founding Member status</li>
                     <li>• Early Feature Deployment</li>
                   </ul>
                 </div>
 
-                <p className="text-center text-[8px] leading-relaxed text-white/20 uppercase font-bold tracking-widest px-4">
+                <p className="text-center text-[8px] leading-relaxed text-[#999999] uppercase font-bold tracking-widest px-4">
                   By joining, you agree to the{" "}
-                  <Link to="/terms" className="text-white hover:opacity-60 transition-opacity">
+                  <Link to="/terms" className="text-[#111111] hover:opacity-60 transition-opacity">
                     Operational Terms
                   </Link>
                   . Beta cycle access enabled.

@@ -22,24 +22,24 @@ const Navbar = () => {
     location.pathname === "/" ? anchor : `/${anchor}`;
 
   // ==================== PREMIUM UI SYSTEM ====================
-  const navBackground = "bg-background/80 backdrop-blur-xl border-b border-white/5 shadow-sm";
-  const linkStyle = "text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-all duration-300";
-  const mobileLinkStyle = "block text-xs font-bold uppercase tracking-widest text-white/60 hover:text-white py-3";
+  const navBackground = "bg-background/80 backdrop-blur-xl border-b border-border shadow-sm";
+  const linkStyle = "text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:text-foreground transition-all duration-300";
+  const mobileLinkStyle = "block text-sm font-bold uppercase tracking-widest text-text-secondary hover:text-foreground py-4";
 
   return (
     <nav className={cn("fixed top-0 left-0 right-0 z-[100] transition-all duration-500", navBackground)}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4 md:py-5">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4 md:py-6">
         
         {/* 🏢 Brand Logo - High Contrast Monochrome */}
         <Link to="/" className="relative group">
-          <span className={cn("text-2xl font-black tracking-tighter text-white group-hover:opacity-80 transition-opacity inline-block")}>
-            Bachat<span className="text-white/40">Karo</span>
+          <span className={cn("text-2xl font-bold tracking-tighter text-foreground group-hover:opacity-80 transition-opacity inline-block")}>
+            Bachat<span className="text-text-secondary">Karo</span>
           </span>
         </Link>
 
         {/* 💻 DESKTOP MENU - Crystal Clear */}
-        <div className="hidden md:flex items-center gap-10">
-          <div className="flex items-center gap-8 mr-4">
+        <div className="hidden md:flex items-center gap-12">
+          <div className="flex items-center gap-10 mr-6">
             <Link to={toLandingAnchor("#features")} className={linkStyle}>
               {t('nav_features', 'Features')}
             </Link>
@@ -59,21 +59,21 @@ const Navbar = () => {
             </Link>
           </div>
           
-          <div className="flex items-center gap-4 border-l border-white/10 pl-8">
+          <div className="flex items-center gap-5 border-l border-border pl-10">
             {/* 🌐 Desktop Language Button */}
             <button 
               onClick={() => setShowLanguageModal(true)}
-              className="flex items-center gap-2 text-white/40 hover:text-white transition-colors bg-white/5 px-3 py-2 rounded-xl border border-white/5"
+              className="flex items-center gap-2.5 text-text-secondary hover:text-foreground transition-colors bg-background border border-border px-4 py-2.5 rounded-xl shadow-sm"
             >
-              <Globe className="w-3.5 h-3.5" />
-              <span className="uppercase text-[9px] font-bold tracking-widest">{language}</span>
+              <Globe className="w-4 h-4" />
+              <span className="uppercase text-[10px] font-bold tracking-widest">{language}</span>
             </button>
 
             {/* 🚀 Primary CTA Button */}
             <Link 
               to="/auth" 
               className={cn(
-                "bg-white text-background px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md hover:bg-white/90 active:scale-[0.98] transition-all"
+                "bg-foreground text-surface px-8 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-xl hover:bg-foreground/90 active:scale-[0.98] transition-all"
               )}
             >
               {t('nav_get_started', 'Access App')}
@@ -83,17 +83,17 @@ const Navbar = () => {
 
         {/* 📱 MOBILE TOGGLE BUTTON */}
         <button 
-          className="md:hidden p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/60" 
+          className="md:hidden p-3 rounded-xl bg-background border border-border text-text-secondary hover:text-foreground shadow-sm transition-all" 
           onClick={() => setOpen(!open)}
         >
-          {open ? <X size={20} /> : <Menu size={20} />}
+          {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
       {/* 📱 MOBILE MENU - High Contrast Glass */}
       {open && (
-        <div className="md:hidden fixed inset-x-0 top-[69px] bg-background/98 backdrop-blur-3xl border-b border-white/10 px-8 py-10 space-y-8 shadow-2xl animate-in slide-in-from-top-5 duration-300">
-          <div className="space-y-2">
+        <div className="md:hidden fixed inset-x-0 top-[78px] bg-background/98 backdrop-blur-3xl border-b border-border px-8 py-12 space-y-10 shadow-2xl animate-in slide-in-from-top-5 duration-300">
+          <div className="space-y-4">
             <Link to={toLandingAnchor("#features")} onClick={closeMenu} className={mobileLinkStyle}>
               {t('nav_features', 'Features')}
             </Link>
@@ -113,17 +113,17 @@ const Navbar = () => {
             </Link>
           </div>
           
-          <div className="pt-8 border-t border-white/5 space-y-5">
+          <div className="pt-10 border-t border-border space-y-6">
             {/* 🌐 Mobile Language Button */}
             <button 
               onClick={() => {
                 setShowLanguageModal(true);
                 closeMenu();
               }}
-              className="flex w-full items-center justify-center gap-3 text-white/40 bg-white/5 px-4 py-4 rounded-2xl border border-white/5"
+              className="flex w-full items-center justify-center gap-4 text-text-secondary bg-background px-6 py-5 rounded-2xl border border-border shadow-sm active:scale-[0.98] transition-all"
             >
-              <Globe className="w-4 h-4" />
-              <span className="uppercase text-[10px] font-bold tracking-[0.2em]">{language} Selection</span>
+              <Globe className="w-5 h-5" />
+              <span className="uppercase text-[11px] font-bold tracking-[0.2em]">{language} Selection</span>
             </button>
 
             {/* 🚀 Mobile Action Button */}
@@ -131,7 +131,7 @@ const Navbar = () => {
               to="/auth" 
               onClick={closeMenu}
               className={cn(
-                "block w-full text-center bg-white text-background py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl active:scale-[0.98] transition-all"
+                "block w-full text-center bg-foreground text-surface py-5 rounded-2xl font-bold text-sm uppercase tracking-[0.25em] shadow-2xl active:scale-[0.98] transition-all"
               )}
             >
               {t('nav_get_started', 'Launch Experience')}

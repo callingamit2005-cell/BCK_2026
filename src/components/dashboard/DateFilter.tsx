@@ -61,8 +61,8 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
   };
 
   // ==================== PREMIUM MONOCHROME UI SYSTEM ====================
-  const premiumSurface = "bg-surface border border-white/5 shadow-sm rounded-[28px]";
-  const activeBtn = "bg-white text-background shadow-sm border-none";
+  const premiumSurface = "bg-surface border border-border shadow-sm rounded-[28px]";
+  const activeBtn = "bg-foreground text-surface shadow-md border-none hover:bg-foreground/90 transition-all";
   const labelText = "text-text-muted font-bold uppercase tracking-[0.2em] text-[10px]";
   const applePhysics = "transition-all duration-300 ease-out active:scale-95 transform-gpu";
 
@@ -73,16 +73,16 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
       
-      <Card className={cn(premiumSurface, "overflow-hidden w-full border-white/5")}>
-        <CardContent className="p-4 sm:p-6 w-full space-y-6">
+      <Card className={cn(premiumSurface, "overflow-hidden w-full border-border")}>
+        <CardContent className="p-4 sm:p-7 w-full space-y-8">
           
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 w-full">
             
             {/* Left Action Area */}
             <div className="flex items-center justify-between lg:justify-start w-full lg:w-auto gap-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10">
-                  <Filter className="h-4 w-4 text-white/40" />
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-2xl bg-background border border-border shadow-inner">
+                  <Filter className="h-5 w-5 text-text-secondary" />
                 </div>
                 <span className={labelText}>Filter Analytics</span>
               </div>
@@ -91,24 +91,24 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
             {/* Right: Scrollable Preset Row */}
             <div className="w-full lg:w-auto">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex flex-wrap gap-2 bg-white/5 p-1.5 rounded-[22px] border border-white/5 shadow-inner w-full lg:w-auto">
+                <div className="flex flex-wrap gap-2.5 bg-background p-1.5 rounded-[24px] border border-border shadow-inner w-full lg:w-auto">
                   {presets.map((p) => (
                     <Button
                       key={p.key}
                       size="sm"
                       variant={value.preset === p.key ? 'default' : 'ghost'}
                       className={cn(
-                        'h-10 px-5 whitespace-nowrap rounded-[18px] text-[11px] font-bold uppercase tracking-wider shrink-0',
+                        'h-11 px-6 whitespace-nowrap rounded-[20px] text-[11px] font-bold uppercase tracking-widest shrink-0 transition-all',
                         applePhysics,
                         value.preset === p.key
                           ? activeBtn
-                          : 'text-text-muted hover:text-white hover:bg-white/5'
+                          : 'text-text-secondary hover:text-foreground hover:bg-surface border border-transparent hover:border-border'
                       )}
                       onClick={() =>
                         onChange({ preset: p.key, customFrom: value.customFrom, customTo: value.customTo })
                       }
                     >
-                      {value.preset === p.key && <Sparkles className="mr-2 h-3.5 w-3.5 text-background" />}
+                      {value.preset === p.key && <Sparkles className="mr-2 h-4 w-4 text-surface" />}
                       {p.label}
                     </Button>
                   ))}
@@ -119,21 +119,21 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
 
           {/* Custom Date Range Display */}
           {value.preset === 'custom' && (
-            <div className="flex flex-wrap items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500 w-full p-4 bg-white/5 rounded-3xl border border-white/5">
+            <div className="flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500 w-full p-6 bg-background rounded-[24px] border border-border shadow-inner">
               <Popover open={fromOpen} onOpenChange={setFromOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "h-12 px-6 text-[11px] font-bold rounded-2xl border-white/10 bg-surface text-white hover:bg-white/5 flex-1 sm:flex-none",
+                      "h-14 px-8 text-[11px] font-bold rounded-2xl border-border bg-surface text-foreground hover:bg-background flex-1 sm:flex-none shadow-sm",
                       applePhysics
                     )}
                   >
-                    <CalendarIcon className="mr-3 h-4 w-4 text-text-muted shrink-0" />
+                    <CalendarIcon className="mr-3 h-5 w-5 text-text-muted shrink-0" />
                     <span className="tracking-widest">{value.customFrom ? format(value.customFrom, 'dd MMM yyyy') : 'START DATE'}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-[32px] bg-background border border-white/10 shadow-3xl transform-gpu" align="start">
+                <PopoverContent className="w-auto p-0 rounded-[32px] bg-surface border border-border shadow-3xl transform-gpu z-[110]" align="start">
                   <Calendar
                     mode="single"
                     selected={value.customFrom}
@@ -143,8 +143,8 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
                 </PopoverContent>
               </Popover>
 
-              <div className="h-12 flex items-center justify-center px-2">
-                <ArrowRight className="h-4 w-4 text-white/20 shrink-0" />
+              <div className="h-14 flex items-center justify-center px-2">
+                <ArrowRight className="h-5 w-5 text-text-muted shrink-0" />
               </div>
 
               <Popover open={toOpen} onOpenChange={setToOpen}>
@@ -152,15 +152,15 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
                   <Button
                     variant="outline"
                     className={cn(
-                      "h-12 px-6 text-[11px] font-bold rounded-2xl border-white/10 bg-surface text-white hover:bg-white/5 flex-1 sm:flex-none",
+                      "h-14 px-8 text-[11px] font-bold rounded-2xl border-border bg-surface text-foreground hover:bg-background flex-1 sm:flex-none shadow-sm",
                       applePhysics
                     )}
                   >
-                    <CalendarIcon className="mr-3 h-4 w-4 text-text-muted shrink-0" />
+                    <CalendarIcon className="mr-3 h-5 w-5 text-text-muted shrink-0" />
                     <span className="tracking-widest">{value.customTo ? format(value.customTo, 'dd MMM yyyy') : 'END DATE'}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 rounded-[32px] bg-background border border-white/10 shadow-3xl transform-gpu" align="start">
+                <PopoverContent className="w-auto p-0 rounded-[32px] bg-surface border border-border shadow-3xl transform-gpu z-[110]" align="start">
                   <Calendar
                     mode="single"
                     selected={value.customTo}

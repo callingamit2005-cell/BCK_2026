@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Share2, MapPin, Sparkles, CheckCircle2, AlertTriangle, Map as MapIcon, Navigation, ExternalLink, Calendar, Plane, Hotel, Globe, ArrowLeft, Heart, Target, Brain } from 'lucide-react';
+import { Loader2, Share2, MapPin, Sparkles, CheckCircle2, AlertTriangle, Map as MapIcon, Navigation, ExternalLink, Calendar, Plane, Hotel, Globe, ArrowLeft, Heart, Target, Brain, Clock, Zap } from 'lucide-react';
 import { tripPlannerService } from '@/services/tripPlanner';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from "@/lib/utils";
@@ -377,18 +377,18 @@ const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => 
     const msg = `✈️ *TRIP PLAN: ${targetDestination.toUpperCase()} TRIP* 🌴
 
 1️⃣ *EXECUTIVE OVERVIEW*
-• Duration: ${p.overview?.duration}
-• Best Fit: ${p.overview?.bestFit}
+• Duration: ${p.overview?.duration || 'TBD'}
+• Best Fit: ${p.overview?.bestFit || 'TBD'}
 
 2️⃣ *ASSUMPTIONS*
-• Budget: ${p.assumptions?.budgetTarget}
+• Budget: ${p.assumptions?.budgetTarget || 'TBD'}
 • Members: ${members}
 
 3️⃣ *STAY STRATEGY*
 ${p.stayStrategy?.hotels?.map((h: any) => `• ${h.name} (${h.budget})\n  📍 Map: ${getMapLink(h.mapQuery || h.name)}`).join('\n')}
 
 4️⃣ *COST BREAKDOWN*
-• Total: ${p.costBreakdown?.total}
+• Total: ${p.costBreakdown?.total || 'TBD'}
 
 🔗 Generated via BachatKaro App`;
 
@@ -405,49 +405,42 @@ ${p.stayStrategy?.hotels?.map((h: any) => `• ${h.name} (${h.budget})\n  📍 M
     setWebViewOpen(true);
   };
 
-  const zenBgStyle = {
-    background: `linear-gradient(to bottom, rgba(10, 0, 20, 0.85), rgba(10, 0, 20, 0.6)), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=2000')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundAttachment: 'fixed'
-  };
-
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 overflow-hidden bg-[#0a0014] rounded-[2.5rem] border border-[#ff0f7b]/30 shadow-2xl z-50 max-h-[92vh] flex flex-col outline-none transform-gpu">
+      <DialogContent className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 overflow-hidden bg-background rounded-[2.5rem] border border-border shadow-2xl z-50 max-h-[92vh] flex flex-col outline-none transform-gpu">
         
         <DialogTitle className="sr-only">Executive Blueprint Planner</DialogTitle>
         <DialogDescription className="sr-only">Plan your trip based on an exact budget calculation.</DialogDescription>
 
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-white/20 rounded-full z-20 md:hidden" />
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-foreground/10 rounded-full z-20 md:hidden" />
 
         <div className="flex-1 overflow-y-auto no-scrollbar pb-8 md:pb-12">
           
-          <div className="relative pt-12 pb-6 md:pt-16 md:pb-8 bg-gradient-to-b from-purple-900/20 to-transparent">
-             <div className="text-center mb-6 md:mb-8 px-4">
-                <h3 className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#b3b3b3] mb-1 md:mb-2">EXECUTIVE BLUEPRINT</h3>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-white truncate drop-shadow-[0_0_15px_rgba(255,15,123,0.6)]">
+          <div className="relative pt-12 pb-6 md:pt-16 md:pb-8 bg-surface">
+             <div className="text-center mb-10 md:mb-12 px-4">
+                <h3 className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-fintech-graphite-muted mb-2">EXECUTIVE BLUEPRINT</h3>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter text-[#1a1a1a] truncate px-4">
                   {targetDestination || groupName}
                 </h2>
 
                 {/* 🌟 PHASE 5: PERSONALITY & JOURNEY HEADER */}
-                <div className="mt-4 flex flex-col items-center gap-3">
+                <div className="mt-6 flex flex-col items-center gap-4">
                    <div className={cn(
-                     "px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest animate-in fade-in slide-in-from-bottom-2",
-                     travelPersonality.bg, travelPersonality.border, travelPersonality.color
+                     "px-4 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest animate-in fade-in slide-in-from-bottom-2 shadow-sm",
+                     "bg-background border-border text-text-secondary"
                    )}>
                      {travelPersonality.label}
                    </div>
                    
-                   <div className="w-full max-w-[200px] space-y-1.5">
-                      <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-tighter text-white/40 px-1">
+                   <div className="w-full max-w-[240px] space-y-2">
+                      <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-text-muted px-1">
                         <span>{journeyStage.label}</span>
                         <span>{journeyStage.score}%</span>
                       </div>
-                      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                      <div className="h-1.5 w-full bg-background rounded-full overflow-hidden border border-border shadow-inner">
                         <div 
-                          className="h-full bg-gradient-to-r from-[#7C3AED] to-[#ff0f7b] transition-all duration-1000 ease-out"
+                          className="h-full bg-foreground transition-all duration-1000 ease-out"
                           style={{ width: `${journeyStage.score}%` }}
                         />
                       </div>
@@ -456,9 +449,9 @@ ${p.stayStrategy?.hotels?.map((h: any) => `• ${h.name} (${h.budget})\n  📍 M
                 
                 {/* 🌟 PHASE 2: COUNTDOWN BANNER */}
                 {countdownDays !== null && (
-                  <div className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 bg-[#ff0f7b]/20 border border-[#ff0f7b]/40 rounded-full animate-pulse">
-                    <Calendar className="h-3 w-3 text-[#ff0f7b]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white">
+                  <div className="mt-6 inline-flex items-center gap-2.5 px-6 py-2 bg-background border border-border rounded-full shadow-sm">
+                    <Calendar className="h-4 w-4 text-text-secondary" />
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">
                       {countdownDays === 0 ? "Traveling Today! 🚀" : countdownDays < 0 ? "Trip Completed ✅" : `${countdownDays} Days Remaining`}
                     </span>
                   </div>
@@ -467,196 +460,145 @@ ${p.stayStrategy?.hotels?.map((h: any) => `• ${h.name} (${h.budget})\n  📍 M
 
              {!isTravelGroup ? (
                <div className="px-6 md:px-12 py-10 text-center animate-in fade-in zoom-in-95 duration-500">
-                  <div className="bg-[#ff0f7b]/10 border border-[#ff0f7b]/20 rounded-[32px] p-6 md:p-8 backdrop-blur-xl">
-                    <p className="text-[#ff0f7b] font-black text-lg md:text-2xl italic mb-2 tracking-tighter uppercase">No trip plan for this. Enjoy! 🚀</p>
-                    <p className="text-[#b3b3b3] text-[10px] md:text-xs uppercase font-bold mt-2 tracking-widest">Manage your group expenses wisely.</p>
+                  <div className="bg-background border border-border/60 rounded-[32px] p-8 md:p-12 shadow-inner">
+                    <p className="text-[#1a1a1a] font-black text-lg md:text-2xl italic mb-3 tracking-tighter uppercase">No trip plan detected.</p>
+                    <p className="text-fintech-graphite-muted text-[11px] md:text-xs uppercase font-black tracking-[0.2em] opacity-60">Manage your group expenses wisely.</p>
                   </div>
-                  <div className="mt-8 pt-6 border-t border-white/10 max-w-sm mx-auto">
-                     <Button onClick={handleManualOverride} variant="outline" className="w-full bg-white/5 border-white/10 text-white rounded-2xl h-14 hover:bg-white/10 active:scale-95 transition-all font-black text-[10px] uppercase tracking-widest">
-                       <MapIcon className="w-4 h-4 mr-2 text-[#ff0f7b]" /> Yes, This is a trip
+                  
+                  {/* 🌍 FALLBACK: Manual Override Button */}
+                  <div className="mt-10 pt-8 border-t border-border/40 max-w-sm mx-auto">
+                     <p className="text-fintech-graphite-muted text-xs font-black uppercase tracking-widest mb-4 opacity-50">Wait, is this actually a trip?</p>
+                     <Button onClick={handleManualOverride} variant="outline" className="w-full bg-surface border-border/60 text-[#1a1a1a] rounded-2xl h-16 hover:bg-[#1a1a1a] hover:text-white transition-all duration-500 font-black text-[11px] uppercase tracking-[0.2em] shadow-sm">
+                       <MapIcon className="w-5 h-5 mr-3 text-fintech-graphite-muted group-hover:text-white" /> Yes, let me add the destination
                      </Button>
                   </div>
                </div>
              ) : (
-               <div className="px-6 md:px-12 lg:px-20 space-y-4 md:space-y-6">
-                 {/* 🌟 PHASE 2: INPUT GRID UPDATED */}
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[#b3b3b3] text-[9px] font-black uppercase ml-1 tracking-widest">📍 Destination</Label>
-                      <Input value={targetDestination} onChange={(e) => setTargetDestination(e.target.value)} placeholder="e.g. Goa" className="bg-white/5 border-white/10 text-white h-14 rounded-2xl font-black text-sm px-5" />
+               <div className="px-6 md:px-12 lg:px-20 space-y-6 md:space-y-8">
+                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div className="space-y-2.5">
+                      <Label className="text-fintech-graphite-muted text-[10px] md:text-xs font-black uppercase ml-1 tracking-widest opacity-60">📍 Where to?</Label>
+                      <Input value={targetDestination} onChange={(e) => setTargetDestination(e.target.value)} placeholder="Enter a City/Place" className="bg-background border-border/40 text-[#1a1a1a] h-14 rounded-xl font-black text-sm md:text-base px-6 focus:border-border/80 shadow-inner" />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[#b3b3b3] text-[9px] font-black uppercase ml-1 tracking-widest">📅 Trip Date</Label>
-                      <Input type="date" value={tripDate} onChange={(e) => setTripDate(e.target.value)} className="bg-white/5 border-white/10 text-white h-14 rounded-2xl font-black text-sm px-5 appearance-none" style={{ colorScheme: 'dark' }} />
+                    <div className="space-y-2.5">
+                      <Label className="text-fintech-graphite-muted text-[10px] md:text-xs font-black uppercase ml-1 tracking-widest opacity-60">📅 Trip Date</Label>
+                      <Input type="date" value={tripDate} onChange={(e) => setTripDate(e.target.value)} className="bg-background border-border/40 text-[#1a1a1a] h-14 rounded-xl font-black text-sm px-6 focus:border-border/80 shadow-inner appearance-none" />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[#b3b3b3] text-[9px] font-black uppercase ml-1 tracking-widest">👥 Members</Label>
-                      <Input type="number" value={members} onChange={(e) => setMembers(e.target.value)} className="bg-white/5 border-white/10 text-white h-14 rounded-2xl font-black text-sm px-5" />
+                    <div className="space-y-2.5">
+                      <Label className="text-fintech-graphite-muted text-[10px] md:text-xs font-black uppercase ml-1 tracking-widest opacity-60">👥 Members</Label>
+                      <Input type="number" value={members} onChange={(e) => setMembers(e.target.value)} className="bg-background border-border/40 text-[#1a1a1a] h-14 rounded-xl font-black text-sm md:text-base px-6 focus:border-border/80 shadow-inner" />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[#b3b3b3] text-[9px] font-black uppercase ml-1 tracking-widest">💰 Total Budget (₹)</Label>
-                      <Input type="number" value={totalBudget} onChange={(e) => setTotalBudget(e.target.value)} className="bg-white/5 border-white/10 text-white h-14 rounded-2xl font-black text-sm px-5" />
+                    <div className="space-y-2.5 sm:col-span-3">
+                      <Label className="text-fintech-graphite-muted text-[10px] md:text-xs font-black uppercase ml-1 tracking-widest opacity-60">💰 Total Budget</Label>
+                      <Input type="number" value={totalBudget} onChange={(e) => setTotalBudget(e.target.value)} className="bg-background border-border/40 text-[#1a1a1a] h-14 rounded-xl font-black text-sm md:text-base px-6 focus:border-border/80 shadow-inner" />
                     </div>
                  </div>
-
-                 {/* 🌟 PHASE 2: SEASONAL ALERT */}
-                 {seasonalInsight && (
-                   <div className={cn(
-                     "px-4 py-3 rounded-2xl border flex items-center gap-3 animate-in slide-in-from-top-2 duration-300",
-                     seasonalInsight.type === 'PEAK' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                   )}>
-                     {seasonalInsight.type === 'PEAK' ? <AlertTriangle className="h-4 w-4 shrink-0" /> : <Sparkles className="h-4 w-4 shrink-0" />}
-                     <p className="text-[10px] font-bold leading-tight tracking-wide">{seasonalInsight.text}</p>
-                   </div>
-                 )}
 
                  <div className={cn(
-                   "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-3 rounded-xl border transition-all",
-                   isLowBudget ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                   "flex items-center gap-3 text-xs md:text-sm font-black px-4 py-2 rounded-full border w-fit mx-auto transition-all",
+                   isLowBudget ? "bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]" : "bg-fintech-emerald-muted text-fintech-emerald-dark border-fintech-emerald/20"
                  )}>
-                   {isLowBudget ? <AlertTriangle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+                   {isLowBudget ? <AlertTriangle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
                    {isLowBudget 
-                     ? `Low Budget: ₹${perPersonCost}/head. Suggestions will be backpacker-grade.` 
-                     : `Budget Stable: ₹${perPersonCost} per person share.`}
+                     ? `⚠️ Tight Budget: ₹${perPersonCost}/head. Logic will optimize for value.` 
+                     : `👉 Budget Basis: ₹${perPersonCost} per person.`}
                  </div>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                   <div className="p-4 bg-white/5 border border-cyan-400/20 rounded-2xl space-y-1">
-                     <p className="text-[9px] font-black text-cyan-300 uppercase tracking-widest">Affordability Score</p>
-                     <p className="text-2xl font-black text-white">{affordability.score}%</p>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-cyan-200">{affordability.level}</p>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="p-6 bg-surface border border-border rounded-3xl space-y-2 shadow-sm">
+                     <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Affordability Score</p>
+                     <p className="text-3xl font-bold text-foreground font-mono">{affordability.score}%</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">{affordability.level}</p>
                    </div>
-                   <div className="p-4 bg-white/5 border border-indigo-400/20 rounded-2xl space-y-1">
+                   <div className="p-6 bg-surface border border-border rounded-3xl space-y-2 shadow-sm">
                      <div className="flex justify-between items-start">
-                       <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest">Travel Confidence</p>
-                       <Brain className="h-4 w-4 text-indigo-400/50" />
+                       <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Travel Confidence</p>
+                       <Brain className="h-4 w-4 text-text-muted" />
                      </div>
-                     <p className="text-2xl font-black text-white">{travelConfidence.score}%</p>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-indigo-200">{travelConfidence.level}</p>
+                     <p className="text-3xl font-bold text-foreground font-mono">{travelConfidence.score}%</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">{travelConfidence.level}</p>
                    </div>
                  </div>
 
                  {/* 🌟 PHASE 4: SMART TRAVEL MEMORY */}
                  {targetDestination && (
-                   <div className="px-4 py-2.5 rounded-xl border bg-white/5 border-white/10 flex items-center gap-3">
-                     <div className="h-6 w-6 rounded-full bg-[#ff0f7b]/20 flex items-center justify-center shrink-0">
-                       <MapPin className="h-3 w-3 text-[#ff0f7b]" />
+                   <div className="px-6 py-4 rounded-2xl border bg-background border-border flex items-center gap-4 shadow-inner">
+                     <div className="h-8 w-8 rounded-full bg-surface border border-border flex items-center justify-center shrink-0 shadow-sm">
+                       <MapPin className="h-4 w-4 text-text-secondary" />
                      </div>
-                     <p className="text-[10px] font-bold text-white/80">{memoryEngine.text}</p>
+                     <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wide">{memoryEngine.text}</p>
                    </div>
                  )}
 
                  {/* 🌟 PHASE 3: EMOTIONAL INTELLIGENCE & SAVINGS GOAL PANELS */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    <div className={cn(
-                     "p-4 border rounded-2xl space-y-2 flex flex-col justify-center transition-all",
-                     emotionalIntelligence.isRomantic ? "bg-pink-500/10 border-pink-500/20" :
-                     emotionalIntelligence.isSpiritual ? "bg-orange-500/10 border-orange-500/20" :
-                     "bg-purple-500/10 border-purple-500/20"
+                     "p-6 border rounded-3xl space-y-3 flex flex-col justify-center transition-all shadow-sm",
+                     "bg-surface border-border"
                    )}>
-                     <div className="flex items-center gap-2 mb-1">
-                        <Heart className={cn(
-                          "h-4 w-4",
-                          emotionalIntelligence.isRomantic ? "text-pink-400" :
-                          emotionalIntelligence.isSpiritual ? "text-orange-400" : "text-purple-400"
-                        )} />
-                        <p className="text-[9px] font-black text-white/70 uppercase tracking-widest">Vibe Check</p>
+                     <div className="flex items-center gap-2.5 mb-1">
+                        <Heart className="h-4 w-4 text-text-secondary" />
+                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Vibe Check</p>
                      </div>
-                     <p className="text-[11px] font-bold text-white leading-tight">{emotionalIntelligence.sentiment}</p>
+                     <p className="text-[12px] font-bold text-foreground leading-snug uppercase tracking-tight">{emotionalIntelligence.sentiment}</p>
                    </div>
                    
                    {savingsGoal ? (
-                     <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-1 flex flex-col justify-center">
-                       <div className="flex items-center gap-2 mb-1">
-                         <Target className="h-4 w-4 text-emerald-400" />
-                         <p className="text-[9px] font-black text-emerald-300 uppercase tracking-widest">Savings Goal</p>
+                     <div className="p-6 bg-surface border border-border rounded-3xl space-y-2 flex flex-col justify-center shadow-sm">
+                       <div className="flex items-center gap-2.5 mb-1">
+                         <Target className="h-4 w-4 text-text-secondary" />
+                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Savings Goal</p>
                        </div>
-                       <p className="text-xl font-black text-white">₹{savingsGoal.monthlyTarget}<span className="text-[10px] text-emerald-400/60 font-bold ml-1">/mo</span></p>
-                       <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-tighter text-emerald-400/60 mt-1 mb-0.5">
+                       <p className="text-2xl font-bold text-foreground font-mono tracking-tighter">₹{savingsGoal.monthlyTarget}<span className="text-[11px] text-text-secondary font-bold ml-1.5 uppercase">/mo</span></p>
+                       <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-text-muted mt-2 mb-1">
                          <span>Ready</span>
                          <span>{savingsGoal.readinessScore}%</span>
                        </div>
-                       <div className="h-0.5 w-full bg-emerald-500/10 rounded-full overflow-hidden">
-                         <div className="h-full bg-emerald-400 transition-all duration-700" style={{ width: `${savingsGoal.readinessScore}%` }} />
+                       <div className="h-1 w-full bg-background rounded-full overflow-hidden border border-border shadow-inner">
+                         <div className="h-full bg-foreground transition-all duration-700" style={{ width: `${savingsGoal.readinessScore}%` }} />
                        </div>
                      </div>
                    ) : (
-                     <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex flex-col justify-center items-center text-center opacity-50">
-                       <Calendar className="h-5 w-5 text-white/40 mb-2" />
-                       <p className="text-[9px] font-black text-white/60 uppercase tracking-widest">Set Trip Date<br/>for Savings Goal</p>
+                     <div className="p-6 bg-background border border-border border-dashed rounded-3xl flex flex-col justify-center items-center text-center opacity-60">
+                       <Calendar className="h-6 w-6 text-text-muted mb-3" />
+                       <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Set Trip Date<br/>for Savings Goal</p>
                      </div>
                    )}
                  </div>
 
-                 <div className="p-4 bg-white/5 border border-amber-400/20 rounded-2xl space-y-2">
-                   <p className="text-[9px] font-black text-amber-300 uppercase tracking-widest">AI Insights</p>
-                   <div className="space-y-1.5">
+                 <div className="p-6 bg-surface border border-border rounded-3xl space-y-4 shadow-sm">
+                   <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">AI Insights</p>
+                   <div className="space-y-2">
                      {insightCards.map((insight, idx) => (
-                       <p key={idx} className="text-[11px] font-bold text-white/90">• {insight}</p>
+                       <p key={idx} className="text-[12px] font-bold text-text-secondary uppercase tracking-tight leading-relaxed">• {insight}</p>
                      ))}
                    </div>
                  </div>
 
-                 <Button 
-                   onClick={handleGenerate} 
-                   disabled={isGenerating} 
-                   className="w-full h-16 bg-gradient-to-r from-[#7C3AED] to-[#ff0f7b] text-white font-black rounded-2xl shadow-xl transition-all active:scale-[0.965] text-sm uppercase tracking-widest mt-2"
-                 >
-                   {isGenerating ? <Loader2 className="h-5 w-5 animate-spin mr-3" /> : <Sparkles className="h-5 w-5 mr-3" />}
-                   {isGenerating ? "Compiling Blueprint..." : "Create Blueprint 🚀"}
+                 <Button onClick={handleGenerate} disabled={isGenerating} className="w-full h-16 md:h-20 bg-[#1a1a1a] text-white font-black rounded-2xl md:rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all active:scale-[0.97] text-sm md:text-lg uppercase tracking-[0.2em] mt-2 hover:bg-[#111111]">
+                   {isGenerating ? <Loader2 className="h-6 w-6 animate-spin mr-3" /> : <Sparkles className="h-6 w-6 mr-4" />}
+                   {isGenerating ? "Compiling Blueprint..." : "Deploy Blueprint 🚀"}
                  </Button>
 
                  {/* 🌟 PHASE 2: AFFILIATE CARDS (PRE-GENERATION) */}
                  {!p && (
-                   <div className="pt-6 space-y-4">
-                     <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] text-center">Evolving Ecosystem</p>
-                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                   <div className="pt-10 space-y-6">
+                     <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.4em] text-center">Evolving Ecosystem</p>
+                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                        {AFFILIATE_LINKS.map((link) => (
                          <button 
                            key={link.id}
                            onClick={() => openAffiliateLink(link.url)}
-                           className="p-4 bg-white/5 border border-white/5 rounded-2xl text-left transition-all hover:bg-white/10 active:scale-95 group"
+                           className="p-6 bg-surface border border-border rounded-2xl text-left transition-all hover:border-foreground/20 active:scale-[0.98] group shadow-sm"
                          >
-                           <div className="flex justify-between items-center mb-3">
-                             <link.icon className="h-5 w-5 text-white/20 group-hover:text-[#ff0f7b] transition-colors" />
-                             {!link.url && <div className="px-1.5 py-0.5 rounded-md bg-[#ff0f7b]/10 text-[#ff0f7b] text-[7px] font-black uppercase tracking-tighter">SOON</div>}
+                           <div className="flex justify-between items-center mb-4">
+                             <link.icon className="h-6 w-6 text-text-secondary group-hover:text-foreground transition-colors" />
+                             {!link.url && <div className="px-2 py-0.5 rounded-md bg-background border border-border text-text-muted text-[8px] font-bold uppercase tracking-widest">SOON</div>}
                            </div>
-                           <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">{link.name}</p>
-                           <p className="text-[9px] text-white/30 font-bold leading-tight">{link.desc}</p>
+                           <p className="text-[11px] font-bold text-foreground uppercase tracking-widest mb-1.5">{link.name}</p>
+                           <p className="text-[10px] text-text-secondary font-medium leading-relaxed">{link.desc}</p>
                          </button>
                        ))}
-                     </div>
-
-                     {/* 🌟 PHASE 5: LIFESTYLE DISCOVERY */}
-                     <div className="p-5 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/10 rounded-[32px] space-y-4">
-                        <div className="flex justify-between items-center px-1">
-                           <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Lifestyle Discovery</h4>
-                           <Sparkles className="h-3.5 w-3.5 text-[#ff0f7b]" />
-                        </div>
-                        <div className="space-y-2.5">
-                           <div className="p-3 bg-white/5 rounded-2xl flex items-center gap-3 border border-white/5">
-                              <div className="h-8 w-8 rounded-xl bg-[#7C3AED]/20 flex items-center justify-center shrink-0">
-                                <MapIcon className="h-4 w-4 text-[#7C3AED]" />
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-black text-white uppercase tracking-tight">Style Alternative</p>
-                                <p className="text-[9px] text-white/50 font-bold leading-tight">
-                                  {travelPersonality.label === 'Luxury Traveler' 
-                                    ? "Consider private estate stays for absolute seclusion." 
-                                    : "Boutique hostels often offer better social vibes for this style."}
-                                </p>
-                              </div>
-                           </div>
-                           <div className="p-3 bg-white/5 rounded-2xl flex items-center gap-3 border border-white/5 text-left w-full cursor-pointer hover:bg-white/10 transition-colors" onClick={() => toast({ title: "Opening Discover", description: "Finding hidden gems for your profile..." })}>
-                              <div className="h-8 w-8 rounded-xl bg-[#ff0f7b]/20 flex items-center justify-center shrink-0">
-                                <Globe className="h-4 w-4 text-[#ff0f7b]" />
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-black text-white uppercase tracking-tight">Hidden Gem Discovery</p>
-                                <p className="text-[9px] text-white/50 font-bold leading-tight">Explore off-beat locations matching your {travelPersonality.label} profile.</p>
-                              </div>
-                           </div>
-                        </div>
                      </div>
                    </div>
                  )}
@@ -664,216 +606,222 @@ ${p.stayStrategy?.hotels?.map((h: any) => `• ${h.name} (${h.budget})\n  📍 M
              )}
           </div>
 
+          {/* 🌟 PHASE 2: GENERATED BLUEPRINT VIEW */}
           {p && (
-            <div 
-              style={zenBgStyle}
-              className="mt-8 mx-4 sm:mx-8 rounded-[40px] overflow-hidden border border-white/10 shadow-3xl animate-in fade-in zoom-in-95 duration-1000 transform-gpu"
-            >
-              <div className="p-6 md:p-12 lg:p-16 space-y-10 backdrop-blur-[32px] bg-[#0a0014]/60">
-                 
-                 {/* 🌟 PHASE 2: PREMIUM AFFILIATE OVERLAY (POST-GENERATION) */}
-                 <section className="space-y-4">
-                   <h4 className="text-[10px] font-black text-[#ff0f7b] uppercase tracking-[0.3em]">ECOSYSTEM EXPERIENCES</h4>
-                   <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-                     {AFFILIATE_LINKS.map((link) => (
-                       <div 
-                         key={link.id} 
-                         onClick={() => openAffiliateLink(link.url)}
-                         className="flex-shrink-0 w-64 p-5 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl cursor-pointer hover:border-[#ff0f7b]/30 transition-all group"
-                       >
-                         <div className="flex items-center justify-between mb-4">
-                           <div className="p-3 bg-white/5 rounded-2xl group-hover:bg-[#ff0f7b]/10 transition-colors">
-                             <link.icon className="h-5 w-5 text-white/40 group-hover:text-[#ff0f7b] transition-colors" />
-                           </div>
-                           {!link.url && <Sparkles className="h-3 w-3 text-[#ff0f7b] animate-pulse" />}
-                           {link.url && <ExternalLink className="h-4 w-4 text-white/20 group-hover:text-white transition-all" />}
-                         </div>
-                         <p className="text-sm font-black text-white uppercase tracking-tighter mb-1">{link.name}</p>
-                         <p className="text-[9px] text-white/30 font-bold mb-4 leading-tight">{link.desc}</p>
-                         <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                           <div 
-                             className={cn("h-full transition-all duration-1000", link.url ? "bg-[#ff0f7b] w-1/3 group-hover:w-full" : "bg-[#ff0f7b]/20 w-0 group-hover:w-1/4")} 
-                           />
-                         </div>
+            <div className="px-6 md:px-12 lg:px-20 py-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 space-y-10">
+               
+               <div className="p-10 rounded-[40px] bg-[#1a1a1a] text-white space-y-10 shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-1000">
+                    <Sparkles size={140} />
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-start mb-10">
+                       <div>
+                         <h4 className="text-3xl font-black tracking-tighter uppercase leading-tight">Strategic Itinerary</h4>
+                         <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em] mt-2">Executive Level Access</p>
                        </div>
-                     ))}
-                   </div>
-                 </section>
-
-                 <section className="space-y-5">
-                    <h4 className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.3em] flex items-center gap-2">
-                      <Navigation className="h-4 w-4" /> Live Map Preview
-                    </h4>
-                    <div className="w-full h-64 md:h-96 rounded-[32px] overflow-hidden border border-white/10 shadow-inner">
-                      <iframe 
-                        width="100%" height="100%" 
-                        style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) contrast(1.2)' }} 
-                        src={`https://maps.google.com/maps?q=${encodeURIComponent(targetDestination)}&t=&z=11&ie=UTF8&iwloc=&output=embed`}
-                      ></iframe>
+                       <button onClick={() => setTripPlan(null)} className="text-white/30 hover:text-white transition-all uppercase text-[10px] font-black tracking-[0.25em] bg-white/5 px-4 py-2 rounded-lg border border-white/10">Reset Model</button>
                     </div>
-                 </section>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4">
-                     <h4 className="text-[10px] font-black text-[#ff0f7b] uppercase tracking-widest">01. EXECUTIVE OVERVIEW</h4>
-                     <div className="space-y-3">
-                       <p className="text-sm font-bold text-white tracking-tight">Duration: <span className="text-[#b3b3b3]">{p.overview?.duration}</span></p>
-                       <p className="text-sm font-bold text-white tracking-tight">Best Fit: <span className="text-[#b3b3b3]">{p.overview?.bestFit}</span></p>
-                     </div>
-                   </div>
-                   <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4">
-                     <h4 className="text-[10px] font-black text-[#ff0f7b] uppercase tracking-widest">02. CORE ASSUMPTIONS</h4>
-                     <div className="space-y-3 font-mono">
-                       <p className="text-sm font-black text-white uppercase tracking-tighter">PER HEAD: ₹{perPersonCost}</p>
-                       <p className="text-sm font-black text-emerald-400 uppercase tracking-tighter italic">TOTAL CAP: ₹{totalBudget}</p>
-                     </div>
-                   </div>
-                 </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                      <div className="p-6 rounded-3xl bg-white/5 border border-white/10 shadow-inner group/card hover:bg-white/10 transition-all">
+                        <p className="text-[10px] text-white/50 font-black uppercase tracking-[0.2em] mb-3 group-hover/card:text-white/80 transition-colors">Hotel</p>
+                        <p className="text-2xl font-black font-mono tracking-tighter tabular-nums leading-none text-white">₹{smartBudget.hotel.toLocaleString()}</p>
+                      </div>
+                      <div className="p-6 rounded-3xl bg-white/5 border border-white/10 shadow-inner group/card hover:bg-white/10 transition-all">
+                        <p className="text-[10px] text-white/50 font-black uppercase tracking-[0.2em] mb-3 group-hover/card:text-white/80 transition-colors">Travel</p>
+                        <p className="text-2xl font-black font-mono tracking-tighter tabular-nums leading-none text-white">₹{smartBudget.travel.toLocaleString()}</p>
+                      </div>
+                      <div className="p-6 rounded-3xl bg-white/5 border border-white/10 shadow-inner group/card hover:bg-white/10 transition-all">
+                        <p className="text-[10px] text-white/50 font-black uppercase tracking-[0.2em] mb-3 group-hover/card:text-white/80 transition-colors">Food</p>
+                        <p className="text-2xl font-black font-mono tracking-tighter tabular-nums leading-none text-white">₹{smartBudget.food.toLocaleString()}</p>
+                      </div>
+                      <div className="p-6 rounded-3xl bg-white/5 border border-white/10 shadow-inner group/card hover:bg-white/10 transition-all">
+                        <p className="text-[10px] text-white/50 font-black uppercase tracking-[0.2em] mb-3 group-hover/card:text-white/80 transition-colors">Reserve</p>
+                        <p className="text-2xl font-black font-mono tracking-tighter tabular-nums leading-none text-white">₹{smartBudget.emergency.toLocaleString()}</p>
+                      </div>
+                    </div>
 
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                   <div className="p-6 bg-white/5 rounded-3xl border border-cyan-400/20">
-                     <h4 className="text-[10px] font-black text-cyan-300 uppercase tracking-widest mb-3">03. AFFORDABILITY</h4>
-                     <p className="text-3xl font-black text-white">{affordability.score}%</p>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-cyan-200 mt-2">Risk Level: {affordability.level}</p>
-                   </div>
-                   <div className="p-6 bg-white/5 rounded-3xl border border-amber-400/20">
-                     <h4 className="text-[10px] font-black text-amber-300 uppercase tracking-widest mb-3">04. HIDDEN COST WINDOW</h4>
-                     <p className="text-sm font-black text-white">₹{hiddenCostEstimate.min} - ₹{hiddenCostEstimate.max}</p>
-                     <p className="text-[10px] text-amber-200/90 font-bold mt-2">Includes transport, shopping, emergency and hidden charges.</p>
-                   </div>
-                   <div className="p-6 bg-white/5 rounded-3xl border border-indigo-400/20">
-                     <h4 className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-3">05. TRAVEL CONFIDENCE</h4>
-                     <p className="text-3xl font-black text-white">{travelConfidence.score}%</p>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-indigo-200 mt-2">{travelConfidence.level}</p>
-                   </div>
-                 </div>
-
-                 <div className="p-6 bg-white/5 rounded-3xl border border-emerald-500/20 space-y-4">
-                   <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em]">06. SMART BUDGET MODEL</h4>
-                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                     <div className="p-3 rounded-xl bg-black/20 border border-white/10"><p className="text-[9px] text-white/60 font-black uppercase">Hotel</p><p className="text-sm font-black text-white">₹{smartBudget.hotel}</p></div>
-                     <div className="p-3 rounded-xl bg-black/20 border border-white/10"><p className="text-[9px] text-white/60 font-black uppercase">Travel</p><p className="text-sm font-black text-white">₹{smartBudget.travel}</p></div>
-                     <div className="p-3 rounded-xl bg-black/20 border border-white/10"><p className="text-[9px] text-white/60 font-black uppercase">Food</p><p className="text-sm font-black text-white">₹{smartBudget.food}</p></div>
-                     <div className="p-3 rounded-xl bg-black/20 border border-white/10"><p className="text-[9px] text-white/60 font-black uppercase">Local Transport</p><p className="text-sm font-black text-white">₹{smartBudget.localTransport}</p></div>
-                     <div className="p-3 rounded-xl bg-black/20 border border-white/10"><p className="text-[9px] text-white/60 font-black uppercase">Shopping</p><p className="text-sm font-black text-white">₹{smartBudget.shopping}</p></div>
-                     <div className="p-3 rounded-xl bg-black/20 border border-white/10"><p className="text-[9px] text-white/60 font-black uppercase">Emergency</p><p className="text-sm font-black text-white">₹{smartBudget.emergency}</p></div>
-                     <div className="p-3 rounded-xl bg-black/20 border border-white/10"><p className="text-[9px] text-white/60 font-black uppercase">Hidden Costs</p><p className="text-sm font-black text-white">₹{smartBudget.hiddenCosts}</p></div>
-                     <div className="p-3 rounded-xl bg-black/20 border border-white/10"><p className="text-[9px] text-white/60 font-black uppercase">Reserve</p><p className="text-sm font-black text-white">₹{hiddenCostEstimate.hiddenCharges}</p></div>
-                   </div>
-                 </div>
-
-                 <div className="space-y-6">
-                   <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">07. VETTED ACCOMMODATION</h4>
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                     {p.stayStrategy?.hotels?.map((h: any, i: number) => (
-                       <a 
-                        key={i}
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.mapQuery || h.name)}`}
-                        target="_blank"
-                        className="p-5 bg-white/5 border border-white/10 rounded-2xl transition-all hover:bg-white/10 group"
-                       >
-                         <div className="flex justify-between items-start mb-2">
-                           <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">{h.budget || 'STAY'}</span>
-                           <ExternalLink className="h-3 w-3 text-white/20 group-hover:text-white transition-colors" />
+                    <div className="mt-14 space-y-10">
+                      <div className="p-10 bg-white rounded-[32px] border border-white/20 shadow-2xl">
+                         <div className="flex items-center gap-6 mb-10">
+                            {/* Circular Premium Icon Container - Chrono Style */}
+                            <div className="h-14 w-14 rounded-full bg-[#E0E7FF] border border-[#C7D2FE] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 hover:scale-110">
+                               <Clock className="h-7 w-7 text-[#DC2626]" />
+                            </div>
+                            <div>
+                               <p className="text-[#1a1a1a] text-lg font-black uppercase tracking-tight leading-none">Sequence Strategy</p>
+                               <p className="text-fintech-graphite-muted text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 opacity-60">Chronological Flow</p>
+                            </div>
                          </div>
-                         <p className="text-sm font-black text-white uppercase tracking-tight mb-1">{h.name}</p>
-                         <p className="text-[10px] text-[#b3b3b3] leading-relaxed line-clamp-2">{h.desc}</p>
-                       </a>
-                     ))}
-                   </div>
-                 </div>
+                         <div className="space-y-8">
+                            {p.itinerary?.map((day: any) => (
+                              <div key={day.day} className="space-y-5 pb-8 border-b border-border/40 last:border-0 last:pb-0 group/day">
+                                <div className="flex items-center gap-4">
+                                   <p className="text-[11px] font-black text-[#1a1a1a] uppercase tracking-[0.25em] bg-background border border-border/60 px-4 py-1.5 rounded-full w-fit shadow-sm">Period {day.day}</p>
+                                   <p className="text-fintech-graphite-muted text-[13px] font-black uppercase tracking-tight opacity-40 group-hover/day:opacity-80 transition-opacity">
+                                     {typeof day.title === 'object' ? (day.title.name || 'Untitled') : (day.title || 'Untitled')}
+                                   </p>
+                                </div>
+                                <div className="space-y-4 pl-2">
+                                  {day.activities?.map((act: any, i: number) => (
+                                    <div key={i} className="flex gap-8 items-start group/act">
+                                      <span className="text-[11px] font-black text-fintech-graphite-muted mt-1 w-18 shrink-0 uppercase tracking-tighter opacity-50 group-hover/act:opacity-100 transition-opacity">{act.time || 'Routine'}</span>
+                                      <p className="text-[16px] font-bold text-[#1a1a1a] group-hover/act:translate-x-1 transition-transform duration-500">
+                                        {typeof act === 'object' ? (act.desc || act.name || 'Activity') : act}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                         </div>
+                      </div>
 
-                 <div className="space-y-6">
-                   <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em]">08. DAY-WISE ITINERARY</h4>
-                   <div className="grid gap-5">
-                     {p.itinerary?.map((d: any, i: number) => (
-                       <div key={i} className="p-6 bg-white/5 border-l-4 border-emerald-500 rounded-r-3xl">
-                         <h5 className="text-sm font-black text-white mb-4 uppercase tracking-tighter italic">Day {d.day} — {d.title}</h5>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           {d.activities?.map((act: any, idx: number) => (
-                             <a 
-                              key={idx}
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.mapQuery || act.name)}`}
-                              target="_blank"
-                              className="flex items-center gap-3 p-3 bg-black/20 rounded-xl hover:bg-black/40 transition-all border border-white/5"
-                             >
-                               <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                 <MapPin className="h-4 w-4 text-emerald-500" />
+                      {/* 🗺️ LIVE GOOGLE MAP INTEL */}
+                      <section className="space-y-6">
+                        <div className="flex items-center gap-6 px-4">
+                           {/* Circular Premium Icon Container - Map Style */}
+                           <div className="h-14 w-14 rounded-full bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 hover:scale-110">
+                             <Navigation className="h-7 w-7 text-[#DC2626]" />
+                           </div>
+                           <div>
+                             <p className="text-white text-lg font-black uppercase tracking-tight leading-none">Destination Intel</p>
+                             <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5">Live Terminal Map</p>
+                           </div>
+                        </div>
+                        <div className="w-full h-64 md:h-96 bg-white rounded-[40px] overflow-hidden border border-white/20 shadow-2xl relative">
+                          <iframe 
+                            width="100%" 
+                            height="100%" 
+                            style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) brightness(1.1) contrast(90%)' }} 
+                            loading="lazy" 
+                            allowFullScreen 
+                            src={`https://maps.google.com/maps?q=$${encodeURIComponent(targetDestination)}&t=&z=12&ie=UTF8&iwloc=&output=embed`}
+                          ></iframe>
+                          <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-white/10 rounded-[40px]"></div>
+                        </div>
+                      </section>
+
+                      <div className="p-10 bg-white rounded-[40px] border border-white/20 shadow-2xl">
+                         <div className="flex items-center gap-6 mb-8 text-[#1a1a1a]">
+                            {/* Circular Premium Icon Container - Logistics Style */}
+                            <div className="h-14 w-14 rounded-full bg-[#DBEAFE] border border-[#BFDBFE] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 hover:scale-110">
+                               <MapPin className="h-7 w-7 text-[#DC2626]" />
+                            </div>
+                            <div>
+                               <p className="text-lg font-black uppercase tracking-tight leading-none">Logistics Protocol</p>
+                               <p className="text-fintech-graphite-muted text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 opacity-60">Verified Movement Strategy</p>
+                            </div>
+                         </div>
+                         <div className="grid sm:grid-cols-2 gap-10">
+                           <div className="space-y-4">
+                             <p className="text-[10px] font-black text-fintech-graphite-muted uppercase tracking-[0.3em] opacity-40">Transit Logic</p>
+                             <div className="space-y-2">
+                               <p className="text-[16px] font-black text-[#1a1a1a] leading-tight">
+                                 ✈️ {typeof p.travelPlan?.flight?.route === 'object' ? (p.travelPlan.flight.route.name || 'Not recommended') : (p.travelPlan?.flight?.route || 'Not recommended')}
+                               </p>
+                               <p className="text-[14px] font-bold text-fintech-graphite-muted leading-relaxed italic border-l-2 border-border/40 pl-5">
+                                 {typeof p.travelPlan?.flight?.postLanding === 'object' ? (p.travelPlan.flight.postLanding.desc || 'Standard arrival protocol') : (p.travelPlan?.flight?.postLanding || 'Standard arrival protocol')}
+                               </p>
+                               <p className="text-[15px] font-bold text-[#1a1a1a] opacity-80 mt-4">
+                                 🚆 {typeof p.travelPlan?.train?.route === 'object' ? (p.travelPlan.train.route.name || 'Checking alternatives...') : (p.travelPlan?.train?.route || 'Checking alternatives...')}
+                               </p>
+                             </div>
+                           </div>
+                           <div className="space-y-4">
+                             <p className="text-[10px] font-black text-fintech-graphite-muted uppercase tracking-[0.3em] opacity-40">Asset Strategy</p>
+                             <div className="bg-background p-6 rounded-[28px] border border-border/40 shadow-sm">
+                               <p className="text-[15px] font-black text-[#1a1a1a] mb-2 uppercase tracking-tight leading-none">
+                                 📍 {typeof p.stayStrategy?.location === 'object' ? (p.stayStrategy.location.name || 'Selection active') : (p.stayStrategy?.location || 'Selection active')}
+                               </p>
+                               <p className="text-[12px] font-bold text-fintech-graphite-muted uppercase tracking-widest opacity-60 leading-tight">
+                                 Zones: {typeof p.stayStrategy?.areas === 'object' ? (p.stayStrategy.areas.name || 'Optimized coverage') : (p.stayStrategy?.areas || 'Optimized coverage')}
+                               </p>
+                               <div className="mt-5 space-y-2">
+                                 {p.stayStrategy?.hotels?.map((h: any, idx: number) => (
+                                   <p key={idx} className="text-[13px] font-black text-[#1a1a1a] opacity-80 flex items-center gap-2">
+                                     <div className="w-1.5 h-1.5 rounded-full bg-[#DC2626] opacity-30" /> 
+                                     {typeof h === 'object' ? (h.name || 'Hotel') : h}
+                                   </p>
+                                 ))}
                                </div>
-                               <div>
-                                 <p className="text-[11px] font-bold text-white uppercase truncate max-w-[120px]">{act.name}</p>
-                                 <p className="text-[9px] font-black text-emerald-400/60 font-mono">COST: {act.cost}</p>
-                               </div>
-                             </a>
+                             </div>
+                           </div>
+                         </div>
+                      </div>
+
+                      <div className="p-10 bg-white rounded-[40px] border border-white/20 shadow-2xl">
+                         <div className="flex items-center gap-6 mb-8 text-[#1a1a1a]">
+                            {/* Circular Premium Icon Container - Risk Style */}
+                            <div className="h-14 w-14 rounded-full bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 hover:scale-110">
+                               <Zap className="h-7 w-7 text-[#DC2626]" />
+                            </div>
+                            <div>
+                               <p className="text-lg font-black uppercase tracking-tight leading-none">Strategic Risk Controls</p>
+                               <p className="text-fintech-graphite-muted text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 opacity-60">Forensic Contingency Plan</p>
+                            </div>
+                         </div>
+                         <div className="space-y-5">
+                           {p.riskManagement?.contingency?.map((c: any, i: number) => (
+                             <div key={i} className="flex items-center gap-5 text-[15px] font-bold text-[#1a1a1a] group/risk bg-background p-5 rounded-[24px] border border-border/40 shadow-sm hover:border-border/80 transition-all duration-500">
+                               <div className="h-3 w-3 rounded-full bg-[#DC2626] opacity-20 shrink-0 group-hover/risk:opacity-100 transition-opacity" />
+                               {typeof c === 'object' ? (c.desc || c.name || 'Precaution active') : (c || 'Precaution active')}
+                             </div>
                            ))}
                          </div>
-                         <p className="mt-4 text-[10px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1.5 rounded-lg inline-block">
-                           DAILY BUDGET: {d.dailyBudget}
-                         </p>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                   <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-                     <h4 className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-3">09. TRANSPORT</h4>
-                     <p className="text-xs font-bold text-white uppercase leading-relaxed">{p.transportStrategy?.bestOption}</p>
-                   </div>
-                   <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-                     <h4 className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-3">10. FOOD ENGINE</h4>
-                     <div className="space-y-2">
-                       {p.foodStrategy?.mustTry?.map((f: any, i: number) => (
-                         <p key={i} className="text-[10px] font-black text-white uppercase tracking-tight">• {f.name}</p>
-                       ))}
-                     </div>
-                   </div>
-                   <div className="p-6 bg-[#ff0f7b]/10 rounded-3xl border border-[#ff0f7b]/30">
-                     <h4 className="text-[10px] font-black text-[#ff0f7b] uppercase tracking-widest mb-3">11. COST AUDIT</h4>
-                     <p className="text-2xl font-black text-white font-mono tracking-tighter underline underline-offset-8 decoration-[#ff0f7b]">{p.costBreakdown?.total}</p>
-                   </div>
-                 </div>
-
-                 {Array.isArray(p.checklist) && p.checklist.length > 0 && (
-                   <div className="p-6 bg-white/5 rounded-3xl border border-cyan-500/20 space-y-3">
-                     <h4 className="text-[10px] font-black text-cyan-300 uppercase tracking-[0.3em]">12. PACKING CHECKLIST</h4>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                       {p.checklist
-                         .filter((item: any) => typeof item === 'string' && item.trim())
-                         .map((item: string, i: number) => (
-                           <p key={i} className="text-[11px] font-bold text-white/90">• {item}</p>
-                         ))}
-                     </div>
-                   </div>
-                 )}
-
-                 <div className="pt-6">
-                   <Button onClick={handleWhatsAppShare} className="w-full h-16 rounded-2xl bg-[#25D366] hover:bg-[#128C7E] text-white font-black flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(37,211,102,0.3)] transition-all active:scale-[0.965] uppercase tracking-[0.2em] text-sm">
-                     <Share2 className="h-5 w-5" /> Copy Blueprint to WhatsApp
-                   </Button>
-                 </div>
-              </div>
+                      </div>
+                    </div>
+                  </div>
+               </div>
             </div>
           )}
+
+          <div className="px-6 md:px-12 lg:px-20 mt-12 space-y-6">
+            <div className="p-10 bg-surface border border-border/40 rounded-[40px] text-center shadow-sm">
+                <p className="text-[10px] font-black text-fintech-graphite-muted uppercase tracking-[0.4em] mb-4 opacity-60">Integrity Disclaimer</p>
+                <p className="text-xs text-[#525252] leading-relaxed uppercase tracking-widest max-w-sm mx-auto font-bold opacity-80">BachatKaro Analysis is advisory. Verify all logistics and pricing independently. Financial responsibility remains with user entities.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 md:p-10 bg-background border-t border-border/40 shrink-0 z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.02)]">
+          <div className="flex flex-col sm:flex-row gap-5">
+            <Button onClick={() => openAffiliateLink(`https://www.google.com/maps/search/${encodeURIComponent(targetDestination || 'Trip')}+hotels`)} variant="outline" className="flex-1 bg-surface border-border/60 text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white h-18 rounded-[24px] font-black uppercase text-[11px] tracking-[0.2em] shadow-sm transition-all active:scale-95 duration-500 group/btn">
+              <Globe className="w-6 w-6 mr-3 text-fintech-graphite-muted group-hover/btn:text-white transition-colors" /> Google Maps Intel
+            </Button>
+            <Button onClick={() => window.open(activeUrl, '_blank')} className="flex-1 bg-[#1a1a1a] text-white h-18 rounded-[24px] font-black uppercase text-[11px] tracking-[0.2em] shadow-[0_15px_40px_rgba(0,0,0,0.2)] hover:bg-[#111111] transition-all active:scale-95 duration-500">
+              <ExternalLink className="w-6 w-6 mr-3" /> External Terminal
+            </Button>
+          </div>
+          
+          <div className="mt-8 p-5 rounded-2xl bg-surface border border-border/40 flex items-center justify-between shadow-inner">
+            <div className="flex items-center gap-4">
+               <div className="w-2 h-2 rounded-full bg-fintech-emerald animate-pulse" />
+               <p className="text-[10px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em] opacity-60">Active Terminal Connection</p>
+            </div>
+            <p className="text-[10px] font-black text-[#1a1a1a] truncate max-w-[200px] uppercase tracking-tighter opacity-40">{activeUrl || 'Handshake Pending'}</p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
 
     {/* 🌟 PHASE 2: IN-APP WEBVIEW CONTINUITY DIALOG */}
     <Dialog open={webViewOpen} onOpenChange={setWebViewOpen}>
-      <DialogContent className="fixed top-0 left-0 w-screen h-screen max-w-none p-0 bg-[#0a0014] border-none z-[100] flex flex-col animate-in fade-in zoom-in-95 duration-300">
-        <div className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-[#0a0014]">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => setWebViewOpen(false)} className="text-white hover:bg-white/10 rounded-full">
-              <ArrowLeft className="h-5 w-5" />
+      <DialogContent className="fixed top-0 left-0 w-screen h-screen max-w-none p-0 bg-background border-none z-[110] flex flex-col animate-in fade-in zoom-in-95 duration-500">
+        <div className="h-20 border-b border-border/40 flex items-center justify-between px-8 bg-surface shadow-sm">
+          <div className="flex items-center gap-6">
+            <Button variant="ghost" size="icon" onClick={() => setWebViewOpen(false)} className="h-12 w-12 text-[#1a1a1a] hover:bg-background border border-transparent hover:border-border/60 rounded-full transition-all">
+              <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-              <p className="text-[10px] font-black text-[#ff0f7b] uppercase tracking-widest">Partner Portal</p>
-              <p className="text-xs font-bold text-white/60 truncate max-w-[200px]">{activeUrl}</p>
+              <p className="text-[10px] font-black text-fintech-graphite-muted uppercase tracking-[0.3em] opacity-60">Partner Resource</p>
+              <p className="text-sm font-black text-[#1a1a1a] truncate max-w-[280px] uppercase tracking-tighter">{activeUrl}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => window.open(activeUrl, '_blank')} className="bg-white/5 border-white/10 text-white rounded-xl text-[9px] uppercase font-black tracking-widest h-9">
-            External Browser <ExternalLink className="h-3 w-3 ml-2" />
+          <Button variant="outline" size="sm" onClick={() => window.open(activeUrl, '_blank')} className="bg-background border-border/60 text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white rounded-xl text-[10px] uppercase font-black tracking-widest h-11 px-6 shadow-sm transition-all duration-500">
+            Open in Browser <ExternalLink className="h-4 w-4 ml-3" />
           </Button>
         </div>
         <div className="flex-1 relative bg-white">
@@ -884,11 +832,15 @@ ${p.stayStrategy?.hotels?.map((h: any) => `• ${h.name} (${h.budget})\n  📍 M
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
           />
           {/* Fallback overlay for sites blocking iframes */}
-          <div className="absolute inset-0 bg-[#0a0014] flex flex-col items-center justify-center text-center p-8 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
-            <div className="max-w-xs space-y-4">
-              <Globe className="h-12 w-12 text-[#ff0f7b] mx-auto mb-4" />
-              <h4 className="text-lg font-black text-white uppercase">Secure Connection</h4>
-              <p className="text-xs text-[#b3b3b3] font-bold">If the portal doesn't load, use the External Browser button above for full features.</p>
+          <div className="absolute inset-0 bg-background flex flex-col items-center justify-center text-center p-12 pointer-events-none opacity-0 hover:opacity-100 transition-opacity bg-background/95">
+            <div className="max-w-md space-y-8">
+              <div className="p-8 bg-surface rounded-[40px] border border-border/60 w-fit mx-auto shadow-sm">
+                <Globe className="h-16 w-16 text-fintech-graphite-muted opacity-40" />
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-3xl font-black text-[#1a1a1a] uppercase tracking-tighter">Secure Connection</h4>
+                <p className="text-base text-fintech-graphite-muted font-bold leading-relaxed uppercase tracking-widest opacity-60">Site security policies may restrict in-app rendering. Use the button above to launch in your native browser.</p>
+              </div>
             </div>
           </div>
         </div>

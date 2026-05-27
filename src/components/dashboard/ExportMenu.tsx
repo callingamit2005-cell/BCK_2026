@@ -310,11 +310,11 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
             size="sm"
             disabled={isGenerating}
             className={cn(
-              "h-11 min-w-[44px] px-5 gap-2.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#EC4899] text-white font-black shadow-lg hover:shadow-xl hover:scale-[1.03] uppercase tracking-widest text-[10px] touch-manipulation",
+              "h-10 sm:h-11 min-w-[40px] sm:min-w-[44px] px-4 sm:px-5 gap-2 sm:gap-2.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#EC4899] text-white font-black shadow-lg hover:shadow-xl hover:scale-[1.03] uppercase tracking-[0.15em] sm:tracking-widest text-[9px] sm:text-[10px] touch-manipulation",
               applePhysics
             )}
           >
-            {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {isGenerating ? <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
             <span>{isGenerating ? "Wait..." : t.export}</span>
           </Button>
         </DropdownMenuTrigger>

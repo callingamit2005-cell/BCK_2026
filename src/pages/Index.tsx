@@ -187,11 +187,11 @@ const Index = () => {
   };
 
   return (
-    <div className="dark">
-      <div className="relative min-h-screen overflow-x-hidden bg-background font-sans text-white selection:bg-white/10">
-        {/* 🌟 PREMIUM MONOCHROME DEPTH – GPU‑accelerated layers */}
-        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5" />
+    <div className="bg-background text-foreground selection:bg-foreground/10 font-sans">
+      <div className="relative min-h-screen overflow-x-hidden">
+        {/* 🌟 PREMIUM MINIMAL DEPTH */}
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-[0.03]">
+          <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:32px_32px]" />
         </div>
 
         <AnnouncementBar />
@@ -202,15 +202,15 @@ const Index = () => {
 
           {/* 🚀 BETA ANNOUNCEMENT SECTION */}
           <div className="mx-auto max-w-5xl px-6 py-12 text-center">
-            <div className="relative overflow-hidden rounded-[24px] border border-white/5 bg-white/[0.02] p-10 backdrop-blur-md shadow-sm">
+            <div className="relative overflow-hidden rounded-[24px] border border-border bg-surface p-10 shadow-sm transition-all hover:border-foreground/20">
               <div className="relative z-10">
-                <h3 className="text-2xl md:text-3xl font-black text-white mb-3 uppercase tracking-tighter">
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3 uppercase tracking-tight">
                   BachatKaro Beta is Live 🚀
                 </h3>
-                <p className="text-white/40 text-lg font-bold uppercase tracking-wide mb-2">
+                <p className="text-text-secondary text-lg font-medium uppercase tracking-wide mb-2">
                   Exclusive Initial Access
                 </p>
-                <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.3em]">
+                <p className="text-text-muted text-[11px] font-bold uppercase tracking-[0.3em]">
                   The future of Indian finance starts here.
                 </p>
               </div>
@@ -219,30 +219,30 @@ const Index = () => {
 
           {/* Ad Section - Non-intrusive Glass */}
           <div className="mx-auto max-w-5xl px-6 py-4">
-            <AdPlaceholder className="rounded-[24px] border-white/5 bg-white/5 backdrop-blur-md" />
+            <AdPlaceholder className="rounded-[24px] border-border bg-surface shadow-sm" />
           </div>
 
           <StatsBar />
 
           {/* 🎯 WAITLIST SECTION: Conversion Engine */}
           <section id="waitlist" className="scroll-mt-24 px-6 py-32">
-            <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.01] p-8 backdrop-blur-[40px] md:p-16 shadow-sm">
+            <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[40px] border border-border bg-surface p-8 md:p-20 shadow-sm">
               <div className="relative z-10 text-center">
-                <span className="mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-6 py-2.5 text-[9px] font-bold uppercase tracking-[0.2em] text-white/60">
-                  <Sparkles className="h-3 w-3" />
+                <span className="mb-8 inline-flex items-center gap-3 rounded-full border border-border bg-background px-6 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-text-secondary">
+                  <Sparkles className="h-3.5 w-3.5" />
                   Exclusive Alpha Network
                 </span>
 
-                  <h2 className="mb-6 text-5xl font-black tracking-tighter md:text-8xl uppercase">
+                  <h2 className="mb-6 text-5xl font-bold tracking-tighter md:text-8xl uppercase text-foreground">
                     Join the Family
                   </h2>
 
-                <div className="mb-12 flex flex-col items-center justify-center gap-2">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/20">
+                <div className="mb-12 flex flex-col items-center justify-center gap-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-text-muted">
                     Limited Availability Window
                   </p>
                   {realtimeCount && (
-                    <p className="text-white/60 font-bold uppercase tracking-widest text-xs animate-pulse">
+                    <p className="text-foreground font-bold uppercase tracking-widest text-xs animate-pulse">
                       {realtimeCount.toLocaleString()}+ Members Synced
                     </p>
                   )}
@@ -250,45 +250,45 @@ const Index = () => {
 
                 {founderEmail ? (
                   /* ✅ SUCCESS VIEW – fully visible, rest of page remains for exploration */
-                  <div className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-700 rounded-[24px] border border-white/10 bg-white/[0.03] p-10 shadow-lg backdrop-blur-[32px]">
-                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/5 border border-white/10">
-                      <CheckCircle2 className="h-10 w-10 text-white/60" />
+                  <div className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-700 rounded-[32px] border border-border bg-background p-10 shadow-lg">
+                    <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-3xl bg-surface border border-border shadow-sm">
+                      <CheckCircle2 className="h-12 w-12 text-foreground" />
                     </div>
-                    <h3 className="mb-6 text-4xl font-black text-white leading-tight uppercase tracking-tighter">
+                    <h3 className="mb-6 text-4xl font-bold text-foreground leading-tight uppercase tracking-tight">
                       Verified Identity
                     </h3>
-                    <div className="mb-8 space-y-3">
-                      <p className="mx-auto max-w-2xl text-xl text-white/40 font-bold uppercase tracking-wide">
+                    <div className="mb-10 space-y-3">
+                      <p className="mx-auto max-w-2xl text-xl text-text-secondary font-medium uppercase tracking-wide">
                         Priority access protocols initialized.
                       </p>
                     </div>
 
-                    <div className="mt-8 mx-auto max-w-xl space-y-6 text-[10px] uppercase font-bold tracking-widest text-white/40 leading-relaxed text-left">
-                      <div className="space-y-3 border-l border-white/10 pl-6">
+                    <div className="mt-8 mx-auto max-w-xl space-y-8 text-[11px] uppercase font-bold tracking-widest text-text-secondary leading-relaxed text-left">
+                      <div className="space-y-4 border-l-2 border-border pl-8">
                         <p>• Wave-based access deployment active.</p>
                         <p>• Notification will be dispatched upon slot activation.</p>
                         <p>• Beta cycle maintains zero-cost status.</p>
                         <p>• Founding credentials secured for future updates.</p>
                       </div>
 
-                      <div className="pt-6 border-t border-white/5 space-y-3">
-                        <p className="text-white/20 font-bold text-[9px] uppercase tracking-[0.3em]">Operational Channels:</p>
-                        <div className="flex gap-6">
-                          <a href="https://www.facebook.com/profile.php?id=61585495950118" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-60 transition-opacity">Meta</a>
-                          <a href="https://x.com/bachatkaroapp" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-60 transition-opacity">X Terminal</a>
+                      <div className="pt-8 border-t border-border space-y-4">
+                        <p className="text-text-muted font-bold text-[10px] uppercase tracking-[0.3em]">Operational Channels:</p>
+                        <div className="flex gap-8">
+                          <a href="https://www.facebook.com/profile.php?id=61585495950118" target="_blank" rel="noopener noreferrer" className="text-foreground hover:opacity-60 transition-opacity underline underline-offset-4 decoration-border">Meta</a>
+                          <a href="https://x.com/bachatkaroapp" target="_blank" rel="noopener noreferrer" className="text-foreground hover:opacity-60 transition-opacity underline underline-offset-4 decoration-border">X Terminal</a>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-10 text-left max-w-xl mx-auto border-t border-white/5 pt-8">
-                      <p className="text-white font-black text-xl uppercase tracking-tighter">Ankit Praser</p>
-                      <p className="text-white/20 text-[9px] font-bold uppercase tracking-[0.3em]">Chief Architect, BachatKaro</p>
+                    <div className="mt-12 text-left max-w-xl mx-auto border-t border-border pt-10">
+                      <p className="text-foreground font-bold text-xl uppercase tracking-tight">Ankit Praser</p>
+                      <p className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em]">Chief Architect, BachatKaro</p>
                     </div>
 
-                    <div className="mt-12 flex flex-col items-center justify-center gap-6 sm:flex-row">
+                    <div className="mt-14 flex flex-col items-center justify-center gap-6 sm:flex-row">
                       <Link
                         to="/dashboard"
-                        className="group flex h-16 items-center justify-center gap-4 rounded-xl bg-white px-10 text-[10px] font-black uppercase tracking-[0.2em] text-background shadow-lg active:scale-[0.98] transition-all"
+                        className="group flex h-16 items-center justify-center gap-4 rounded-xl bg-foreground px-12 text-[11px] font-bold uppercase tracking-[0.25em] text-surface shadow-xl active:scale-[0.98] transition-all hover:bg-foreground/90"
                       >
                         Enter Console
                         <ArrowRight className="h-4 w-4" />
@@ -296,7 +296,7 @@ const Index = () => {
                       <button
                         type="button"
                         onClick={() => setFounderEmail(null)}
-                        className="h-16 items-center justify-center rounded-xl border border-white/5 bg-white/5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-white/40 hover:text-white hover:bg-white/10 active:scale-[0.98] transition-all"
+                        className="h-16 items-center justify-center rounded-xl border border-border bg-surface px-10 text-[11px] font-bold uppercase tracking-[0.25em] text-text-secondary hover:text-foreground hover:border-foreground active:scale-[0.98] transition-all shadow-sm"
                       >
                         Refer Network
                       </button>
@@ -305,11 +305,11 @@ const Index = () => {
                 ) : (
                   /* 🚀 CALL TO ACTION VIEW */
                   <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_0.8fr] lg:text-left">
-                    <div className="rounded-[24px] border border-white/5 bg-white/[0.02] p-8 md:p-10 shadow-inner">
-                      <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 mb-8">
+                    <div className="rounded-[32px] border border-border bg-background p-8 md:p-12 shadow-inner">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-text-muted mb-10">
                         The Founder Protocol
                       </p>
-                      <div className="space-y-6">
+                      <div className="space-y-8">
                         {[
                           {
                             text: "Priority clearance for verified network members.",
@@ -326,10 +326,10 @@ const Index = () => {
                         ].map((item, index) => (
                           <div
                             key={index}
-                            className="flex items-start gap-6 rounded-xl border border-white/5 bg-white/[0.01] p-5 transition-all hover:bg-white/[0.04]"
+                            className="flex items-start gap-8 rounded-2xl border border-border bg-surface p-6 transition-all hover:border-foreground/20 shadow-sm"
                           >
-                            <item.icon className="h-5 w-5 shrink-0 text-white/40 mt-0.5" />
-                            <p className="text-sm font-bold uppercase tracking-wide leading-relaxed text-white/60">
+                            <item.icon className="h-6 w-6 shrink-0 text-text-secondary mt-0.5" />
+                            <p className="text-sm font-bold uppercase tracking-wide leading-relaxed text-text-secondary">
                               {item.text}
                             </p>
                           </div>
@@ -337,15 +337,15 @@ const Index = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-col justify-between rounded-[24px] border border-white/5 bg-white/[0.02] p-8 md:p-10 backdrop-blur-sm">
-                      <div className="space-y-6">
-                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20">
+                    <div className="flex flex-col justify-between rounded-[32px] border border-border bg-surface p-8 md:p-12 shadow-sm">
+                      <div className="space-y-8">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-text-muted">
                           Slot Allocation
                         </p>
-                        <h3 className="text-3xl font-black text-white leading-tight uppercase tracking-tighter">
+                        <h3 className="text-3xl font-bold text-foreground leading-tight uppercase tracking-tight">
                           Wave 1 Access Closes Soon.
                         </h3>
-                        <p className="text-sm font-bold uppercase tracking-widest text-white/40 leading-relaxed">
+                        <p className="text-sm font-medium uppercase tracking-widest text-text-secondary leading-relaxed">
                           Secure your endpoint now and bypass the global queue in subsequent cycles.
                         </p>
                       </div>
@@ -353,7 +353,7 @@ const Index = () => {
                       <button
                         type="button"
                         onClick={openCheckout}
-                        className="mt-12 flex h-16 w-full items-center justify-center gap-4 rounded-xl bg-white px-8 text-[10px] font-black uppercase tracking-[0.2em] text-background shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all"
+                        className="mt-14 flex h-18 w-full items-center justify-center gap-4 rounded-2xl bg-foreground px-8 text-[11px] font-bold uppercase tracking-[0.3em] text-surface shadow-2xl hover:bg-foreground/90 active:scale-[0.98] transition-all"
                       >
                         Secure My Slot
                         <ArrowRight className="h-4 w-4" />

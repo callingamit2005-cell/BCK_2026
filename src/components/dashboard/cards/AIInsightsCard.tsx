@@ -16,7 +16,7 @@ interface AIInsightsCardProps {
     trend: string;
   };
   t: (key: string, defaultValue?: string) => string;
-  neonGlass: string;
+  premiumSurface: string;
 }
 
 export const AIInsightsCard: React.FC<AIInsightsCardProps> = React.memo(({
@@ -24,61 +24,75 @@ export const AIInsightsCard: React.FC<AIInsightsCardProps> = React.memo(({
   aiAlerts,
   aiPrediction,
   t,
-  neonGlass,
+  premiumSurface,
 }) => {
   return (
-    <Card className={cn(neonGlass, "p-8 relative border-border shadow-sm")}>
-      <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-        <span className="w-1.5 h-1.5 bg-white rounded-full opacity-40" />
-        <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest">ANALYSIS</span>
+    <Card className={cn(premiumSurface, "p-5 sm:p-10 relative border-border/40 shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-all duration-700 ease-butter-soft")}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h3 className="text-fintech-graphite-muted text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] opacity-60">Intelligence Feed</h3>
+        <div className="flex items-center gap-2.5 px-3 py-1.5 bg-background border border-border/60 rounded-full shadow-sm shrink-0">
+          <div className="h-4 w-4 rounded-full bg-[#DBEAFE] border border-[#BFDBFE] flex items-center justify-center">
+            <div className="w-1.5 h-1.5 bg-[#DC2626] rounded-full animate-pulse" />
+          </div>
+          <span className="text-[9px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em]">Forensic Logic</span>
+        </div>
       </div>
-      <div className="space-y-6">
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em]">AI Analysis</h3>
-            {aiAdvice?.confidence && (
+
+      <div className="space-y-8 sm:space-y-12">
+        <div className="min-w-0">
+          <div className="flex justify-between items-center mb-6">
+             {aiAdvice?.confidence && (
               <span className={cn(
-                "text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md border",
-                "text-text-secondary border-white/10 bg-white/5"
+                "text-[9px] font-black uppercase tracking-[0.2em] px-3.5 py-1 rounded-lg border shadow-sm transition-all duration-700",
+                aiAdvice.confidence === 'HIGH' ? "text-fintech-emerald-dark border-fintech-emerald/20 bg-fintech-emerald-muted" : "text-fintech-graphite-muted border-border/40 bg-background"
               )}>
-                Confidence: {aiAdvice.confidence}
+                Integrity: {aiAdvice.confidence}
               </span>
             )}
           </div>
-          <div className="space-y-3">
-            <p className="text-white text-sm font-bold flex items-start gap-2 leading-relaxed">
-              <Sparkles className="h-4 w-4 text-text-muted shrink-0 mt-0.5" />
-              {aiAdvice?.insights || 'Analyzing your patterns...'}
-            </p>
-            <p className="text-text-muted text-xs font-medium italic leading-relaxed">
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+               <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[#E0E7FF] border border-[#C7D2FE] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700">
+                 <Sparkles className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-[#DC2626]" />
+               </div>
+               <p className="text-[#1a1a1a] text-[15px] sm:text-[16px] font-black leading-snug pt-0.5">
+                 {aiAdvice?.insights || 'Analyzing your recent financial cycles...'}
+               </p>
+            </div>
+            <p className="text-fintech-graphite-muted text-[13px] sm:text-[14px] font-bold italic leading-relaxed pl-10 sm:pl-12 opacity-80 border-l-2 border-border/20 ml-5 sm:ml-6">
               {aiAdvice?.projection}
             </p>
           </div>
         </div>
 
         {aiAlerts.length > 0 && (
-          <div className="pt-4 border-t border-white/5">
-            <h3 className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Smart Alerts</h3>
-            <div className="space-y-3">
+          <div className="pt-6 sm:pt-10 border-t border-border/40">
+            <h3 className="text-fintech-graphite-muted text-[10px] font-black uppercase tracking-[0.3em] mb-6 opacity-60">Critical Nudges</h3>
+            <div className="space-y-5 sm:space-y-6">
               {aiAlerts.map((alert, idx) => (
-                <p key={idx} className="text-white/80 text-sm font-bold flex items-start gap-2">
-                  <Zap className="h-4 w-4 text-text-muted shrink-0 mt-0.5" />
-                  {alert}
-                </p>
+                <div key={idx} className="flex items-start gap-4 sm:gap-5">
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-[#FEF3C7] border border-[#FDE68A] flex items-center justify-center shrink-0 shadow-sm">
+                    <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#DC2626]" />
+                  </div>
+                  <p className="text-[#1a1a1a] text-[14px] sm:text-[15px] font-bold pt-1">
+                    {alert}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
         )}
 
-        <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-          <div>
-            <h3 className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em] mb-1">Spend Prediction</h3>
-            <p className="text-white text-lg font-bold font-mono tracking-tighter">{formatCurrency(aiPrediction.predictedTotal)}</p>
+        <div className="pt-6 sm:pt-10 border-t border-border/40 flex items-center justify-between px-1">
+          <div className="min-w-0 flex-1 pr-4">
+            <h3 className="text-fintech-graphite-muted text-[9px] font-black uppercase tracking-[0.3em] mb-1.5 opacity-60">Cycle Prediction</h3>
+            <p className="text-[#1a1a1a] text-xl sm:text-3xl font-black font-mono tracking-tighter leading-none tabular-nums truncate">{formatCurrency(aiPrediction.predictedTotal)}</p>
           </div>
-          <div className="text-right">
-            <h3 className="text-text-muted text-[10px] font-bold uppercase tracking-[0.3em] mb-1">Trend</h3>
+          <div className="text-right shrink-0">
+            <h3 className="text-fintech-graphite-muted text-[9px] font-black uppercase tracking-[0.3em] mb-1.5 opacity-60">Momentum</h3>
             <span className={cn(
-              "text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border bg-white/5 border-white/10 text-text-muted"
+              "text-[9px] font-black uppercase tracking-[0.2em] px-3.5 py-1 rounded-xl border shadow-sm transition-all duration-700",
+              aiPrediction.trend.toLowerCase().includes('up') ? "bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]" : "bg-fintech-emerald-muted text-fintech-emerald-dark border-fintech-emerald/10"
             )}>
               {aiPrediction.trend}
             </span>

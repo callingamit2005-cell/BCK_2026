@@ -86,42 +86,49 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 antialiased">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 antialiased selection:bg-foreground/10">
+      
+      {/* Subtle Background Texture */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:32px_32px]" />
+      </div>
 
-      <Card className="w-full max-w-md bg-surface border border-white/5 rounded-[24px] p-8 shadow-sm transition-all duration-300">
-        <CardHeader className="text-center space-y-4">
+      <Card className="w-full max-w-md bg-surface border border-border rounded-[40px] p-8 md:p-10 shadow-2xl transition-all duration-300 relative z-10">
+        <CardHeader className="text-center space-y-6">
           <div className="flex justify-center">
-            <div className="w-14 h-14 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 shadow-inner">
-              <KeyRound className="h-6 w-6 text-white/40" />
+            <div className="w-20 h-20 flex items-center justify-center rounded-[28px] bg-background border border-border shadow-inner">
+              <KeyRound className="h-8 w-8 text-text-secondary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-black tracking-tighter text-white uppercase">
-            Reset Identity
-          </CardTitle>
-          <CardDescription className="text-white/40 text-[9px] font-bold uppercase tracking-widest">
-            Enter your email and new credentials.
-          </CardDescription>
+          <div className="space-y-2">
+            <CardTitle className="text-2xl font-bold tracking-tight text-foreground uppercase">
+              Reset Identity
+            </CardTitle>
+            <CardDescription className="text-text-secondary font-bold uppercase tracking-widest text-[10px]">
+              Secure credential recovery protocol.
+            </CardDescription>
+          </div>
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="reset-email" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">Email address</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="reset-email" className="text-[10px] font-bold text-text-secondary ml-1 uppercase tracking-widest">Email Address</Label>
               <Input
                 id="reset-email"
                 type="email"
-                placeholder="amit@example.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 bg-white/5 border-white/5 rounded-xl text-white font-bold focus:border-white/20 transition-all"
+                className="h-12 bg-background border-border rounded-xl text-foreground font-bold focus:border-foreground transition-all"
               />
             </div>
 
             {/* New Password */}
-            <div className="space-y-2">
-              <Label htmlFor="new-password" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">New Password</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="new-password" className="text-[10px] font-bold text-text-secondary ml-1 uppercase tracking-widest">New Credentials</Label>
               <Input
                 id="new-password"
                 type="password"
@@ -130,13 +137,13 @@ const ForgotPassword = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 minLength={6}
-                className="h-12 bg-white/5 border-white/5 rounded-xl text-white font-bold focus:border-white/20 transition-all"
+                className="h-12 bg-background border-border rounded-xl text-foreground font-bold focus:border-foreground transition-all"
               />
             </div>
 
             {/* Confirm Password */}
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password" className="text-[10px] font-bold text-white/20 ml-1 uppercase tracking-widest">Confirm Password</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="confirm-password" className="text-[10px] font-bold text-text-secondary ml-1 uppercase tracking-widest">Confirm credentials</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -145,26 +152,26 @@ const ForgotPassword = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
-                className="h-12 bg-white/5 border-white/5 rounded-xl text-white font-bold focus:border-white/20 transition-all"
+                className="h-12 bg-background border-border rounded-xl text-foreground font-bold focus:border-foreground transition-all"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-14 bg-white text-background rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-white/90 active:scale-[0.98] transition-all"
+              className="w-full h-16 bg-foreground text-surface rounded-2xl font-bold uppercase text-[11px] tracking-widest shadow-2xl hover:bg-foreground/90 active:scale-[0.98] transition-all"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Commit Reset
+              Commit Identity Reset
             </Button>
 
-            <div className="text-center pt-4 border-t border-white/5">
+            <div className="text-center pt-6 border-t border-border">
               <button
                 type="button"
                 onClick={() => navigate('/auth')}
-                className="inline-flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-widest hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase tracking-widest hover:text-foreground transition-colors"
               >
-                <ArrowLeft className="h-3 w-3" /> Back to Authorization
+                <ArrowLeft className="h-3 w-3" /> Return to Authorization
               </button>
             </div>
           </form>

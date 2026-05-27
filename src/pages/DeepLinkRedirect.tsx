@@ -51,16 +51,16 @@ const DeepLinkRedirect = () => {
     <div className="min-h-screen bg-[#0a0014] flex flex-col items-center justify-center p-6 text-center space-y-6">
       <div className="relative">
         <div className="absolute inset-0 blur-3xl bg-purple-600/20 rounded-full animate-pulse" />
-        <div className="relative bg-white/5 backdrop-blur-2xl p-8 rounded-[40px] border border-white/10 shadow-2xl">
+        <div className="relative bg-background backdrop-blur-2xl p-8 rounded-[40px] border border-border shadow-2xl">
           <Zap className="h-12 w-12 text-pink-500 mx-auto animate-bounce" />
-          <h2 className="text-2xl font-black text-white mt-4 tracking-tighter uppercase">Opening BachatKaro</h2>
+          <h2 className="text-2xl font-black text-[#111111] mt-4 tracking-tighter uppercase">Opening BachatKaro</h2>
           <div className="flex items-center justify-center gap-2 mt-2">
-            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Redirecting Securely</p>
+            <Loader2 className="h-4 w-4 animate-spin text-[#666666]" />
+            <p className="text-[10px] font-bold text-[#666666] uppercase tracking-[0.2em]">Redirecting Securely</p>
           </div>
         </div>
       </div>
-      <p className="text-xs text-white/30 font-medium max-w-[200px]">
+      <p className="text-xs text-[#999999] font-medium max-w-[200px]">
         Taking you to the app to securely join the group...
       </p>
     </div>

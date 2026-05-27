@@ -35,10 +35,10 @@ const FAQ = () => {
   return (
     <section id="faq" className="py-24 px-6 bg-background antialiased">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-4xl md:text-6xl font-black text-center mb-6 text-white tracking-tighter uppercase">
-          {t('faq_title_1', 'Operational')} <span className="text-white/40">{t('faq_title_2', 'Queries')}</span>
+        <h2 className="text-4xl md:text-6xl font-black text-center mb-6 text-[#111111] tracking-tighter uppercase">
+          {t('faq_title_1', 'Operational')} <span className="text-[#999999]">{t('faq_title_2', 'Queries')}</span>
         </h2>
-        <p className="text-center text-white/40 text-lg md:text-xl mb-16 max-w-2xl mx-auto font-bold uppercase tracking-wide">
+        <p className="text-center text-[#999999] text-lg md:text-xl mb-16 max-w-2xl mx-auto font-bold uppercase tracking-wide">
           {t('faq_sub', 'Essential documentation for BachatKaro utilization.')}
         </p>
 
@@ -47,12 +47,12 @@ const FAQ = () => {
             <AccordionItem
               key={i}
               value={`faq-${i}`}
-              className="border border-white/5 rounded-xl px-6 bg-surface/40 backdrop-blur-sm data-[state=open]:border-white/20 data-[state=open]:bg-surface transition-all duration-300"
+              className="border border-border rounded-xl px-6 bg-background backdrop-blur-sm data-[state=open]:border-[#111111]/20 data-[state=open]:bg-white transition-all duration-300"
             >
-              <AccordionTrigger className="text-left text-lg font-black text-white uppercase tracking-tighter hover:no-underline py-6">
+              <AccordionTrigger className="text-left text-lg font-black text-[#111111] uppercase tracking-tighter hover:no-underline py-6">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-white/60 text-sm font-medium leading-relaxed pb-6 uppercase tracking-widest opacity-80">
+              <AccordionContent className="text-[#666666] text-sm font-medium leading-relaxed pb-6 uppercase tracking-widest opacity-80">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

@@ -54,15 +54,15 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions, loadi
         {/* Card A: Total In */}
         <motion.div 
           {...summaryInteraction}
-          className="bg-surface min-w-[160px] p-5 rounded-[24px] border border-white/5 snap-start flex flex-col gap-3 cursor-pointer"
+          className="bg-surface min-w-[160px] p-5 rounded-[24px] border border-border snap-start flex flex-col gap-3 cursor-pointer shadow-sm"
         >
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-white/5 rounded-lg">
-              <ArrowUpRight className="h-3.5 w-3.5 text-white/40" />
+            <div className="p-1.5 bg-background rounded-lg border border-border">
+              <ArrowUpRight className="h-3.5 w-3.5 text-text-secondary" />
             </div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Total In</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Monthly In</span>
           </div>
-          <p className="text-xl font-black text-foreground font-mono tracking-tighter">
+          <p className="text-xl font-bold text-foreground font-mono tracking-tighter">
             {loading ? '---' : formatCurrency(summary.totalIn)}
           </p>
         </motion.div>
@@ -70,15 +70,15 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions, loadi
         {/* Card B: Total Out */}
         <motion.div 
           {...summaryInteraction}
-          className="bg-surface min-w-[160px] p-5 rounded-[24px] border border-white/5 snap-start flex flex-col gap-3 cursor-pointer"
+          className="bg-surface min-w-[160px] p-5 rounded-[24px] border border-border snap-start flex flex-col gap-3 cursor-pointer shadow-sm"
         >
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-white/5 rounded-lg">
-              <ArrowDownRight className="h-3.5 w-3.5 text-white/40" />
+            <div className="p-1.5 bg-background rounded-lg border border-border">
+              <ArrowDownRight className="h-3.5 w-3.5 text-text-secondary" />
             </div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Total Out</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Monthly Out</span>
           </div>
-          <p className="text-xl font-black text-foreground font-mono tracking-tighter">
+          <p className="text-xl font-bold text-foreground font-mono tracking-tighter">
             {loading ? '---' : formatCurrency(summary.totalOut)}
           </p>
         </motion.div>
@@ -86,15 +86,15 @@ const FinancialSummary: React.FC<FinancialSummaryProps> = ({ transactions, loadi
         {/* Card C: Net Balance (Hero Card) */}
         <motion.div 
           {...summaryInteraction}
-          className="bg-surface min-w-[200px] p-5 rounded-[24px] border border-white/10 snap-start flex flex-col gap-3 cursor-pointer"
+          className="bg-surface min-w-[200px] p-5 rounded-[24px] border border-border snap-start flex flex-col gap-3 cursor-pointer shadow-sm"
         >
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-white/10 rounded-lg">
-              <Activity className="h-3.5 w-3.5 text-white/60" />
+            <div className="p-1.5 bg-background rounded-lg border border-border">
+              <Activity className="h-3.5 w-3.5 text-foreground" />
             </div>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Net Surplus</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Net Balance</span>
           </div>
-          <p className="text-2xl font-black font-mono tracking-tighter text-foreground">
+          <p className="text-2xl font-bold font-mono tracking-tighter text-foreground">
             {loading ? '---' : formatCurrency(summary.net)}
           </p>
         </motion.div>
