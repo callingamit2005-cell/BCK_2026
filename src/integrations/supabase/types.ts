@@ -373,6 +373,8 @@ export type Database = {
           preferred_upi_app: string | null
           upi_verification_state: string | null
           updated_at: string | null
+          has_completed_setup: boolean | null
+          privacy_completed: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -384,6 +386,8 @@ export type Database = {
           preferred_upi_app?: string | null
           upi_verification_state?: string | null
           updated_at?: string | null
+          has_completed_setup?: boolean | null
+          privacy_completed?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -395,6 +399,8 @@ export type Database = {
           preferred_upi_app?: string | null
           upi_verification_state?: string | null
           updated_at?: string | null
+          has_completed_setup?: boolean | null
+          privacy_completed?: boolean | null
         }
         Relationships: []
       }
@@ -588,6 +594,10 @@ export type Database = {
       create_group_with_admin: {
         Args: { p_name: string; p_group_id?: string; p_member_id?: string }
         Returns: Json
+      }
+      finalize_user_onboarding: {
+        Args: { p_country: string; p_language: string }
+        Returns: undefined
       }
       increment_waitlist_count: { Args: Record<PropertyKey, never>; Returns: number }
       merge_or_insert_member: {

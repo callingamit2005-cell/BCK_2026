@@ -71,10 +71,11 @@ export const useBachatData = () => {
         const monthlySpent = Number(statsData?.[0]?.monthly_spent || 0);
 
         const { data: recentTransactions, error: transError } = await supabase
-          .from('expenses')
+          .from('transactions')
           .select('*')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
+          .eq('is_deleted', false)
+          .order('date', { ascending: false })
           .limit(10);
 
         if (transError) throw transError;
@@ -82,9 +83,15 @@ export const useBachatData = () => {
         setData({
           totalBalance: 0 - totalSpent,
           monthlyExpenses: monthlySpent,
-          transactions: recentTransactions || [],
-        });
-      }
+          transactions: (recentTransactions || []).map(tx => ({
+            id: tx.id,
+            amount: tx.amount,
+            category: tx.category,
+            name: tx.description || tx.payee || 'Transaction',
+            created_at: tx.date,
+            type: tx.type
+          })),
+        });      }
     } catch (error) {
       console.error('Error fetching BachatData:', error);
     } finally {

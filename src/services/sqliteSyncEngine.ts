@@ -201,13 +201,7 @@ export const syncEngine = {
             const conflictTarget = getConflictTarget(row.table_name);
             const remotePayload = translateToRemote(row.table_name, payload);
 
-            console.log(`🧪 [TABLE_CONTRACT_FORENSIC] Replay Attempt:`, {
-              id: row.id,
-              table: row.table_name,
-              target: conflictTarget,
-              payload: remotePayload
-            });
-
+            console.log(`🧪 [SYNC_ENGINE_TRACE] Attempting UPSERT: ${row.table_name} conflictTarget=${conflictTarget} ID=${remotePayload.id}`);
             const { data, error } = await supabase
               .from(row.table_name)
               .upsert(remotePayload, { onConflict: conflictTarget })
@@ -217,9 +211,39 @@ export const syncEngine = {
             if (!error && data) {
               success = true;
               serverData = data;
-              console.log(`🧪 [TABLE_CONTRACT_FORENSIC] Replay Success: [${row.id}]`);
+              console.log(`🧪 [SYNC_ENGINE_TRACE] UPSERT Success: [${row.id}]`);
             } else if (error) {
-              console.error(`❌ [TABLE_CONTRACT_FORENSIC] Replay Fail: [${row.id}]`, error);
+              console.error(`❌ [SYNC_ENGINE_TRACE] UPSERT Fail: [${row.id}]`, {
+                code: error.code,
+                message: error.message,
+                details: error.details,
+                payload: JSON.stringify(remotePayload)
+              });
+            }
+          } else if (row.operation === 'UPDATE') {
+            // 🛡️ [REPLAY_UPDATE_PATH]
+            // Use .update() for explicit edits. This ensures that metadata changes
+            // don't trigger secondary insert attempts that fail on PKey constraints.
+            const remotePayload = translateToRemote(row.table_name, payload);
+            console.log(`🧪 [SYNC_ENGINE_TRACE] Attempting UPDATE: ${row.table_name} ID=${payload.id}`);
+            const { data, error } = await supabase
+              .from(row.table_name)
+              .update(remotePayload)
+              .eq('id', payload.id)
+              .select()
+              .single();
+            
+            if (!error && data) {
+              success = true;
+              serverData = data;
+              console.log(`🧪 [SYNC_ENGINE_TRACE] UPDATE Success: [${row.id}]`);
+            } else if (error) {
+              console.error(`❌ [SYNC_ENGINE_TRACE] UPDATE Fail: [${row.id}]`, {
+                code: error.code,
+                message: error.message,
+                details: error.details,
+                payload: JSON.stringify(remotePayload)
+              });
             }
           } else if (row.operation === 'RPC') {
             console.log(`[SYNC_RPC_START] [${row.id}] Func: ${row.table_name}`);

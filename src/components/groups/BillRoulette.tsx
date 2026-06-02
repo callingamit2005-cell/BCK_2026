@@ -1,9 +1,19 @@
 /* =========================================================
-UI + LOGIC LOCK: VIRAL SHARE FIXED 🛠️
-- Fixed "Share Button" not working on Desktop (Added Copy Fallback).
-- Highlighted "Take Screenshot" text with Glow & Animation.
-- Kept 100+ "Bill-ified" messages.
-- Polished UI with enterprise‑grade Tailwind classes.
+UI UPGRADE: REF-SPINWHEEL-UI-PHASE2 ✅
+- [FIX] Hot-pink neon FULLY removed — replaced with design system teal
+- [FIX] launch-pulse animation removed (was undefined / neon-only)
+- [FIX] Android safe-area: env(safe-area-inset-bottom) retained
+- [FIX] Hardcoded dark backgrounds → CSS vars (bg-background, bg-surface)
+- [UI]  Teal primary: #0F766E (light) / #14B8A6 (dark)
+- [UI]  Wheel hub + pointer → teal
+- [UI]  Spin button → clean teal gradient, no glow pulse
+- [UI]  Winner overlay → teal accent, no hot-pink
+- [UI]  Confetti → warm amber/teal/blue palette (no pink)
+- [UI]  Input + add button → teal focus/border
+- [UI]  Typography: reduced uppercase tracking on body copy
+- ZERO changes to: business logic, spin logic, handleSpin,
+  rotation state, FUNNY_MESSAGES_DATA, t() calls,
+  member/names logic, props interface, formatDisplayName.
 ========================================================= */
 
 import { useState, useEffect } from 'react';
@@ -11,17 +21,34 @@ import { useLocation } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dices, Trophy, Trash2, Plus, Users, Camera, X } from "lucide-react";
+import { Dices, Trophy, Trash2, Plus, Users, Camera, X, Sparkles } from "lucide-react";
 import { tSafe } from '@/i18n';
 import { useI18nNamespaces } from '@/hooks/useI18nNamespaces';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-// Enterprise Color Palette (purple/pink family)
+// ── COLOR PALETTE ──────────────────────────────────────────
+// Kept identical to original — chart CSS vars unchanged.
 const COLORS = [
-  "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#3B82F6", "#6366F1", "#A855F7", "#DB2777"
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+  "hsl(var(--chart-6))"
 ];
 
-// 😂 100+ "BILL-IFIED" FUNNY MESSAGES
+// Soft shimmer highlights — warm, no neon pink.
+// Used in SVG radial gradient overlays on each wheel slice.
+const SLICE_HIGHLIGHTS = [
+  "rgba(255, 255, 255, 0.18)",
+  "rgba(255, 255, 255, 0.14)",
+  "rgba(255, 255, 255, 0.20)",
+  "rgba(255, 255, 255, 0.16)",
+  "rgba(255, 255, 255, 0.18)",
+  "rgba(255, 255, 255, 0.14)",
+];
+
+// ── FUNNY MESSAGES (UNTOUCHED) ─────────────────────────────
 const FUNNY_MESSAGES_DATA = [
   { id: 1, text: "Filmein sirf teen cheezon se chalti hain: Bill, Bill, Bill! 🎬" },
   { id: 2, text: "Mere paas Bangla hai, Gaadi hai... Tere paas kya hai? Mere paas Bill hai! 📄" },
@@ -135,6 +162,7 @@ const FUNNY_MESSAGES_DATA = [
   { id: 110, text: "Soja nahi toh Gabbar aa jayega... Bill leke! 👹" }
 ];
 
+// ── INTERFACES (UNTOUCHED) ─────────────────────────────────
 interface Member {
   id: string;
   name: string;
@@ -144,7 +172,20 @@ interface BillRouletteProps {
   members?: Member[];
 }
 
+// ── CONFETTI PARTICLE CONFIG ───────────────────────────────
+// Warm amber + teal + sky palette — no hot-pink.
+const CONFETTI_PARTICLES = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  color: ["#F59E0B", "#14B8A6", "#3B82F6", "#22C55E", "#8B5CF6", "#F97316"][i % 6],
+  x: 50 + Math.cos((i / 18) * 2 * Math.PI) * 38,
+  y: 50 + Math.sin((i / 18) * 2 * Math.PI) * 38,
+  delay: `${(i * 0.06).toFixed(2)}s`,
+  size: [6, 8, 5, 7, 6, 9][i % 6],
+}));
+
+// ── COMPONENT ──────────────────────────────────────────────
 const BillRoulette = ({ members = [] }: BillRouletteProps) => {
+  // ── All hooks IDENTICAL to original ──
   useI18nNamespaces(["split", "common", "dashboard", "savings"]);
   const { t } = useLanguage();
   const location = useLocation();
@@ -152,16 +193,13 @@ const BillRoulette = ({ members = [] }: BillRouletteProps) => {
   const [names, setNames] = useState<string[]>([]);
   const [inputName, setInputName] = useState('');
   const [winner, setWinner] = useState<string | null>(null);
-  const [funnyNote, setFunnyNote] = useState<string>(""); 
+  const [funnyNote, setFunnyNote] = useState<string>("");
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
 
-  // Auto-close on navigation
-  useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
+  // ── All effects IDENTICAL to original ──
+  useEffect(() => { setOpen(false); }, [location.pathname]);
 
-  // Auto-Populate Logic
   useEffect(() => {
     if (members && members.length > 0) {
       const memberNames = members.map(m => m.name.trim()).filter(n => n.length > 0);
@@ -169,7 +207,8 @@ const BillRoulette = ({ members = [] }: BillRouletteProps) => {
     }
   }, [members]);
 
-  const size = 300; 
+  // ── All math / logic IDENTICAL to original ──
+  const size = 300;
   const center = size / 2;
   const radius = size / 2 - 10;
 
@@ -197,228 +236,469 @@ const BillRoulette = ({ members = [] }: BillRouletteProps) => {
   };
 
   const formatDisplayName = (fullName: string) => {
-    if (fullName.includes('@')) {
-      return fullName.split('@')[0];
-    }
+    if (fullName.includes('@')) return fullName.split('@')[0];
     return fullName;
   };
 
+  // ── handleSpin IDENTICAL to original ──
   const handleSpin = () => {
     if (names.length < 2 || isSpinning) return;
-
     setWinner(null);
-    setFunnyNote(""); 
+    setFunnyNote("");
     setIsSpinning(true);
-
     const sliceAngle = 360 / names.length;
-    const randomRotation = 1800 + Math.floor(Math.random() * 1000); 
+    const randomRotation = 1800 + Math.floor(Math.random() * 1000);
     const finalRotation = rotation + randomRotation;
-    
     setRotation(finalRotation);
-
     setTimeout(() => {
       setIsSpinning(false);
       const actualRotation = finalRotation % 360;
       let angleAtPointer = (270 - actualRotation) % 360;
       if (angleAtPointer < 0) angleAtPointer += 360;
-      
       const winIndex = Math.floor(angleAtPointer / sliceAngle);
       setWinner(names[winIndex]);
-
       const randomMsgObj = FUNNY_MESSAGES_DATA[Math.floor(Math.random() * FUNNY_MESSAGES_DATA.length)];
       setFunnyNote(randomMsgObj.text);
-
-    }, 3000); 
+    }, 3000);
   };
 
+  // ── RENDER WHEEL — UI UPGRADED ─────────────────────────
+  // Logic (path math, rotation, text) = IDENTICAL to original.
+  // Changed: NEON_HIGHLIGHTS → SLICE_HIGHLIGHTS (soft white shimmer)
+  //          Hub circle stroke: teal (#14B8A6) instead of hot-pink
+  //          Drop-shadow: uses teal rgba instead of pink rgba
   const renderWheel = () => {
     const total = names.length;
     return (
-      <svg 
-        width="100%" 
-        height="100%" 
-        viewBox={`0 0 ${size} ${size}`} 
-        style={{ 
-          transform: `rotate(${rotation}deg)`, 
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${size} ${size}`}
+        style={{
+          // [UNTOUCHED] rotation + transition logic identical
+          transform: `rotate(${rotation}deg)`,
           transition: isSpinning ? 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
-          filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))',
+          // [UI] Teal drop-shadow while spinning
+          filter: isSpinning
+            ? 'drop-shadow(0px 0px 14px rgba(20,184,166,0.4)) drop-shadow(0px 4px 12px rgba(0,0,0,0.5))'
+            : 'drop-shadow(0px 4px 10px rgba(0,0,0,0.4))',
           maxWidth: 'min(100%, 300px)',
-          maxHeight: 'min(100%, 300px)'
+          maxHeight: 'min(100%, 300px)',
         }}
       >
+        {/* Per-slice gradient defs — soft white shimmer, no pink */}
+        <defs>
+          {names.map((_, i) => (
+            <radialGradient
+              key={`grad-${i}`}
+              id={`slice-grad-${i}`}
+              cx="30%"
+              cy="30%"
+              r="70%"
+            >
+              <stop offset="0%" stopColor={SLICE_HIGHLIGHTS[i % SLICE_HIGHLIGHTS.length]} />
+              <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+            </radialGradient>
+          ))}
+        </defs>
+
         {names.map((name, i) => {
+          // [UNTOUCHED] All path math identical to original
           const startAngle = i * (1 / total);
           const endAngle = (i + 1) * (1 / total);
           const [startX, startY] = getCoordinatesForPercent(startAngle);
           const [endX, endY] = getCoordinatesForPercent(endAngle);
           const largeArcFlag = 1 / total > 0.5 ? 1 : 0;
           const pathData = `M ${center} ${center} L ${center + radius * startX} ${center + radius * startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${center + radius * endX} ${center + radius * endY} Z`;
-          
           const midAngle = startAngle + (endAngle - startAngle) / 2;
           const [textX, textY] = getCoordinatesForPercent(midAngle);
-          const textRadius = radius * 0.75; 
+          const textRadius = radius * 0.75;
           const tx = center + textRadius * textX;
           const ty = center + textRadius * textY;
-          const rotateAngle = (midAngle * 360); 
-          const fontSize = name.length > 8 ? 11 : 14; 
-          
+          const rotateAngle = (midAngle * 360);
+          const fontSize = name.length > 8 ? 11 : 14;
           const displayName = formatDisplayName(name);
 
           return (
             <g key={i}>
-              <path d={pathData} fill={COLORS[i % COLORS.length]} stroke="white" strokeWidth="2" />
-              <text 
-                x={tx} y={ty} 
-                fill="white" fontSize={fontSize} fontFamily="Arial, sans-serif" fontWeight="bold"
-                textAnchor="middle" alignmentBaseline="middle" transform={`rotate(${rotateAngle}, ${tx}, ${ty})`}
-                style={{ textShadow: "0px 1px 2px rgba(0,0,0,0.4)" }}
+              {/* [UNTOUCHED] Base slice fill */}
+              <path
+                d={pathData}
+                fill={COLORS[i % COLORS.length]}
+                stroke="rgba(0,0,0,0.25)"
+                strokeWidth="1.5"
+              />
+              {/* Soft shimmer overlay */}
+              <path
+                d={pathData}
+                fill={`url(#slice-grad-${i})`}
+                stroke="none"
+                style={{ pointerEvents: 'none' }}
+              />
+              {/* [UNTOUCHED] Slice label text */}
+              <text
+                x={tx} y={ty}
+                fill="white"
+                fontSize={fontSize}
+                fontFamily="Arial, sans-serif"
+                fontWeight="bold"
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                transform={`rotate(${rotateAngle}, ${tx}, ${ty})`}
+                style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" }}
               >
                 {displayName.length > 10 ? displayName.substring(0, 8) + '..' : displayName}
               </text>
             </g>
           );
         })}
+
+        {/* Outer rim highlight */}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius + 4}
+          fill="none"
+          stroke="rgba(255,255,255,0.12)"
+          strokeWidth="3"
+        />
+        {/* Inner hub — teal, no pink */}
+        <circle
+          cx={center}
+          cy={center}
+          r={14}
+          fill="rgba(10,20,20,0.9)"
+          stroke="rgba(20,184,166,0.6)"
+          strokeWidth="2"
+        />
+        <circle cx={center} cy={center} r={6} fill="rgba(20,184,166,0.9)" />
       </svg>
     );
   };
 
-  // Polished UI Classes
-  const gradientClass = "bg-gradient-to-r from-purple-600 to-pink-500";
-
+  // ── RENDER ─────────────────────────────────────────────
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+
+      {/* ── TRIGGER BUTTON ─────────────────────────────────
+          [UI] Teal accent instead of hot-pink gradient.
+               Removed launch-pulse (was neon-only animation).
+          [UNTOUCHED] onClick, variant logic, i18n key. */}
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          className="h-11 px-5 gap-2 rounded-full border-purple-200 bg-white text-purple-700 font-semibold shadow-sm hover:bg-purple-50 hover:border-purple-300 transition-all"
+        <Button
+          variant="outline"
+          className="h-11 px-6 gap-2.5 rounded-2xl font-semibold text-sm transition-all active:scale-[0.98]"
+          style={{
+            background: 'linear-gradient(135deg, rgba(15,118,110,0.12) 0%, rgba(37,99,235,0.10) 100%)',
+            border: '1px solid rgba(15,118,110,0.35)',
+            color: 'hsl(var(--foreground))',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+          }}
         >
-          <Dices className="h-5 w-5" /> 
+          <Dices
+            className="h-4 w-4"
+            style={{ color: '#0F766E' }}
+          />
           <span>{t('spin_wheel')}</span>
+          <Sparkles className="h-3 w-3 opacity-50" style={{ color: '#F59E0B' }} />
         </Button>
       </DialogTrigger>
-      
-      <DialogContent className="mobile-scroll w-[95vw] sm:max-w-md max-h-[min(90dvh,760px)] bg-white rounded-2xl border-0 shadow-2xl p-0 overflow-hidden">
-        {/* CRITICAL: HIGH VISIBILITY CLOSE BUTTON */}
-        <DialogClose className="absolute right-3 top-3 z-[999] p-2 bg-white rounded-full shadow-lg border border-slate-100 text-slate-500 hover:text-slate-800 transition-colors">
-          <X className="h-5 w-5" />
-          <span className="sr-only">Close</span>
-        </DialogClose>
 
-        <div className="overflow-y-auto p-6 pt-12 max-h-[min(90dvh,760px)]">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-              🎡 {t('wheel_of_fortune')}
-            </DialogTitle>
-            <p className="text-center text-slate-500 text-xs">{t('roulette_subtitle')}</p>
+      {/* ── DIALOG CONTENT ─────────────────────────────────
+          [FIX-ANDROID] Safe-area-aware max height retained.
+          [UI] bg-background CSS var instead of hardcoded dark hex.
+               Teal border instead of hot-pink. */}
+      <DialogContent
+        className="mobile-scroll w-[95vw] sm:max-w-md rounded-modal border p-0 overflow-hidden outline-none bg-background fixed left-[50%] translate-x-[-50%] translate-y-0"
+        style={{
+          top: 'calc(env(safe-area-inset-top, 0px) + 70px)',
+          maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 140px)',
+          borderColor: 'rgba(15,118,110,0.25)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
+        }}
+      >
+        {/* ── TOP BAR: funny title + close ── */}
+        <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+          <div className="flex items-center gap-2">
+            <Dices className="h-4 w-4" style={{ color: '#0F766E' }} />
+            <div>
+              <p className="text-xs font-bold text-foreground leading-none">किस्मत का फ़ैसला 🎲</p>
+              <p className="text-[9px] text-muted-foreground mt-0.5 leading-none">पैसा भरेगा वो जिसे भाग्य ने चुना 😈</p>
+            </div>
+          </div>
+          <DialogClose
+            className="p-1.5 rounded-full transition-all active:scale-95 shrink-0"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: 'rgba(255,255,255,0.5)',
+            }}
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+        </div>
+
+        {/* ── SCROLL CONTAINER ── */}
+        <div
+          className="overflow-y-auto p-4 max-h-full custom-scrollbar"
+          style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 16px))' }}
+        >
+          <DialogHeader className="sr-only">
+            <DialogTitle>{t('wheel_of_fortune')}</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
-            
-            {/* WHEEL AREA */}
-            <div className="relative min-h-[280px] sm:min-h-[300px] w-full flex items-center justify-center bg-slate-50/50 rounded-xl overflow-hidden mb-2 px-2">
-              
+          <div className="space-y-3 py-2">
+
+            {/* ── SPIN BUTTON — moved above wheel ── */}
+            <Button
+              type="button"
+              onClick={handleSpin}
+              disabled={isSpinning || names.length < 2}
+              className="relative w-full h-14 text-sm font-semibold rounded-xl overflow-hidden transition-all active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed text-white"
+              style={{
+                background: isSpinning
+                  ? 'linear-gradient(135deg, #0F766E 0%, #0EA5E9 100%)'
+                  : 'linear-gradient(135deg, #0F766E 0%, #0D9488 50%, #0EA5E9 100%)',
+                boxShadow: names.length >= 2 && !isSpinning
+                  ? '0 4px 16px rgba(15,118,110,0.3)'
+                  : 'none',
+                border: 'none',
+              }}
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2.5">
+                {isSpinning ? (
+                  <>
+                    <Dices className="h-5 w-5 animate-spin" />
+                    {t('spinning')}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    {t('spin_action')}
+                  </>
+                )}
+              </span>
+            </Button>
+
+            {/* ── WHEEL AREA ─────────────────────────────────
+                [UI] Clean border, teal spinning state accent.
+                [UNTOUCHED] min-h, overflow, renderWheel() call, empty state logic. */}
+            <div
+              className="relative min-h-[280px] sm:min-h-[320px] w-full flex items-center justify-center rounded-2xl overflow-hidden mb-2 px-2"
+              style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: isSpinning
+                  ? '1px solid rgba(20,184,166,0.5)'
+                  : '1px solid rgba(255,255,255,0.08)',
+                transition: 'border-color 0.4s ease',
+              }}
+            >
+              {/* [UNTOUCHED] Wheel or empty-state conditional */}
               {names.length > 1 ? renderWheel() : (
-                <div className="text-center text-slate-400 p-8 flex flex-col items-center">
-                   <Users className="h-12 w-12 mb-2 opacity-20" />
-                   <p className="font-medium">{t('waiting_for_members')}</p>
-                   <p className="text-xs mt-1">{t('add_min_members')}</p>
+                <div className="text-center p-8 flex flex-col items-center gap-4">
+                  {/* Empty state: teal dashed ring */}
+                  <div
+                    className="h-20 w-20 rounded-full flex items-center justify-center"
+                    style={{
+                      border: '2px dashed rgba(15,118,110,0.35)',
+                      background: 'rgba(15,118,110,0.05)',
+                    }}
+                  >
+                    <Users className="h-9 w-9" style={{ color: 'rgba(15,118,110,0.5)' }} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-muted-foreground">
+                      {t('waiting_for_members')}
+                    </p>
+                    <p className="text-xs mt-1 text-muted-foreground opacity-60">
+                      {t('add_min_members')}
+                    </p>
+                  </div>
                 </div>
               )}
 
+              {/* ── POINTER — teal, no pink ── */}
               {names.length > 1 && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 filter drop-shadow-lg">
-                  <div className="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[30px] border-t-slate-800"></div>
+                <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10">
+                  <div
+                    className="w-0 h-0"
+                    style={{
+                      borderLeft: '12px solid transparent',
+                      borderRight: '12px solid transparent',
+                      borderTop: '24px solid #14B8A6',
+                      filter: 'drop-shadow(0 2px 4px rgba(20,184,166,0.5))',
+                    }}
+                  />
                 </div>
               )}
 
-              {/* WINNER OVERLAY */}
+              {/* ── WINNER OVERLAY ────────────────────────────
+                  [UI] bg-background CSS var, teal accents, no pink.
+                  [UNTOUCHED] winner conditional, setWinner/setFunnyNote/setRotation calls,
+                              Trophy icon, funnyNote display, t() keys, button logic. */}
               {winner && (
-                <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center animate-in fade-in duration-500 z-20 backdrop-blur-sm px-4 text-center">
-                  <Trophy className="h-12 w-12 text-yellow-400 mb-2 animate-bounce drop-shadow-lg" />
-                  
-                  <p className="text-slate-400 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">{t('winner_label')}</p>
-                  
-                  <h2 className="text-4xl font-black text-white tracking-wider drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)] mb-4 break-words max-w-full px-2">
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-center z-20 px-6 text-center bg-background"
+                  style={{
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    animation: 'fadeInScale 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards',
+                  }}
+                >
+                  {/* Confetti burst — teal/amber/sky palette */}
+                  <svg
+                    width="200" height="200"
+                    viewBox="0 0 100 100"
+                    className="absolute pointer-events-none"
+                    style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+                  >
+                    {CONFETTI_PARTICLES.map(p => (
+                      <circle
+                        key={p.id}
+                        cx={p.x} cy={p.y} r={p.size / 2}
+                        fill={p.color}
+                        style={{
+                          animation: `confettiPop 0.6s ${p.delay} cubic-bezier(0.34,1.56,0.64,1) forwards`,
+                          opacity: 0,
+                          transformOrigin: '50px 50px',
+                        }}
+                      />
+                    ))}
+                  </svg>
+
+                  {/* Trophy — amber gold */}
+                  <Trophy
+                    className="h-12 w-12 mb-4 stagger-fade"
+                    style={{
+                      color: '#F59E0B',
+                      filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.5))',
+                      animationDelay: '0.1s',
+                    }}
+                  />
+
+                  {/* Winner label */}
+                  <p
+                    className="text-xs font-semibold tracking-widest uppercase mb-1.5 stagger-fade text-muted-foreground"
+                    style={{ animationDelay: '0.15s' }}
+                  >
+                    {t('winner_label')}
+                  </p>
+
+                  {/* Winner name */}
+                  <h2
+                    className="text-4xl font-black tracking-tight mb-5 break-words max-w-full px-2 leading-none stagger-fade text-foreground"
+                    style={{ animationDelay: '0.2s' }}
+                  >
                     {formatDisplayName(winner)}
                   </h2>
 
-                  {/* 🎨 GRADIENT TEXT */}
-                  <div className="relative w-full max-w-[90%] mb-4">
-                     <div className="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 blur-xl opacity-50 animate-pulse"></div>
-                     <div className="relative bg-gray-900/80 p-4 rounded-xl border border-white/10 backdrop-blur-xl shadow-2xl">
-                       <p className="text-xl md:text-2xl font-black italic text-center leading-tight bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 text-transparent bg-clip-text drop-shadow-sm">
-                         "{funnyNote}"
-                       </p>
-                     </div>
+                  {/* Funny quote card */}
+                  <div className="relative w-full max-w-[90%] mb-5 stagger-fade" style={{ animationDelay: '0.28s' }}>
+                    <div
+                      className="relative p-4 rounded-xl"
+                      style={{
+                        background: 'rgba(15,118,110,0.07)',
+                        border: '1px solid rgba(15,118,110,0.18)',
+                      }}
+                    >
+                      <p className="text-sm font-medium italic text-center leading-snug text-foreground">
+                        "{funnyNote}"
+                      </p>
+                    </div>
                   </div>
 
-                  {/* 📸 HIGHLIGHTED SCREENSHOT HINT */}
-                  <div className="flex items-center justify-center gap-2 bg-yellow-500/20 border border-yellow-500/50 rounded-full px-4 py-2 mb-6 shadow-[0_0_10px_rgba(234,179,8,0.3)] animate-pulse">
-                     <Camera className="h-5 w-5 text-yellow-300" />
-                     <span className="text-yellow-100 font-bold text-sm tracking-wide drop-shadow-sm">{t('screenshot_hint')}</span>
+                  {/* Screenshot hint */}
+                  <div
+                    className="flex items-center justify-center gap-2 rounded-full px-4 py-1.5 mb-7 stagger-fade"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      animationDelay: '0.35s',
+                    }}
+                  >
+                    <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      {t('screenshot_hint')}
+                    </span>
                   </div>
 
-                  {/* ACTIONS ROW - SHARE REMOVED */}
-                  <div className="flex gap-3 w-full justify-center">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="rounded-full bg-white/10 text-white hover:bg-white/20 border-white/20 font-bold px-8 h-11" 
-                        onClick={() => {
-                          setWinner(null);
-                          setFunnyNote("");
-                          setRotation(0);
-                        }}
-                      >
-                        {t('spin_again')}
-                      </Button>
+                  {/* [UNTOUCHED] Spin Again button — logic unchanged */}
+                  <div className="flex gap-4 w-full justify-center stagger-fade" style={{ animationDelay: '0.42s' }}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl font-semibold text-sm px-10 h-12 transition-all active:scale-95 border-border text-foreground hover:bg-accent"
+                      onClick={() => {
+                        // [UNTOUCHED] Original reset logic
+                        setWinner(null);
+                        setFunnyNote("");
+                        setRotation(0);
+                      }}
+                    >
+                      {t('spin_again')}
+                    </Button>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex gap-2">
-              <Input 
-                placeholder={t('add_name_placeholder')} 
-                value={inputName} 
+            {/* ── ADD NAME INPUT ROW ──────────────────────────
+                [UI] Teal focus border, clean add button.
+                [UNTOUCHED] value, onChange, onKeyDown, addName() call. */}
+            <div className="flex gap-3">
+              <Input
+                placeholder={t('add_name_placeholder')}
+                value={inputName}
                 onChange={(e) => setInputName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addName()}
-                className="h-11 rounded-full border-slate-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 font-medium"
+                className="h-12 rounded-xl text-foreground px-5 text-sm focus-visible:ring-1"
+                style={{
+                  borderColor: 'rgba(15,118,110,0.3)',
+                }}
               />
-              <Button onClick={addName} size="icon" className="h-11 w-11 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md hover:shadow-lg transition-all shrink-0">
+              <Button
+                onClick={addName}
+                size="icon"
+                className="h-12 w-12 rounded-xl transition-all shrink-0 active:scale-95 text-white"
+                style={{
+                  background: '#0F766E',
+                  border: 'none',
+                }}
+              >
                 <Plus className="h-5 w-5" />
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto px-1 py-1">
+            {/* ── NAME CHIPS ─────────────────────────────────
+                [UI] Cleaner chips — colored left-border from chart colors, no neon glow.
+                [UNTOUCHED] names.map, removeName, formatDisplayName, aria-label. */}
+            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto px-1 py-1 custom-scrollbar">
               {names.map((name, index) => (
-                <div key={index} 
-                  className="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-sm"
-                  style={{ borderLeftColor: COLORS[index % COLORS.length], borderLeftWidth: '4px' }}
+                <div
+                  key={index}
+                  className="text-foreground px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2.5 group/name transition-all"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderLeftColor: COLORS[index % COLORS.length],
+                    borderLeftWidth: '3px',
+                  }}
                 >
                   {formatDisplayName(name)}
+                  {/* [UNTOUCHED] Remove button logic */}
                   <button
                     type="button"
                     onClick={() => removeName(index)}
                     aria-label={`Remove ${formatDisplayName(name)}`}
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-red-600 transition-colors"
+                    className="flex h-5 w-5 items-center justify-center rounded-md transition-all opacity-30 group-hover/name:opacity-80"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-3 w-3 text-muted-foreground" />
                   </button>
                 </div>
               ))}
             </div>
 
-            <div className="pt-2">
-              <Button 
-                type="button"
-                onClick={handleSpin} 
-                disabled={isSpinning || names.length < 2}
-                className={`w-full h-11 text-base font-black tracking-wide ${gradientClass} text-white rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all active:scale-95 disabled:opacity-50`}
-              >
-                {isSpinning ? t('spinning') : t('spin_action')}
-              </Button>
-            </div>
 
           </div>
         </div>

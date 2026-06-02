@@ -1,8 +1,8 @@
 const AdPlaceholder = ({ className = "" }: { className?: string }) => (
-  <div className={`my-8 w-full border-2 border-dashed border-purple-500/30 rounded-xl p-8 flex items-center justify-center bg-purple-500/5 ${className}`}>
+  <div className={`my-8 w-full border-2 border-dashed border-border rounded-2xl p-6 flex items-center justify-center bg-background ${className}`}>
     <div className="text-center">
-      <span className="text-xs font-bold tracking-widest text-purple-400 uppercase block mb-2">Advertisement</span>
-      <p className="text-sm text-slate-500 font-medium">Google AdSense Space</p>
+      <span className="text-xs font-bold tracking-wider text-text-muted uppercase block mb-2">Sponsorship</span>
+      <p className="text-sm text-foreground font-black">Reserved Premium Space</p>
     </div>
   </div>
 );

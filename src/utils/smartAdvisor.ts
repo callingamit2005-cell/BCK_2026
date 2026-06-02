@@ -236,9 +236,13 @@ export const getRuleBasedStructuredAdviceFromSummary = (summary: FinancialSummar
   else if (summary.transactionCount >= 5) confidence = "MEDIUM";
 
   const potentialSavings = Math.round(summary.unnecessarySpend * 0.4);
-  const sipAmount = Math.max(500, Math.floor((summary.surplus * 0.5) / 100 / 100) * 100);
-  const emergencyMonthly = Math.max(500, Math.floor((summary.surplus * 0.3) / 100 / 100) * 100);
-  const emergencyTarget = Math.round((summary.expenseTotal * 3) / 100 / 100) * 100;
+  // [BUG-FIX] surplus/expenseTotal are in PAISA. Convert to rupees ONCE (/100).
+  // Previous code divided by /100/100 — made amounts 100x too small (e.g. ₹26 instead of ₹2600).
+  const surplusRupees = summary.surplus / 100;
+  const expenseTotalRupees = summary.expenseTotal / 100;
+  const sipAmount = Math.max(500, Math.floor((surplusRupees * 0.5) / 100) * 100);
+  const emergencyMonthly = Math.max(500, Math.floor((surplusRupees * 0.3) / 100) * 100);
+  const emergencyTarget = Math.round((expenseTotalRupees * 3) / 100) * 100;
 
   let riskProfile: InvestmentPlan['riskProfile'] = "Low";
   if (summary.savingsRate > 30) riskProfile = "High";
@@ -333,7 +337,7 @@ export const getRuleBasedStructuredAdviceFromSummary = (summary: FinancialSummar
     reasonStr = isHindi ? "कमाई का बड़ा हिस्सा बचाना ही अमीरी का रास्ता है।" : (isHinglish ? "Aap income ka bada portion retain kar rahe ho, this is brilliant discipline." : "Retaining a high percentage of income is the fastest path to wealth.");
     healthReasonStr = isHindi ? "आर्थिक स्थिति बहुत मजबूत है।" : (isHinglish ? "Financial condition bohot strong hai. Tension free raho." : "Exceptional financial stability.");
     projectionStr = isHindi ? `एक साल में आप ${fmt(summary.surplus * 12)} जोड़ लेंगे!` : (isHinglish ? `Yahi speed rahi toh saal bhar mein ${fmt(summary.surplus * 12)} ki wealth build hogi! ✨` : `Outstanding! You are on track to accumulate ${fmt(summary.surplus * 12)} this year! ✨`);
-    growthStr = isHindi ? `अब ${fmt(sipAmount)} की एग्रेसिव SIP का सही समय है।` : (isHinglish ? `Abhi ${fmt(sipAmount)} ki aggressive SIP dalo, wealth compound hogi.` : `Perfect time to deploy ${fmt(sipAmount)} into high-growth equity SIPs.`);
+    growthStr = isHindi ? `अब ₹${sipAmount.toLocaleString('en-IN')} की एग्रेसिव SIP का सही समय है।` : (isHinglish ? `Abhi ₹${sipAmount.toLocaleString('en-IN')} ki aggressive SIP dalo, wealth compound hogi.` : `Perfect time to deploy ₹${sipAmount.toLocaleString('en-IN')} into high-growth equity SIPs.`);
     strategyStr = isHindi ? "पोर्टफोलियो डाइवर्सिफाई करें।" : (isHinglish ? "Ab sirf save nahi, diversify bhi karo and assets badhao." : "Strategic asset allocation is your next milestone. Diversify.");
   }
   else {
@@ -346,10 +350,10 @@ export const getRuleBasedStructuredAdviceFromSummary = (summary: FinancialSummar
   }
 
   const stepsStr = isHindi 
-    ? `1. ${fmt(sipAmount)} की SIP शुरू करें\n2. इमरजेंसी फंड में ${fmt(emergencyMonthly)} डालें\n3. अनावश्यक UPI खर्च ट्रैक करें`
+    ? `1. ₹${sipAmount.toLocaleString('en-IN')} की SIP शुरू करें\n2. इमरजेंसी फंड में ₹${emergencyMonthly.toLocaleString('en-IN')} डालें\n3. अनावश्यक UPI खर्च ट्रैक करें`
     : (isHinglish 
-      ? `1. ₹${sipAmount/100} ki SIP start karo\n2. Emergency fund mein ₹${emergencyMonthly/100} dalo\n3. Chhote UPI kharche control karo`
-      : `1. Start a ₹${sipAmount/100} SIP\n2. Buffer ₹${emergencyMonthly/100} for Emergency\n3. Audit all recurring UPI spends`);
+      ? `1. ₹${sipAmount} ki SIP start karo\n2. Emergency fund mein ₹${emergencyMonthly} dalo\n3. Chhote UPI kharche control karo`
+      : `1. Start a ₹${sipAmount} SIP\n2. Buffer ₹${emergencyMonthly} for Emergency\n3. Audit all recurring UPI spends`);
 
   return {
     action: actionStr,
@@ -362,8 +366,8 @@ export const getRuleBasedStructuredAdviceFromSummary = (summary: FinancialSummar
     healthReason: healthReasonStr,
     confidence: confidence,
     investmentOptions: {
-      sip: isHindi ? `${fmt(sipAmount)} की SIP आपके भविष्य को सुरक्षित करेगी।` : (isHinglish ? `Monthly ₹${sipAmount/100} SIP future goals ke liye must hai.` : `A monthly SIP of ₹${sipAmount/100} is required for wealth creation.`),
-      emergency: isHindi ? `टारगेट: ${fmt(emergencyTarget)}। मुश्किल वक्त का साथी।` : (isHinglish ? `Target: ₹${emergencyTarget/100}. Bure waqt mein yehi kaam aayega.` : `Target: ₹${emergencyTarget/100}. Secure this as your survival safety net.`),
+      sip: isHindi ? `₹${sipAmount.toLocaleString('en-IN')} की SIP आपके भविष्य को सुरक्षित करेगी।` : (isHinglish ? `Monthly ₹${sipAmount} SIP future goals ke liye must hai.` : `A monthly SIP of ₹${sipAmount} is required for wealth creation.`),
+      emergency: isHindi ? `टारगेट: ₹${emergencyTarget.toLocaleString('en-IN')}। मुश्किल वक्त का साथी।` : (isHinglish ? `Target: ₹${emergencyTarget}. Bure waqt mein yehi kaam aayega.` : `Target: ₹${emergencyTarget}. Secure this as your survival safety net.`),
       fd: isHindi ? "सुरक्षित रिटर्न के लिए बैंक FD बेहतर है।" : (isHinglish ? "Safe returns ke liye Bank FD ya Liquid Funds best hain." : "Bank FDs or Liquid Funds provide capital protection.")
     },
     platforms: ["Groww", "Zerodha", "Paytm Money"],
@@ -483,22 +487,69 @@ export const getRichStructuredAIAdvice = async (transactions: Transaction[], lan
     if (language === 'hi') requestedLangName = 'Hindi';
     else if (language === 'hinglish' || language.includes('in')) requestedLangName = 'Hinglish';
 
-    const prompt = `Financial Snapshot for ${summary.monthYear}:
-    - Income: ₹${(summary.incomeTotal/100).toLocaleString('en-IN')}
-    - Expense: ₹${(summary.expenseTotal/100).toLocaleString('en-IN')}
-    - Top Spending: ${topCatsStr}
-    - Late Night Spend (10PM-4AM): ₹${(summary.lateNightSpend/100).toFixed(0)}
-    - Weekend Spend: ₹${(summary.weekendSpend/100).toFixed(0)}
-    - Small UPI Payments count: ${summary.smallUpiHabitCount}
-    - 80% Salary Exhaustion Day: ${summary.salaryExhaustionDay || 'Not reached'}
-    - ${spikesStr}
-    - Local Recommendation: ${fallback.action}
-    - Local Reason: ${fallback.reason}
+    // 🛡️ [FINANCIAL_HEALTH_ARCHITECT] Upgraded prompt — India-specific, hybrid rule+AI
+    const savingsTarget = Math.max(0, Math.round((summary.surplus / 100) / 100) * 100);
+    const mandatorySavings = Math.max(0, Math.round(((summary.incomeTotal / 100) * 0.20) / 100) * 100);
+    const behaviorFlags = [
+      summary.smallUpiHabitCount > 20 ? `${summary.smallUpiHabitCount} small UPI payments (chillar drain)` : null,
+      summary.lateNightSpend > 0 ? `₹${(summary.lateNightSpend/100).toFixed(0)} late-night spend (10PM-4AM)` : null,
+      summary.salaryExhaustionDay && summary.salaryExhaustionDay < 20 ? `80% salary exhausted by Day ${summary.salaryExhaustionDay}` : null,
+      summary.weekendSpend > (summary.expenseTotal * 0.3) ? `Weekend overspend: ₹${(summary.weekendSpend/100).toFixed(0)}` : null,
+    ].filter(Boolean).join('; ') || 'No critical flags';
 
-    Please refine this into a personal 'Experienced Wealth Mentor' style advice in ${requestedLangName}.
-    Be wise, empathetic, concise, and provide actionable steps. Understand emotional spending patterns like lifestyle inflation, salary pressure, or late-night emotional ordering.
-    Include investment advice (SIP: ₹${fallback.personalizedPlan?.sipAmount}, Emergency: ₹${fallback.personalizedPlan?.emergencyTarget}).
-    Return ONLY valid JSON with exactly the same keys as structured advice.`;
+    const prompt = `### ROLE
+You are a "Financial Health Architect" for BachatKaro — an elite wealth-management advisor for Indian users. Balance strict discipline with practical Indian market realities. Be like an experienced CA mentor who knows the user personally.
+
+### USER FINANCIAL SNAPSHOT (${summary.monthYear})
+- Income: ₹${(summary.incomeTotal/100).toLocaleString('en-IN')}
+- Total Expense: ₹${(summary.expenseTotal/100).toLocaleString('en-IN')}
+- Surplus: ₹${(summary.surplus/100).toLocaleString('en-IN')}
+- Savings Rate: ${summary.savingsRate.toFixed(1)}%
+- Top Categories: ${topCatsStr}
+- Behavior Flags: ${behaviorFlags}
+- ${spikesStr}
+- Local Mentor Pre-Assessment: "${fallback.action}" — ${fallback.reason}
+
+### LANGUAGE POLICY
+Respond ENTIRELY in ${requestedLangName}. If Hinglish, use natural urban Indian mix (e.g., "bhai", "yaar", "dekho"). If Hindi, use pure Devanagari. If English, be sharp and professional.
+
+### MANDATORY INSTRUCTIONS
+1. REALITY CHECK: Call out the behavior flags above firmly but with empathy. Name the exact habit, name the exact amount.
+2. SAVINGS TARGET: Apply 50/30/20 rule adjusted for Indian middle-class reality. Mandatory savings this month = ₹${mandatorySavings.toLocaleString('en-IN')} (20% of income). If surplus < this, explain how to bridge the gap.
+3. HIDDEN INVESTMENT GEMS — always include 2-3 from this India-specific list:
+   - Sovereign Gold Bonds (SGB): 2.5% extra annual interest + tax-free capital gains on maturity vs physical gold
+   - NPS (National Pension System): Structured retirement + extra ₹50,000 deduction under 80CCD(1B)
+   - REITs/InvITs: Real estate/infrastructure exposure from just ₹500 with quarterly dividends
+   - Direct Index Funds: Avoid Regular plan commissions (saves ~1% annually = lakhs over 20 years)
+4. BEHAVIORAL HACK: Give exactly ONE powerful money rule relevant to this user's specific flags (e.g., "48-Hour Rule" for purchases above ₹2000, or "10PM App Lock" for night spenders).
+5. TONE: Mentor voice — firm, warm, specific. Never generic. Use real rupee amounts from the data above.
+
+### OUTPUT FORMAT
+Return ONLY valid JSON with these exact keys (no extra keys, no markdown, no preamble):
+{
+  "action": "2-line punchy verdict of their financial state (their score in words)",
+  "reason": "Why this verdict — specific to their data, not generic",
+  "steps": "Numbered action plan with Hidden Gems + Behavioral Hack (use \n for line breaks)",
+  "insights": "1-line behavioral pattern insight from the flags",
+  "projection": "What happens in 12 months if they follow this plan — with specific ₹ figure",
+  "growth": "The Hidden Investment Gem recommendation most suited to this user",
+  "healthScore": <integer 1-10>,
+  "healthReason": "Why this score — tie it to their savings rate and behavior",
+  "confidence": "${summary.transactionCount > 20 ? 'HIGH' : summary.transactionCount >= 5 ? 'MEDIUM' : 'LOW'}",
+  "investmentOptions": {
+    "sip": "Specific SIP recommendation with fund type and amount",
+    "emergency": "Emergency fund target and timeline",
+    "fd": "FD or liquid fund recommendation"
+  },
+  "platforms": ["Groww", "Zerodha", "Paytm Money"],
+  "personalizedPlan": {
+    "sipAmount": ${fallback.personalizedPlan?.sipAmount || 500},
+    "emergencyTarget": ${fallback.personalizedPlan?.emergencyTarget || 10000},
+    "savingsRate": ${summary.savingsRate.toFixed(1)},
+    "riskProfile": "${fallback.personalizedPlan?.riskProfile || 'Low'}",
+    "strategy": "One-line core strategy for this user"
+  }
+}`;
 
     const aiResponse = await aiRouter.generateAIResponse(prompt, context as any);
     

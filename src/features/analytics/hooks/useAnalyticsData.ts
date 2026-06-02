@@ -8,6 +8,7 @@
  * 4. [BUG-FIX] queryKey includes dateFilter — React Query re-fetches on date change
  * 5. [BUG-FIX] Removed hardcoded .range(0,99) — fetches all data in window
  * 6. [SECURITY] user_id RLS + .eq() filter — zero cross-user leakage
+ * 7. [PHASE_2] Integrated Advanced Predictive Auditing logic
  */
 
 import { useQuery } from "@tanstack/react-query";
@@ -24,23 +25,21 @@ import {
   subMonths,
 } from "date-fns";
 import { type DateFilterValue } from "@/components/dashboard/DateFilter";
+import {
+  calculateProjectedSpend,
+  calculateConfidenceScore,
+  getCategoryPredictions,
+  getSpendInsight
+} from "@/utils/PredictiveSpendEngine";
 
 /**
  * Converts a local date to an IST-safe ISO string for Supabase queries.
- * 
- * ⚠️ WHY THIS EXISTS:
- * new Date("2026-05-12") parses as UTC midnight → in IST (+05:30) this is
- * "2026-05-11 18:30:00 IST" — the entire last day gets excluded from the filter.
- * 
- * FIX: We always use startOfDay/endOfDay (local timezone) then call .toISOString()
- * which converts to UTC correctly from the user's local clock.
  */
 const toISTSafeStart = (date: Date): string => startOfDay(date).toISOString();
 const toISTSafeEnd = (date: Date): string => endOfDay(date).toISOString();
 
 /**
  * Resolves a DateFilterValue into a concrete { from, to } ISO string pair.
- * All times use local midnight/end-of-day to avoid IST timezone boundary bugs.
  */
 const resolveDateRange = (
   filter: DateFilterValue,
@@ -55,7 +54,7 @@ const resolveDateRange = (
 
     case "this_week":
       return {
-        from: toISTSafeStart(startOfWeek(now, { weekStartsOn: 1 })), // Monday start
+        from: toISTSafeStart(startOfWeek(now, { weekStartsOn: 1 })),
         to: toISTSafeEnd(endOfWeek(now, { weekStartsOn: 1 })),
       };
 
@@ -74,7 +73,6 @@ const resolveDateRange = (
     }
 
     case "custom": {
-      // 🛡️ Guard: if custom dates not set yet, fall back to current month
       if (!filter.customFrom && !filter.customTo) {
         return {
           from: toISTSafeStart(startOfMonth(now)),
@@ -82,12 +80,11 @@ const resolveDateRange = (
         };
       }
       return {
-        // If only one bound set, use now as the other
         from: filter.customFrom
           ? toISTSafeStart(filter.customFrom)
           : toISTSafeStart(startOfMonth(now)),
         to: filter.customTo
-          ? toISTSafeEnd(filter.customTo)   // ← KEY FIX: end of day, not midnight
+          ? toISTSafeEnd(filter.customTo)
           : toISTSafeEnd(now),
       };
     }
@@ -106,7 +103,6 @@ export const useAnalyticsData = (
   const { session } = useAuth();
   const now = new Date();
 
-  // 🛡️ Stable cache key — React Query re-fetches whenever date filter changes
   const filterKey =
     dateFilter.preset === "custom"
       ? `custom:${dateFilter.customFrom?.toDateString()}:${dateFilter.customTo?.toDateString()}`
@@ -119,15 +115,19 @@ export const useAnalyticsData = (
 
       const { from, to } = resolveDateRange(dateFilter, now);
 
-      // ✅ FIX: Query `transactions` (unified ledger) not stale `expenses` table
-      // ✅ FIX: .gte/.lte with IST-safe ISO strings — includes full start & end day
-      // ✅ FIX: No .range() limit — fetches all transactions in the date window
+      // [BUG-FIX Bug 3] Derive the comparison month from the active filter's start date,
+      // not from `now`. This ensures "previous month" is always relative to the
+      // period the user is actually viewing, not the current calendar month.
+      const filterStartDate = new Date(from);
+      const currentMonth = filterStartDate.toISOString().slice(0, 7);
+      const prevMonth = subMonths(filterStartDate, 1).toISOString().slice(0, 7);
+
       const { data: transactions, error } = await supabase
         .from("transactions")
         .select("amount, category, type, date")
         .eq("user_id", session.user.id)
-        .gte("date", from)   // >= start of first day (local midnight → UTC)
-        .lte("date", to)     // <= end of last day (local 23:59:59 → UTC)
+        .gte("date", from)
+        .lte("date", to)
         .order("date", { ascending: true });
 
       if (error) throw error;
@@ -138,7 +138,7 @@ export const useAnalyticsData = (
           categoryTotals: [],
           currentMonthTotal: 0,
           previousMonthTotal: 0,
-          percentChange: 0,
+          percentChange: null,
         };
       }
 
@@ -148,17 +148,13 @@ export const useAnalyticsData = (
       let currentMonthTotal = 0;
       let previousMonthTotal = 0;
 
-      const currentMonth = now.toISOString().slice(0, 7); // "YYYY-MM"
-      const prevMonth = subMonths(now, 1).toISOString().slice(0, 7);
+      // currentMonth and prevMonth are now derived from filterStartDate above
 
       transactions.forEach((tx) => {
-        // 🛡️ Only count expenses (not income) in analytics spend totals
         if (tx.type === "income") return;
 
         const amount = Number(tx.amount) || 0;
         const cat = tx.category || "Uncategorized";
-
-        // tx.date is full ISO string — slice(0,7) gives "YYYY-MM"
         const month = (tx.date || "").slice(0, 7);
         if (!month) return;
 
@@ -177,9 +173,44 @@ export const useAnalyticsData = (
         .map(([category, total]) => ({ category, total }))
         .sort((a, b) => b.total - a.total);
 
-      const percentChange = previousMonthTotal
+      // [BUG-FIX Bug 4] Return null when no prior period exists.
+      // Previously returned 0, which MonthlyComparison rendered as "▲ 0.0%"
+      // — implying a prior period with identical spending exists. null means
+      // "no comparison available" and the component renders "No Prior Period".
+      const percentChange: number | null = previousMonthTotal
         ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100
-        : 0;
+        : null;
+
+      // [BUG-FIX Bug 2] isCurrentPeriod was inverted — it previously checked
+      // `toISTSafeEnd(now) <= to` which is TRUE for future ranges and FALSE for past
+      // ranges — the exact opposite of correct. Fixed: check whether `now` falls
+      // within the resolved [from, to] window, meaning we are currently inside
+      // the period being viewed and projection is meaningful.
+      const nowISO = now.toISOString();
+      const isCurrentPeriod =
+        dateFilter.preset === "this_month" ||
+        (dateFilter.preset === "custom" && nowISO >= from && nowISO <= to);
+
+      let predictive;
+      if (isCurrentPeriod && currentMonthTotal > 0) {
+        const daysPassed = now.getDate();
+        const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const currentMonthExpenses = transactions
+          .filter(tx => tx.type !== 'income' && (tx.date || "").slice(0, 7) === currentMonth)
+          .map(tx => ({ amount: Number(tx.amount), category: tx.category || "Uncategorized" }));
+
+        const projectedTotal = calculateProjectedSpend(currentMonthTotal);
+        const confidenceScore = calculateConfidenceScore(daysPassed, totalDays, currentMonthExpenses.map(e => e.amount));
+        const categoryPredictions = getCategoryPredictions(currentMonthExpenses, daysPassed, totalDays);
+        const insight = getSpendInsight(previousMonthTotal || currentMonthTotal, projectedTotal);
+
+        predictive = {
+          projectedTotal,
+          confidenceScore,
+          categoryPredictions,
+          insight
+        };
+      }
 
       return {
         monthlyTotals,
@@ -187,6 +218,7 @@ export const useAnalyticsData = (
         currentMonthTotal,
         previousMonthTotal,
         percentChange,
+        predictive
       };
     },
     enabled: !!session?.user,

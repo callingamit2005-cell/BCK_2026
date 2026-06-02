@@ -125,3 +125,30 @@ export const getCurrentMonthRange = () => {
     monthYear: now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
   };
 };
+
+/**
+ * 🛡️ [IDENTITY_HARDENING_V2]
+ * Sole source of identity truth for transaction deduplication.
+ * MATCHES: Supabase SQL lower(regexp_replace(description, '[^a-zA-Z0-9]', '', 'g'))
+ */
+export const generateCanonicalKey = (entry: { 
+  amount: number; 
+  date: string | Date | null | undefined; 
+  payee: string; 
+  type: string 
+}): string | null => {
+  const normAmount = Math.round(Number(entry.amount || 0));
+  const dateObj = safeDate(entry.date);
+  // 🛡️ [TIMESTAMP_PARITY_V2] 
+  // Use Math.round to match Postgres ::bigint behavior for extract(epoch from date).
+  // This prevents 1-second drift collisions between JS and SQL layers.
+  const ts = dateObj ? Math.round(dateObj.getTime() / 1000) : 0;
+  
+  // 🛡️ [PARITY_NORMALIZATION] Match SQL logic exactly.
+  // This removes EVERYTHING except alphanumeric characters for maximum collision safety.
+  const normPayee = (entry.payee || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  
+  const type = (entry.type || "expense").toLowerCase();
+  
+  return (ts > 0 && normAmount > 0) ? `canon:${normAmount}:${ts}:${normPayee}:${type}` : null;
+};

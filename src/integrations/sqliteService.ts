@@ -28,7 +28,7 @@ export const dispatchSyncUpdate = () => {
   if (syncEventTimeout) clearTimeout(syncEventTimeout);
   syncEventTimeout = setTimeout(() => {
     window.dispatchEvent(new Event('sync_queue_updated'));
-  }, 150); // 150ms buffer for batch operations
+  }, 500); // 500ms stable buffer for Android performance
 };
 
 export const seedLocalCacheRow = async (
@@ -234,7 +234,12 @@ export const getConflictTarget = (tableName: string) => {
   // 🚀 FIX: Standardize on 'id' for all versioned tables.
   return 'id';
 };
-export const saveAndSync = async (tableName: string, payload: any, operation: 'INSERT' | 'UPSERT' | 'RPC' = 'UPSERT') => {
+export const saveAndSync = async (
+  tableName: string, 
+  payload: any, 
+  operation: 'INSERT' | 'UPSERT' | 'RPC' | 'UPDATE' = 'UPSERT',
+  silent: boolean = false
+) => {
   const isAndroid = Capacitor.getPlatform() === 'android';
   const isOverwriteTable = DETERMINISTIC_OVERWRITE_TABLES.includes(tableName);
   
@@ -249,7 +254,13 @@ export const saveAndSync = async (tableName: string, payload: any, operation: 'I
     
     // Only generate idempotency_key for versioned tables
     if (!isOverwriteTable) {
-      payload.idempotency_key = await generateIdempotencyKey(payload);
+      if (tableName === 'transactions') {
+        // 🛡️ [DETERMINISTIC_QUEUE_IDENTITY]
+        // Prefer existing key, then fallback to immutable record ID, then generate.
+        payload.idempotency_key = payload.idempotency_key || payload.id || await generateIdempotencyKey(payload);
+      } else {
+        payload.idempotency_key = await generateIdempotencyKey(payload);
+      }
     }
   }
 
@@ -298,14 +309,20 @@ export const saveAndSync = async (tableName: string, payload: any, operation: 'I
         
         // 🛡️ [ATOMIC_WRITE_CONTRACT]
         // Ensure local save and sync enqueue are strictly sequential.
+        console.log(`[ANDROID_EDIT_TRACE] before save: ${tableName} operation=${operation}`);
         await db.run(`INSERT OR REPLACE INTO ${tableName} (${cols}, sync_status, is_deleted) VALUES (${placeholders}, 'pending', 0)`, [...values]);
-        console.log(`🧪 [TABLE_CONTRACT_FORENSIC] SQLite Persisted:`, { table: tableName, cols: colsArray });
+        console.log(`[ANDROID_EDIT_TRACE] after save success`);
       }
       
-      const enqueued = await enqueueSync(tableName, operation, payload);
-      if (!enqueued) throw new Error("Sync Queue insertion failed.");
+      console.log(`[ANDROID_EDIT_TRACE] before sync enqueue: ${operation}`);
+      const enqueued = await enqueueSync(tableName, operation, payload, silent);
+      if (!enqueued) {
+        console.log(`[ANDROID_EDIT_TRACE] on error: sync enqueue failed`);
+        throw new Error("Sync Queue insertion failed.");
+      }
+      console.log(`[ANDROID_EDIT_TRACE] after sync success`);
       
-      dispatchSyncUpdate();
+      if (!silent) dispatchSyncUpdate();
       return payload;
     }
   }
@@ -322,24 +339,42 @@ export const saveAndSync = async (tableName: string, payload: any, operation: 'I
 
     const { error } = await supabase.rpc(tableName, cleanPayload);
     if (error) throw error;
+  } else if (operation === 'UPDATE') {
+    // 🛡️ [STRICT_UPDATE_PATH]
+    // Use .update() to target specific row by ID. This bypasses the mutable canonical_key
+    // used in upserts, allowing metadata edits without primary key collisions (23505).
+    const remotePayload = translateToRemote(tableName, payload);
+    const { data, error } = await supabase.from(tableName)
+      .update(remotePayload)
+      .eq('id', payload.id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   } else {
     const conflictTarget = getConflictTarget(tableName);
     const remotePayload = translateToRemote(tableName, payload);
 
-    console.log(`🧪 [TABLE_CONTRACT_FORENSIC] Remote Attempt:`, { 
-      table: tableName, 
-      target: conflictTarget, 
-      payload: remotePayload 
-    });
+    console.log(`🧪 [TABLE_CONTRACT_FORENSIC] Full Remote Payload:`, JSON.stringify(remotePayload, null, 2));
 
-    const { data, error } = await supabase.from(tableName).upsert(remotePayload, { onConflict: conflictTarget });
+    const { data, error } = await supabase.from(tableName)
+      .upsert(remotePayload, { onConflict: conflictTarget })
+      .select()
+      .single();
     
     if (error) {
-      console.error(`❌ [TABLE_CONTRACT_FORENSIC] Remote Fail:`, { error, table: tableName });
+      console.error(`❌ [TABLE_CONTRACT_FORENSIC] Remote Fail:`, JSON.stringify(error, null, 2));
+      console.log(`🧪 [TABLE_CONTRACT_FORENSIC] Failed Payload Identity:`, {
+        id: remotePayload.id,
+        canonical_key: remotePayload.canonical_key,
+        idempotency_key: remotePayload.idempotency_key,
+        user_id: remotePayload.user_id
+      });
       throw error;
     }
     
-    console.log(`✅ [TABLE_CONTRACT_FORENSIC] Remote Success:`, { table: tableName, data });
+    console.log(`✅ [TABLE_CONTRACT_FORENSIC] Remote Success (Verified Row):`, JSON.stringify(data, null, 2));
   }
   return payload;
 };

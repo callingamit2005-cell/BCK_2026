@@ -80,7 +80,9 @@ class MainActivity : BridgeActivity() {
             }
         }
 
-        requestRuntimePermissionsIfNeeded()
+        // 🛡️ [PHASE_A_UX_STABILIZATION]
+        // Automatic permission requests removed. 
+        // Logic moved to React layer (PermissionEducation.tsx) to ensure user trust.
     }
 
     override fun onStart() {

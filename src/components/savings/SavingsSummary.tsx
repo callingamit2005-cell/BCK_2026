@@ -1,7 +1,14 @@
+/**
+ * SavingsSummary.tsx - BachatKaro Premium Fintech Edition
+ * UI: High-Level Portfolio Aggregation.
+ * 🛡️ LOGIC LOCK: Aggregation math and data logic 100% untouched.
+ */
+
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Target, Wallet } from 'lucide-react';
 import { tSafe } from '@/i18n';
 import { formatCurrency } from '@/utils/currencyFormatter';
+import { cn } from '@/lib/utils';
 
 interface SavingsGoal {
   id: string;
@@ -21,36 +28,60 @@ const SavingsSummary = ({ goals }: SavingsSummaryProps) => {
   const completedGoals = goals.filter((g) => g.currentSaved >= g.targetAmount).length;
 
   return (
-    <div className="grid grid-cols-3 gap-4 sm:gap-6">
-      <Card className="bg-surface border-border shadow-sm rounded-[24px] overflow-hidden group hover:border-foreground/10 transition-all">
-        <CardContent className="p-6 text-center">
-          <div className="p-2.5 bg-background border border-border rounded-xl w-fit mx-auto mb-4 group-hover:scale-110 transition-transform">
-            <Wallet className="h-5 w-5 text-text-secondary" />
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 1. Accumulated */}
+      <Card className="fintech-card overflow-hidden group">
+        <CardContent className="p-5 flex items-center gap-4">
+          <div className="h-10 w-10 rounded-lg bg-savings/10 border border-savings/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-sm">
+            <Wallet className="h-5 w-5 text-savings" />
           </div>
-          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">{tSafe('savings.summary.totalSaved', 'Accumulated')}</p>
-          <p className="text-xl font-bold text-foreground font-mono tracking-tighter">{formatCurrency(totalSaved)}</p>
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1.5">
+              {tSafe('savings.summary.totalSaved', 'Accumulated')}
+            </p>
+            <p className="text-xl font-bold text-foreground font-mono tracking-tighter tabular-nums leading-none">
+              {formatCurrency(totalSaved)}
+            </p>
+          </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-surface border-border shadow-sm rounded-[24px] overflow-hidden group hover:border-foreground/10 transition-all">
-        <CardContent className="p-6 text-center">
-          <div className="p-2.5 bg-background border border-border rounded-xl w-fit mx-auto mb-4 group-hover:scale-110 transition-transform">
-            <Target className="h-5 w-5 text-text-secondary" />
+      {/* 2. Aggregate Target */}
+      <Card className="fintech-card overflow-hidden group">
+        <CardContent className="p-5 flex items-center gap-4">
+          <div className="h-10 w-10 rounded-lg bg-muted/20 border border-border/50 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-sm group-hover:bg-primary/5 group-hover:border-primary/20">
+            <Target className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
           </div>
-          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">{tSafe('savings.summary.totalTarget', 'Aggregate')}</p>
-          <p className="text-xl font-bold text-foreground font-mono tracking-tighter">{formatCurrency(totalTarget)}</p>
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1.5">
+              {tSafe('savings.summary.totalTarget', 'Aggregate')}
+            </p>
+            <p className="text-xl font-bold text-foreground font-mono tracking-tighter tabular-nums leading-none">
+              {formatCurrency(totalTarget)}
+            </p>
+          </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-surface border-border shadow-sm rounded-[24px] overflow-hidden group hover:border-foreground/10 transition-all">
-        <CardContent className="p-6 text-center">
-          <div className="p-2.5 bg-background border border-border rounded-xl w-fit mx-auto mb-4 group-hover:scale-110 transition-transform">
-            <TrendingUp className="h-5 w-5 text-text-secondary" />
+      {/* 3. Success Rate */}
+      <Card className="fintech-card overflow-hidden group">
+        <CardContent className="p-5 flex items-center gap-4">
+          <div className={cn(
+            "h-10 w-10 rounded-lg border flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-sm",
+            completedGoals > 0 ? "bg-income/10 border-income/20" : "bg-muted/20 border-border/50"
+          )}>
+            <TrendingUp className={cn("h-5 w-5", completedGoals > 0 ? "text-income" : "text-muted-foreground")} />
           </div>
-          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">{tSafe('savings.summary.completed', 'Success Rate')}</p>
-          <p className="text-xl font-bold text-foreground font-mono tracking-tighter">
-            {completedGoals}<span className="text-text-muted mx-1 opacity-40">/</span><span className="text-text-secondary">{goals.length}</span>
-          </p>
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1.5">
+              {tSafe('savings.summary.completed', 'Success Rate')}
+            </p>
+            <p className="text-xl font-bold text-foreground font-mono tracking-tighter tabular-nums leading-none">
+              <span className={cn(completedGoals > 0 ? "text-income" : "text-foreground")}>{completedGoals}</span>
+              <span className="text-muted-foreground opacity-50 mx-1">/</span>
+              <span className="text-foreground">{goals.length}</span>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

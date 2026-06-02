@@ -5,17 +5,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchUnifiedLedger, toUnifiedNativeEntry, toUnifiedSalaryEntry, mergeUnifiedLedgerEntries, isValidSmsTransaction, type LedgerWindow, type UnifiedLedgerEntry } from '@/features/transactions/ledger';
 import { getNativeTransactions, addSmsListener } from '@/integrations/smsBridge';
 import { DashboardTransaction, toDashboardTransaction, getSalaryAmount, SalaryRecord } from '@/utils/dashboardHelpers';
-import { isToday, isThisWeek, startOfDay, endOfDay, subMonths } from 'date-fns';
+import { isToday, isThisWeek, startOfDay, endOfDay } from 'date-fns';
 import { isCurrentMonth, isValidDate, isLastMonth, safeDate } from '@/utils/dateFilters';
 import { type DateFilterValue } from '@/components/dashboard/DateFilter';
 import { fetchLocalOrCloud } from '@/integrations/sqliteService';
-import { safeJsonParse } from '@/utils/jsonUtils';
 
 // ✅ FIX: IST-safe date boundary helpers
 const toLocalStart = (date: Date): Date => startOfDay(date);
 const toLocalEnd = (date: Date): Date => endOfDay(date);  // 23:59:59.999 local time
 
-export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: LedgerWindow, currentMonthYear: string, dateFilter: DateFilterValue, isSQLiteReady: boolean = true) => {
+export const useDashboardData = (
+  user: any, 
+  canReadSms: boolean, 
+  ledgerWindow: LedgerWindow, 
+  currentMonthYear: string, 
+  dateFilter: DateFilterValue, 
+  isSQLiteReady: boolean = true,
+  manualInjections: any[] = [] // 🛡️ [STRESS_TEST_INJECTION_PORT]
+) => {
   const queryClient = useQueryClient();
   const now = useMemo(() => new Date(), []);
   const [isLoadingNativeTransactions, setIsLoadingNativeTransactions] = useState(false);
@@ -58,22 +65,37 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
     staleTime: 30000,
   });
 
-  // 🛡️ [UI_REALTIME_SYNC]
-  // Listen for local and remote sync events to invalidate queries instantly.
-  // Implements strict debouncing to prevent invalidation storms during batch/sync events.
+  // 🛡️ [LOOP_PROTECTION_LOCK]
+  const isInvalidatingRef = useRef(false);
   const invalidationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const handleRefresh = () => {
+    const handleRefresh = (event?: Event) => {
+      // 🛡️ [STORM_GUARD] Prevent circular invalidation during batch feeding or silent scans
+      if (isInvalidatingRef.current || (window as any).BK_IS_SCANNING) {
+        return;
+      }
+      
       if (invalidationTimeoutRef.current) {
         clearTimeout(invalidationTimeoutRef.current);
       }
       
-      invalidationTimeoutRef.current = setTimeout(() => {
-        void queryClient.invalidateQueries({ queryKey: ['ledger-transactions'] });
-        void queryClient.invalidateQueries({ queryKey: ['salaries'] });
-        void queryClient.invalidateQueries({ queryKey: ['budgets'] });
-      }, 300); // 300ms debounce window
+      invalidationTimeoutRef.current = setTimeout(async () => {
+        try {
+          isInvalidatingRef.current = true;
+          // 🚀 [ATOMIC_REFRESH] Invalidate only what is necessary
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['ledger-transactions', user?.id] }),
+            queryClient.invalidateQueries({ queryKey: ['salaries', user?.id] }),
+            queryClient.invalidateQueries({ queryKey: ['budgets', user?.id] })
+          ]);
+        } finally {
+          // Allow future invalidations after React Query has finished triggering refetches
+          setTimeout(() => {
+            isInvalidatingRef.current = false;
+          }, 1000);
+        }
+      }, 500); // 500ms stable debounce window
     };
 
     window.addEventListener('sync_queue_updated', handleRefresh);
@@ -86,12 +108,14 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
       window.removeEventListener('newTransaction', handleRefresh);
       window.removeEventListener('newLocalTransaction', handleRefresh);
     };
-  }, [queryClient]);
+  }, [queryClient, user?.id]);
 
+  const hasRunFeederRef = useRef(false);
   const loadNativeTransactions = useCallback(async () => {
-    if (!user?.id || feederInProgressRef.current) return;
+    if (!user?.id || feederInProgressRef.current || hasRunFeederRef.current) return;
 
     try {
+      hasRunFeederRef.current = true;
       feederInProgressRef.current = true;
       setIsLoadingNativeTransactions(true);
       const PAGE_SIZE = 50;
@@ -131,9 +155,9 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
             };
             await saveLocalTransaction(payload, true);
             
-            // Auto-map if expense
+            // 🚀 [STORM_FIX] Pass silent: true to mapping to prevent event flood
             if (payload.type === 'expense') {
-              void autoMapTransactionToGroup(payload);
+              void autoMapTransactionToGroup(payload, true);
             }
           }
         }
@@ -146,11 +170,8 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
         await new Promise(resolve => setTimeout(() => resolve(undefined), 0));
       }
 
-      // 🚀 [SETTLED_SIGNAL] Dispatch exactly one event after feeding is complete
-      window.dispatchEvent(new Event('sync_queue_updated'));
-
-      // ✅ FIX: Manually invalidate the ledger to force a refetch after silent hydration
-      queryClient.invalidateQueries({ queryKey: ['ledger-transactions', user?.id] });
+      // 🚀 [LOOP_FIX] Single dispatch signal after batch is complete
+      window.dispatchEvent(new Event('newLocalTransaction'));
 
     } catch (err) {
       console.error('Bridge feeder error:', err);
@@ -166,7 +187,8 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
     let isMounted = true;
 
     const handleNewLocal = (event: any) => {
-      queryClient.invalidateQueries({ queryKey: ['ledger-transactions', user?.id] });
+      // 🛡️ [REDUNDANCY_FIX] Removed immediate invalidation.
+      // handleRefresh already listens for 'newLocalTransaction' and handles debounced invalidation.
     };
 
     const handleNewSms = async (data: any) => {
@@ -178,6 +200,8 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
           if (isValidSmsTransaction(tx)) {
             const unified = toUnifiedNativeEntry(tx);
             
+            // 🚀 [STORM_FIX] Use silent: true to suppress event flood from saveLocalTransaction.
+            // Dispatch a manual DOM event which is caught and debounced by handleRefresh.
             await saveLocalTransaction({
               id: unified.id,
               user_id: user.id,
@@ -190,9 +214,9 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
               sms_hash: unified.smsHash,
               entry_source: 'sms',
               sync_status: 'completed'
-            });
+            }, true); // SILENT
 
-            queryClient.invalidateQueries({ queryKey: ['ledger-transactions', user?.id] });
+            window.dispatchEvent(new Event('newLocalTransaction'));
           }
         } catch (err) {
           console.error('Realtime SMS ingestion failed:', err);
@@ -245,7 +269,7 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
         return {
           ...e,
           loanDetails: rawLoanDetails ? {
-            principal: Number(rawLoanDetails.loanAmount || rawLoanDetails.principal || 0),
+            principal: Number(rawLoanDetails.principal || 0),
             annualInterestRate: Number(rawLoanDetails.interestRateAnnual || rawLoanDetails.annualInterestRate || 0),
             totalMonths: Number(rawLoanDetails.tenureMonths || rawLoanDetails.totalMonths || 0),
             startDate: rawLoanDetails.startDate || rawLoanDetails.start_date,
@@ -295,6 +319,9 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
     );
   }, [currentMonthYear, salaryData]);
 
+  // 🛡️ [STRESS_DATA_MEMO]
+  // Injected data is merged ONLY at the derived memo layer.
+  // Never persists to database.
   const allUnifiedTransactions = useMemo(() => {
     const entriesToMerge: UnifiedLedgerEntry[] = [...ledgerTransactions];
     
@@ -305,8 +332,17 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
     }
 
     const merged = mergeUnifiedLedgerEntries(entriesToMerge).map(toDashboardTransaction);
+    
+    // 🛡️ [SECURITY_GATE] Strictly Dev-Only Injection
+    if (import.meta.env.DEV && manualInjections.length > 0) {
+      console.log(`🧪 [FORENSIC_STRESS] Merging ${manualInjections.length} mock records into unified state.`);
+      return [...merged, ...manualInjections].sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    }
+    
     return merged;
-  }, [ledgerTransactions, salaryTransaction, salaryData, currentMonthYear, isAndroid]);
+  }, [ledgerTransactions, salaryTransaction, salaryData, currentMonthYear, isAndroid, manualInjections]);
 
   const currentMonthExpenses = useMemo(() => {
     const transactions = allUnifiedTransactions || [];
@@ -360,6 +396,7 @@ export const useDashboardData = (user: any, canReadSms: boolean, ledgerWindow: L
     budgetData,
     ledgerTransactions,
     emiList,
+    subscriptionList,
     isLoadingNativeTransactions,
     loadingExpenses,
     loadNativeTransactions,

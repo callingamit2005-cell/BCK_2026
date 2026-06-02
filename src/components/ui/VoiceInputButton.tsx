@@ -143,7 +143,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       type="button"
       variant="ghost"
       size="icon"
-      className={`rounded-full ${isListening ? 'bg-red-100 text-red-600 animate-pulse' : ''} ${className}`}
+      className={`rounded-full ${isListening ? 'bg-foreground text-surface animate-pulse' : ''} ${className}`}
       onClick={toggleListening}
       title={isListening ? tSafe('voice.stop', 'Stop') : tSafe('voice.start', 'Start')}
     >

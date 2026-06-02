@@ -1,34 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from "@/lib/utils";
 
 interface VoiceInputProps {
   onResult: (val: string) => void;
   className?: string;
+  isListening?: boolean;
+  setIsListening?: (val: boolean) => void;
 }
 
-const VoiceInput = ({ onResult, className }: VoiceInputProps) => {
-  const [isListening, setIsListening] = useState(false);
+const VoiceInput = ({ onResult, className, isListening: propIsListening, setIsListening: propSetIsListening }: VoiceInputProps) => {
+  const [internalIsListening, setInternalIsListening] = useState(false);
+  
+  // 🛡️ [SYNC_CONROLL] Link internal state to parent control
+  const isListening = propIsListening !== undefined ? propIsListening : internalIsListening;
+  const setIsListening = propSetIsListening || setInternalIsListening;
+
   const { toast } = useToast();
   const { t } = useLanguage();
 
+  // 🛡️ [CONCURRENCY_GUARD] 
+  // Prevents multiple start attempts during async permission/initialization phase.
+  const isStartingRef = useRef(false);
+  const isListeningRef = useRef(false);
+  const autoStartConsumedRef = useRef<string | null>(null);
+
   const startListening = async () => {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const permissionStatus = await SpeechRecognition.requestPermissions();
-        if (permissionStatus.speechRecognition !== 'granted') {
+    if (isStartingRef.current || isListeningRef.current) {
+      return;
+    }
+
+    try {
+      isStartingRef.current = true;
+      if (Capacitor.isNativePlatform()) {
+        const currentStatus = await SpeechRecognition.checkPermissions();
+        let isGranted = currentStatus.speechRecognition === 'granted';
+        
+        if (!isGranted) {
+          const permissionStatus = await SpeechRecognition.requestPermissions();
+          isGranted = permissionStatus.speechRecognition === 'granted';
+        }
+
+        if (!isGranted) {
           toast({
             title: t('voiceInput.permissionDenied'),
             description: t('voiceInput.allowMic'),
             variant: "destructive"
           });
+          setIsListening(false);
           return;
         }
 
         setIsListening(true);
+        isListeningRef.current = true;
+        
         const result = await SpeechRecognition.start({
           language: 'en-IN',
           maxResults: 1,
@@ -40,73 +69,90 @@ const VoiceInput = ({ onResult, className }: VoiceInputProps) => {
         if (transcript) {
           onResult(transcript);
         }
-      } catch (e: any) {
-        console.error(e);
-        toast({
-          title: t('voiceInput.permissionDenied'),
-          description: t('voiceInput.allowMic'),
-          variant: "destructive"
-        });
-      } finally {
-        setIsListening(false);
+      } else {
+        // @ts-ignore
+        const SpeechRecognitionWeb = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognitionWeb) {
+          toast({ 
+            title: t('voiceInput.errorTitle'), 
+            description: t('voiceInput.browserNotSupported'), 
+            variant: "destructive" 
+          });
+          return;
+        }
+
+        const recognition = new SpeechRecognitionWeb();
+        recognition.lang = 'en-IN';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+          setIsListening(true);
+          isListeningRef.current = true;
+        };
+        
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          const cleanText = transcript.replace(/\.$/, '').trim(); 
+          onResult(cleanText);
+          setIsListening(false);
+          isListeningRef.current = false;
+        };
+
+        recognition.onerror = (e: any) => {
+          console.error("[VoiceInput] Web Error:", e);
+          setIsListening(false);
+          isListeningRef.current = false;
+          if (e.error === 'not-allowed') {
+             toast({ 
+               title: t('voiceInput.permissionDenied'), 
+               description: t('voiceInput.allowMic'), 
+               variant: "destructive" 
+             });
+          }
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+          isListeningRef.current = false;
+        };
+        recognition.start();
       }
-      return;
-    }
-
-    // @ts-ignore
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      toast({ 
-        title: t('voiceInput.errorTitle'), 
-        description: t('voiceInput.browserNotSupported'), 
-        variant: "destructive" 
+    } catch (e: any) {
+      console.error(`[VoiceInput] Error:`, e);
+      toast({
+        title: t('voiceInput.permissionDenied'),
+        description: t('voiceInput.allowMic'),
+        variant: "destructive"
       });
-      return;
+      setIsListening(false);
+      isListeningRef.current = false;
+    } finally {
+      isStartingRef.current = false;
     }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-IN'; // Use 'hi-IN' if you want pure Hindi, 'en-IN' handles numbers better
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setIsListening(true);
-    
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      // Clean up the text (remove full stops, trim)
-      const cleanText = transcript.replace(/\.$/, '').trim(); 
-      onResult(cleanText);
-      setIsListening(false);
-    };
-
-    recognition.onerror = (e: any) => {
-      console.error(e);
-      setIsListening(false);
-      // Don't spam toast on simple no-speech errors
-      if (e.error === 'not-allowed') {
-         toast({ 
-           title: t('voiceInput.permissionDenied'), 
-           description: t('voiceInput.allowMic'), 
-           variant: "destructive" 
-         });
-      }
-    };
-
-    recognition.onend = () => setIsListening(false);
-
-    recognition.start();
   };
+
+  // 🚀 [AUTO_START_SYNC] 
+  // Watch for parent signaling isListening: true.
+  // Use a ref to ensure we consume the signal only once per true transition.
+  useEffect(() => {
+    if (propIsListening && !isListeningRef.current && !isStartingRef.current) {
+      startListening();
+    }
+  }, [propIsListening]);
 
   return (
     <button
       type="button"
       onClick={startListening}
-      className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all ${
-        isListening ? 'bg-red-100 text-red-600 animate-pulse' : 'text-gray-400 hover:text-purple-600 hover:bg-purple-50'
-      } ${className}`}
+      className={cn(
+        "relative rounded-full transition-all flex items-center justify-center",
+        isListening ? 'bg-primary text-primary-foreground animate-pulse scale-110 shadow-premium' : 'bg-muted/20 text-muted-foreground hover:bg-muted/40',
+        className
+      )}
     >
-      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+      {isListening ? <MicOff className="h-1/3 w-1/3" /> : <Mic className="h-1/3 w-1/3" />}
     </button>
   );
 };

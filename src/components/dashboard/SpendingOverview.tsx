@@ -1,13 +1,16 @@
-// src/features/analytics/SpendingOverview.tsx
-// Polished Enterprise‑Grade UI with Tailwind CSS
-// Logic untouched – only JSX/className enhancements
+/**
+ * SpendingOverview.tsx - BachatKaro Premium Fintech Edition
+ * UI: High-Performance Institutional Data Visualization.
+ * 🛡️ LOGIC LOCK: Data aggregation, sorting, and chart logic 100% untouched.
+ */
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { Wallet } from 'lucide-react';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { Wallet, PieChart as PieChartIcon, BarChart3, Info } from 'lucide-react';
 import { formatCurrency } from '@/utils/currencyFormatter';
+import { cn } from '@/lib/utils';
 
 interface Expense {
   id: string;
@@ -22,20 +25,17 @@ interface SpendingOverviewProps {
   loading: boolean;
 }
 
-// Enterprise‑grade monochrome palette
-const MONOCHROME_COLORS = [
-  '#111111', // foreground
-  '#666666', // text-secondary
-  '#999999', // text-muted
-  '#333333',
-  '#4D4D4D',
-  '#808080',
-  '#B3B3B3',
-  '#CCCCCC',
+// Institutional Chart Palette mapped to CSS variables
+const CHART_COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
 ];
 
 const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
-  // 1. Category data for pie chart
+  // 1. Category data for pie chart (Locked)
   const categoryData = useMemo(() => {
     const grouped: Record<string, number> = {};
     expenses.forEach((e) => {
@@ -45,12 +45,12 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
       .map(([name, value], index) => ({
         name,
         value,
-        color: MONOCHROME_COLORS[index % MONOCHROME_COLORS.length],
+        color: CHART_COLORS[index % CHART_COLORS.length],
       }))
-      .sort((a, b) => b.value - a.value); // sort descending
+      .sort((a, b) => b.value - a.value);
   }, [expenses]);
 
-  // 2. Payment mode data for bar chart
+  // 2. Payment mode data for bar chart (Locked)
   const paymentModeData = useMemo(() => {
     const grouped: Record<string, number> = {};
     expenses.forEach((e) => {
@@ -61,12 +61,12 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
       .map(([name, value], index) => ({
         name,
         value,
-        color: MONOCHROME_COLORS[(index + 3) % MONOCHROME_COLORS.length], // shift index for variety
+        color: CHART_COLORS[(index + 2) % CHART_COLORS.length],
       }))
       .sort((a, b) => b.value - a.value);
   }, [expenses]);
 
-  // Chart configs for tooltip (needed by ChartContainer)
+  // Chart configs (Locked)
   const categoryChartConfig = useMemo(() => {
     const config: Record<string, { label: string; color: string }> = {};
     categoryData.forEach((item) => {
@@ -89,28 +89,12 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-foreground">
-            Spending Overview
-          </h2>
-          <div className="h-px flex-1 bg-border" />
+          <h2 className="text-xl font-bold text-foreground tracking-tight">Spending Overview</h2>
+          <div className="h-px flex-1 bg-border/60" />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-surface rounded-2xl shadow-sm border border-border">
-            <CardContent className="h-64 flex items-center justify-center">
-              <div className="animate-pulse space-y-4 w-3/4">
-                <div className="h-4 bg-background rounded w-3/4 mx-auto"></div>
-                <div className="h-32 bg-background rounded-xl"></div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-surface rounded-2xl shadow-sm border border-border">
-            <CardContent className="h-64 flex items-center justify-center">
-              <div className="animate-pulse space-y-4 w-3/4">
-                <div className="h-4 bg-background rounded w-3/4 mx-auto"></div>
-                <div className="h-32 bg-background rounded-xl"></div>
-              </div>
-            </CardContent>
-          </Card>
+          <Card className="fintech-card h-80 animate-pulse bg-muted/20" />
+          <Card className="fintech-card h-80 animate-pulse bg-muted/20" />
         </div>
       </div>
     );
@@ -120,16 +104,16 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-foreground">
-            Spending Overview
-          </h2>
-          <div className="h-px flex-1 bg-border" />
+          <h2 className="text-xl font-bold text-foreground tracking-tight">Spending Overview</h2>
+          <div className="h-px flex-1 bg-border/60" />
         </div>
-        <Card className="bg-surface rounded-2xl shadow-sm border border-border">
-          <CardContent className="py-20 text-center text-text-secondary">
-            <Wallet className="h-16 w-16 mx-auto mb-6 text-text-muted" />
-            <p className="text-lg font-bold text-foreground mb-1 uppercase tracking-tight">Zero Records</p>
-            <p className="text-[11px] font-bold uppercase tracking-widest">Add transactions to generate intelligence</p>
+        <Card className="fintech-card">
+          <CardContent className="py-20 text-center">
+            <div className="h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-6 border border-border/50">
+              <Wallet className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <p className="text-lg font-bold text-foreground mb-1">No Spending Data</p>
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Add transactions to generate intelligence</p>
           </CardContent>
         </Card>
       </div>
@@ -138,77 +122,89 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <h2 className="text-xl font-bold text-foreground">
-          Spending Overview
-        </h2>
-        <div className="h-px flex-1 bg-border" />
+      <div className="flex items-center gap-4">
+        <h2 className="text-xl font-bold text-foreground tracking-tight">Spending Overview</h2>
+        <div className="h-px flex-1 bg-border/60" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Chart – Category Distribution */}
-        <Card className="bg-surface rounded-[24px] shadow-sm border border-border overflow-hidden">
-          <CardHeader className="pb-4 border-b border-border bg-background">
-            <CardTitle className="text-sm font-bold text-foreground uppercase tracking-widest">
+        <Card className="fintech-card overflow-hidden">
+          <CardHeader className="p-5 border-b border-border/50 bg-muted/20 flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <PieChartIcon className="h-3.5 w-3.5 text-primary" />
               Category Matrix
             </CardTitle>
+            <div className="h-7 px-2.5 bg-surface border border-border rounded-md flex items-center gap-1.5 shadow-sm">
+              <span className="text-[10px] font-bold text-foreground font-mono">{categoryData.length}</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Sectors</span>
+            </div>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="flex flex-col items-center gap-8">
-              <ChartContainer config={categoryChartConfig} className="h-64 w-64 flex-shrink-0">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={96}
-                    paddingAngle={2}
-                    dataKey="value"
-                    strokeWidth={4}
-                    stroke="hsl(var(--background))"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        formatter={(value) => (
-                          <span className="font-mono font-bold text-foreground">{formatCurrency(Number(value))}</span>
-                        )}
-                      />
-                    }
-                  />
-                </PieChart>
-              </ChartContainer>
+            <div className="flex flex-col xl:flex-row items-center gap-8">
+              <div className="relative h-64 w-64 flex-shrink-0">
+                <ChartContainer config={categoryChartConfig} className="h-full w-full">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={3}
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="bg-surface/95 backdrop-blur-md border-border shadow-premium rounded-xl"
+                          formatter={(value) => (
+                            <span className="font-mono font-bold text-foreground">{formatCurrency(Number(value))}</span>
+                          )}
+                        />
+                      }
+                    />
+                  </PieChart>
+                </ChartContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total</span>
+                  <span className="text-xl font-bold text-foreground font-mono tracking-tighter">
+                    ₹{(total / 1000).toFixed(1)}k
+                  </span>
+                </div>
+              </div>
 
-              <div className="flex-1 space-y-4 w-full">
+              <div className="flex-1 space-y-3.5 w-full">
                 {categoryData.slice(0, 5).map((item) => (
-                  <div key={item.name} className="flex items-center justify-between text-[12px]">
+                  <div key={item.name} className="flex items-center justify-between group">
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-3.5 h-3.5 rounded-sm shadow-sm"
+                        className="w-2.5 h-2.5 rounded-full shadow-sm group-hover:scale-125 transition-transform"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="text-text-secondary font-bold uppercase tracking-tight">{item.name}</span>
+                      <span className="text-xs text-muted-foreground font-medium group-hover:text-foreground transition-colors">{item.name}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="font-bold text-foreground font-mono">
+                      <span className="text-xs font-bold text-foreground font-mono tabular-nums">
                         {formatCurrency(item.value)}
                       </span>
-                      <span className="text-[10px] font-bold font-mono text-text-muted w-10 text-right">
+                      <span className="text-[10px] font-bold font-mono text-muted-foreground/60 w-8 text-right">
                         {((item.value / total) * 100).toFixed(0)}%
                       </span>
                     </div>
                   </div>
                 ))}
-                <div className="pt-4 mt-4 border-t border-border">
-                  <div className="flex items-center justify-between text-sm font-bold text-foreground uppercase tracking-widest">
-                    <span>Aggregate</span>
-                    <span className="text-lg font-mono">{formatCurrency(total)}</span>
-                  </div>
+                <div className="pt-4 mt-4 border-t border-border/50 flex items-center justify-between text-sm">
+                   <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                     <Info className="h-3.5 w-3.5" />
+                     <span>Net Volume</span>
+                   </div>
+                   <span className="font-bold text-foreground font-mono tracking-tight">{formatCurrency(total)}</span>
                 </div>
               </div>
             </div>
@@ -216,55 +212,59 @@ const SpendingOverview = ({ expenses, loading }: SpendingOverviewProps) => {
         </Card>
 
         {/* Bar Chart – Payment Mode Totals */}
-        <Card className="bg-surface rounded-[24px] shadow-sm border border-border overflow-hidden">
-          <CardHeader className="pb-4 border-b border-border bg-background">
-            <CardTitle className="text-sm font-bold text-foreground uppercase tracking-widest">
+        <Card className="fintech-card overflow-hidden">
+          <CardHeader className="p-5 border-b border-border/50 bg-muted/20 flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <BarChart3 className="h-3.5 w-3.5 text-primary" />
               Payment Velocity
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <ChartContainer config={paymentChartConfig} className="h-64 w-full">
-              <BarChart
-                data={paymentModeData}
-                layout="vertical"
-                margin={{ top: 0, right: 32, bottom: 0, left: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="4 4"
-                  horizontal={true}
-                  vertical={false}
-                  className="stroke-border"
-                />
-                <XAxis
-                  type="number"
-                  tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
-                  axisLine={false}
-                  tickLine={false}
-                  className="text-[10px] font-bold fill-text-muted uppercase"
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  width={90}
-                  className="text-[11px] fill-text-secondary font-bold uppercase tracking-tight"
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => (
-                        <span className="font-mono font-bold text-foreground">{formatCurrency(Number(value))}</span>
-                      )}
-                    />
-                  }
-                />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
-                  {paymentModeData.map((entry, index) => (
-                    <Cell key={`bar-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={paymentModeData}
+                  layout="vertical"
+                  margin={{ top: 5, right: 40, bottom: 5, left: 10 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="4 4"
+                    horizontal={true}
+                    vertical={false}
+                    className="stroke-muted/30"
+                  />
+                  <XAxis
+                    type="number"
+                    tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+                    axisLine={false}
+                    tickLine={false}
+                    className="text-[10px] font-bold fill-muted-foreground font-mono"
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    width={80}
+                    className="text-[10px] fill-muted-foreground font-bold uppercase tracking-tight"
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        className="bg-surface/95 backdrop-blur-md border-border shadow-premium rounded-xl"
+                        formatter={(value) => (
+                          <span className="font-mono font-bold text-foreground">{formatCurrency(Number(value))}</span>
+                        )}
+                      />
+                    }
+                  />
+                  <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={20}>
+                    {paymentModeData.map((entry, index) => (
+                      <Cell key={`bar-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>

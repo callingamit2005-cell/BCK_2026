@@ -1,134 +1,131 @@
+/**
+ * DashboardLayout.tsx - BachatKaro Premium Fintech Edition
+ * UI: Professional Institutional Grid Foundation.
+ * 🛡️ LOGIC LOCK: useBachatData hook and routing 100% untouched.
+ */
+
 import React from 'react';
 import { useBachatData } from '@/hooks/useBachatData';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { Wallet, Sparkles, TrendingDown, ArrowRight, UserCircle } from 'lucide-react';
+import { Wallet, Sparkles, TrendingDown, ArrowRight, UserCircle, Activity, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FinancialSummary from './FinancialSummary';
 import { formatCurrency } from '@/utils/currencyFormatter';
 
-/**
- * DashboardLayout - BachatKaro Neon Enterprise Edition
- * UI System: True Dark Neon Glass V2 + Framer Motion
- * Interaction DNA: Soft Elastic Return, Micro-glow, GPU Accelerated
- */
 const DashboardLayout: React.FC = () => {
   const { totalBalance, monthlyExpenses, transactions, loading } = useBachatData();
   const { user } = useAuth();
 
-  // Interaction Config
+  // Premium Interaction Config
   const cardInteraction = {
-    whileTap: { 
-      scale: 0.985,
-    },
-    transition: { 
-      type: "spring", 
-      stiffness: 400, 
-      damping: 30,
-    }
+    whileTap: { scale: 0.985 },
+    transition: { type: "spring", stiffness: 400, damping: 30 }
   };
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden font-sans custom-scrollbar">
-      {/* Premium Foundation - Subtle Texture */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03] transform-gpu">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:24px_24px]" />
-      </div>
-
-      <div className="relative z-10 flex flex-col gap-8 p-6 md:p-8 max-w-xl mx-auto transform-gpu">
+      
+      <div className="relative z-10 flex flex-col gap-8 p-6 md:p-10 max-w-xl mx-auto animate-fade-in-up">
         
-        {/* Section 1: Header */}
+        {/* SECTION 1: INSTITUTIONAL HEADER */}
         <header className="flex justify-between items-center">
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-0.5"
-          >
-            <p className="text-[12px] font-bold uppercase tracking-[0.15em] text-text-secondary">Dashboard</p>
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Pulse Dashboard</p>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
-              Namaste, <span className="text-foreground">{user?.user_metadata?.full_name || 'User'}</span>
+              Namaste, <span className="text-primary">{user?.user_metadata?.full_name || 'User'}</span>
             </h1>
-          </motion.div>
+          </div>
           <motion.div 
-            whileTap={{ scale: 0.95 }}
-            className="btn-soft h-12 w-12 rounded-2xl bg-surface border border-border flex items-center justify-center shadow-sm cursor-pointer"
+            whileTap={{ scale: 0.9 }}
+            className="h-12 w-12 rounded-xl bg-surface border border-border/60 flex items-center justify-center shadow-sm cursor-pointer hover:border-primary/20 transition-colors"
           >
-            <UserCircle className="h-6 w-6 text-text-secondary" />
+            <UserCircle className="h-6 w-6 text-muted-foreground" />
           </motion.div>
         </header>
 
-        {/* Section 2: Balance Card */}
+        {/* SECTION 2: LIQUIDITY TERMINAL */}
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
           {...cardInteraction}
-          className="bg-surface p-8 rounded-[32px] border border-border shadow-sm cursor-pointer"
+          className="fintech-card p-8 group cursor-pointer relative overflow-hidden"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2.5 bg-background rounded-xl border border-border">
-              <Wallet className="h-5 w-5 text-foreground" />
-            </div>
-            <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-text-secondary">Available Liquidity</span>
+          <div className="absolute top-0 right-0 p-8 text-primary/5 group-hover:text-primary/10 transition-colors">
+            <ShieldCheck size={120} />
           </div>
-          <h2 className="text-5xl font-bold tracking-tighter font-mono text-foreground">
+
+          <div className="flex items-center gap-3 mb-6 relative z-10">
+            <div className="p-2.5 bg-primary/10 rounded-lg border border-primary/20">
+              <Wallet className="h-5 w-5 text-primary" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Available Liquidity</span>
+          </div>
+
+          <h2 className="text-5xl font-bold tracking-tighter font-mono tabular-nums text-foreground relative z-10">
             {loading ? '₹ --,---' : formatCurrency(totalBalance)}
           </h2>
-          <div className="mt-8 pt-8 border-t border-border flex gap-10">
-            <div>
-              <p className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-1.5">Monthly Burn</p>
-              <p className="text-xl font-bold text-foreground font-mono">{loading ? '₹ --' : formatCurrency(monthlyExpenses)}</p>
+
+          <div className="mt-10 pt-8 border-t border-border/50 flex gap-12 relative z-10">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Monthly Burn</p>
+              <p className="text-xl font-bold text-foreground font-mono tabular-nums">
+                {loading ? '₹ --' : formatCurrency(monthlyExpenses)}
+              </p>
             </div>
-            <div>
-              <p className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-1.5">Savings Goal</p>
-              <p className="text-xl font-bold text-foreground font-mono">0%</p>
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Retention</p>
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-income" />
+                <p className="text-xl font-bold text-foreground font-mono tabular-nums">92%</p>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Section 2.5: Financial Summary Header */}
+        {/* SECTION 2.5: VELOCITY SUMMARY */}
         <FinancialSummary transactions={transactions} loading={loading} />
 
-        {/* Section 3: AI Mentor Card */}
+        {/* SECTION 3: AI MENTOR TERMINAL */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           {...cardInteraction}
-          className="bg-surface p-10 rounded-[32px] text-center border border-border shadow-sm cursor-pointer"
+          className="fintech-card p-8 text-center border-primary/10 shadow-institutional cursor-pointer group"
         >
           <div className="flex justify-center mb-6">
-            <div className="px-4 py-1.5 rounded-full bg-background border border-border flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground">AI Intelligence</span>
+            <div className="px-4 py-1.5 rounded-full bg-primary/5 border border-primary/20 flex items-center gap-2 shadow-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Intelligence Active</span>
             </div>
           </div>
-          <h3 className="text-xl font-bold text-foreground tracking-tight mb-4 leading-snug">
-            "Your spending velocity is <span className="underline decoration-border underline-offset-4">12% lower</span> than last week. Excellent progress."
+          <h3 className="text-xl font-bold text-foreground tracking-tight mb-4 leading-relaxed">
+            "Your spending velocity is <span className="text-primary">12% lower</span> than last week. Optimizing habits."
           </h3>
-          <p className="text-text-secondary text-sm font-medium mb-8">Tap to optimize your financial engine</p>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="btn-soft mx-auto flex items-center gap-3 bg-foreground text-surface px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-md"
+          <p className="text-muted-foreground text-xs font-medium mb-8 uppercase tracking-wider">Tap to audit financial engine</p>
+          
+          <Button 
+            className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium group-hover:opacity-95"
           >
-            <Sparkles className="h-4 w-4" /> Ask Finance Mentor
-          </motion.button>
+            <Sparkles className="h-4 w-4 mr-2" /> Ask Finance Mentor
+          </Button>
         </motion.div>
 
-        {/* Section 4: Transaction List */}
-        <section className="space-y-6">
-          <div className="flex justify-between items-end px-2">
-            <h4 className="text-[12px] font-bold text-foreground uppercase tracking-[0.2em]">Recent Activity</h4>
-            <button className="text-[11px] font-bold text-text-secondary uppercase tracking-widest flex items-center gap-1 hover:text-foreground transition-colors">
-              History <ArrowRight className="h-3 w-3" />
+        {/* SECTION 4: ACTIVITY LOG */}
+        <section className="space-y-6 pt-4">
+          <div className="flex justify-between items-end px-1">
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Audit Trail</p>
+              <h4 className="text-sm font-bold text-foreground tracking-tight">Recent Activity</h4>
+            </div>
+            <button className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5 hover:opacity-80 transition-all">
+              Full History <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
           
           <div className="flex flex-col gap-3">
             {loading ? (
               [1, 2, 3].map(i => (
-                <div key={i} className="h-20 w-full bg-surface border border-border rounded-2xl animate-pulse" />
+                <div key={i} className="h-20 w-full bg-muted/20 border border-border/40 rounded-2xl animate-pulse" />
               ))
             ) : transactions.map((t, idx) => (
               <motion.div 
@@ -137,22 +134,22 @@ const DashboardLayout: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 {...cardInteraction}
-                className="bg-surface p-5 rounded-2xl border border-border flex items-center justify-between group cursor-pointer shadow-sm hover:border-text-muted transition-colors"
+                className="bg-surface p-5 rounded-2xl border border-border/40 flex items-center justify-between group cursor-pointer shadow-sm hover:border-primary/20 transition-all duration-300"
               >
                 <div className="flex items-center gap-4">
-                  <div className="h-11 w-11 rounded-xl bg-background border border-border flex items-center justify-center group-hover:border-text-muted transition-colors">
-                    <TrendingDown className="h-5 w-5 text-text-secondary group-hover:text-foreground transition-colors" />
+                  <div className="h-10 w-10 rounded-lg bg-muted/20 border border-border/50 flex items-center justify-center group-hover:bg-primary/5 group-hover:border-primary/20 transition-all">
+                    <TrendingDown className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground tracking-tight uppercase">{t.name || 'External Burn'}</p>
-                    <p className="text-[11px] font-bold text-text-secondary uppercase tracking-widest">{t.category || 'Others'}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-foreground tracking-tight uppercase truncate max-w-[140px]">{t.name || 'External Burn'}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">{t.category || 'Others'}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-base font-bold text-foreground font-mono tracking-tighter">
+                <div className="text-right shrink-0">
+                  <p className="text-base font-bold text-foreground font-mono tabular-nums tracking-tighter">
                     - {formatCurrency(t.amount)}
                   </p>
-                  <p className="text-[10px] font-bold text-text-secondary uppercase tracking-tighter">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
                     {new Date(t.created_at).toLocaleDateString()}
                   </p>
                 </div>

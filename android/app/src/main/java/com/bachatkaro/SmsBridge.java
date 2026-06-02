@@ -25,7 +25,29 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.List;
 
-@CapacitorPlugin(name = "SmsBridge")
+import com.getcapacitor.annotation.Permission;
+
+import android.content.Intent;
+import android.net.Uri;
+
+@CapacitorPlugin(
+    name = "SmsBridge",
+    permissions = {
+        @Permission(
+            alias = "sms",
+            strings = {
+                Manifest.permission.READ_SMS,
+                Manifest.permission.RECEIVE_SMS
+            }
+        ),
+        @Permission(
+            alias = "notifications",
+            strings = {
+                "android.permission.POST_NOTIFICATIONS"
+            }
+        )
+    }
+)
 public class SmsBridge extends Plugin implements SmsTransactionEngine.Listener {
 
     private static final String TAG = "SmsBridge";
@@ -73,6 +95,83 @@ public class SmsBridge extends Plugin implements SmsTransactionEngine.Listener {
             ret.put("status", "denied");
         }
         call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void requestSmsPermission(PluginCall call) {
+        if (getContext().checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
+                && getContext().checkSelfPermission(Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED) {
+            JSObject ret = new JSObject();
+            ret.put("status", "granted");
+            call.resolve(ret);
+        } else {
+            requestPermissionForAlias("sms", call, "smsPermissionCallback");
+        }
+    }
+
+    @com.getcapacitor.annotation.PermissionCallback
+    private void smsPermissionCallback(PluginCall call) {
+        boolean granted = getContext().checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
+                && getContext().checkSelfPermission(Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED;
+
+        JSObject ret = new JSObject();
+        if (granted) {
+            ret.put("status", "granted");
+        } else {
+            ret.put("status", "denied");
+        }
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void checkNotificationPermission(PluginCall call) {
+        JSObject ret = new JSObject();
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            boolean granted = getContext().checkSelfPermission("android.permission.POST_NOTIFICATIONS") == PackageManager.PERMISSION_GRANTED;
+            ret.put("status", granted ? "granted" : "denied");
+        } else {
+            ret.put("status", "granted");
+        }
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void requestNotificationPermission(PluginCall call) {
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            if (getContext().checkSelfPermission("android.permission.POST_NOTIFICATIONS") == PackageManager.PERMISSION_GRANTED) {
+                JSObject ret = new JSObject();
+                ret.put("status", "granted");
+                call.resolve(ret);
+            } else {
+                requestPermissionForAlias("notifications", call, "notificationPermissionCallback");
+            }
+        } else {
+            JSObject ret = new JSObject();
+            ret.put("status", "granted");
+            call.resolve(ret);
+        }
+    }
+
+    @com.getcapacitor.annotation.PermissionCallback
+    private void notificationPermissionCallback(PluginCall call) {
+        boolean granted = getContext().checkSelfPermission("android.permission.POST_NOTIFICATIONS") == PackageManager.PERMISSION_GRANTED;
+        JSObject ret = new JSObject();
+        ret.put("status", granted ? "granted" : "denied");
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void openAppSettings(PluginCall call) {
+        try {
+            Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            Uri uri = Uri.fromParts("package", getContext().getPackageName(), null);
+            intent.setData(uri);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Could not open settings", e);
+        }
     }
 
     @PluginMethod
@@ -241,16 +340,15 @@ public class SmsBridge extends Plugin implements SmsTransactionEngine.Listener {
             try {
                 Context context = getContext().getApplicationContext();
 
-                // Compute first day of 6 months ago (00:00:00.000)
+                // Compute start bound based on 'days' parameter (default 180)
+                int days = call.getInt("days", 180);
                 Calendar cal = Calendar.getInstance();
-                cal.set(Calendar.DAY_OF_MONTH, 1);
                 cal.set(Calendar.HOUR_OF_DAY, 0);
                 cal.set(Calendar.MINUTE, 0);
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
-                cal.add(Calendar.MONTH, -6);
+                cal.add(Calendar.DAY_OF_MONTH, -days);
                 long startOfSixMonthsAgo = cal.getTimeInMillis();
-
                 // Upper bound: current time
                 long currentTime = System.currentTimeMillis();
 

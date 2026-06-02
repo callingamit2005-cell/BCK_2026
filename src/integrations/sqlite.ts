@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
+import { generateCanonicalKey } from '@/utils/dateFilters';
 
 const sqlite = new SQLiteConnection(CapacitorSQLite);
 let db: SQLiteDBConnection | null = null;
@@ -127,6 +128,16 @@ export const initSQLite = async () => {
         CREATE INDEX IF NOT EXISTS idx_settlement_intents_status ON settlement_intents(status);
       `;
       await db.execute(createTables);
+
+      // 🛡️ [DATABASE_JOURNAL_ALIGNMENT]
+      // Force WAL mode to match the Native SMS Engine (TransactionDbHelper.kt).
+      // This prevents locking conflicts when both JS and Native layers access the DB.
+      try {
+        await db.execute("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;");
+        console.log("🛡️ [SQLITE_INIT] Journal mode set to WAL (Aligned with Native)");
+      } catch (pragmaErr) {
+        console.warn("⚠️ [SQLITE_INIT] PRAGMA WAL failed:", pragmaErr);
+      }
 
       // 🛡️ [FORENSIC_SCHEMA_SYNC]
       // Comprehensive migration map covering ALL tables in the master contract.
@@ -287,25 +298,33 @@ export const initSQLite = async () => {
         }
       }
 
-      // 🛡️ [DETERMINISTIC_DATA_REPAIR_V6]
+      // 🛡️ [DETERMINISTIC_DATA_REPAIR_V7]
       console.log("🛠️ [SQLITE_REPAIR] Starting forensic data alignment...");
       
       // 1. Recover sources
       await db.run(`UPDATE transactions SET entry_source = 'manual' WHERE (entry_source IS NULL OR entry_source = 'sms') AND sms_hash LIKE 'man:%'`);
       await db.run(`UPDATE transactions SET entry_source = 'voice' WHERE (entry_source IS NULL OR entry_source = 'sms') AND sms_hash LIKE 'voice:%'`);
 
-      // 2. Fix Amount Scale
-      await db.run(`UPDATE transactions SET amount = amount * 100 WHERE (entry_source IN ('manual', 'voice')) AND amount > 0 AND amount < 10000`);
-
-      // 3. Backfill canonical_key (UTC safe)
-      await db.run(`
-        UPDATE transactions 
-        SET canonical_key = 'canon:' || amount || ':' || 
-            strftime('%s', REPLACE(REPLACE(REPLACE(date, 'T', ' '), 'Z', ''), '+00:00', '')) || ':' || 
-            lower(replace(replace(replace(COALESCE(description, ''), ' ', ''), '.', ''), '-', '')) || ':' || 
-            type
-        WHERE canonical_key IS NULL
-      `);
+      // 2. Backfill canonical_key (JS Parity)
+      // 🛡️ [IDENTITY_PARITY_V2] 
+      // We use the JS generateCanonicalKey function to perform the backfill.
+      // This is slightly slower but ensures 100% de-duplication parity with the Cloud layer,
+      // as SQLite SQL lacks robust REGEXP_REPLACE capabilities.
+      const nullCanon = await db.query("SELECT id, user_id, amount, description, date, type FROM transactions WHERE canonical_key IS NULL");
+      if (nullCanon.values && nullCanon.values.length > 0) {
+        console.log(`🛠️ [SQLITE_REPAIR] Backfilling ${nullCanon.values.length} canonical keys via JS...`);
+        for (const row of nullCanon.values) {
+          const key = generateCanonicalKey({
+            amount: row.amount,
+            date: row.date,
+            payee: row.description || "",
+            type: row.type || "expense"
+          });
+          if (key) {
+            await db.run("UPDATE transactions SET canonical_key = ? WHERE id = ?", [key, row.id]);
+          }
+        }
+      }
 
       // 4. Purge duplicates (BACKWARD COMPATIBLE: No Window Functions / ROW_NUMBER)
       // Uses SQLite-native aggregate behavior to identify the latest record per canonical_key.
@@ -419,7 +438,12 @@ export const enqueueSync = async (tableName: string, operation: string, payload:
     await currentDb.run(`
       INSERT INTO sync_queue (id, table_name, operation, payload, idempotency_key, status) 
       VALUES (?, ?, ?, ?, ?, 'pending')
-      ON CONFLICT(idempotency_key) DO UPDATE SET status = 'pending', retry_count = 0;
+      ON CONFLICT(idempotency_key) DO UPDATE SET 
+        operation = excluded.operation,
+        payload = excluded.payload,
+        status = 'pending', 
+        retry_count = 0,
+        next_retry_at = CURRENT_TIMESTAMP;
     `, [getSafeUUID(), tableName, operation, JSON.stringify(payload), key]);
     if (!silent) {
       window.dispatchEvent(new Event('sync_queue_updated'));
@@ -444,19 +468,17 @@ export const saveLocalTransaction = async (tx: any, silent: boolean = false, syn
     const source = tx.entry_source || tx.source || 'sms';
     const isUserAction = source === 'manual' || source === 'voice' || source === 'paste';
     
-    const normAmount = Math.round(Number(tx.amount || 0));
-    const dateObj = tx.date ? new Date(tx.date) : new Date();
-    const ts = Math.floor(dateObj.getTime() / 1000);
-    const normPayee = (tx.description || tx.payee || "").toLowerCase().replace(/[\s\.-]/g, "");
-    
     const canonicalKey = tx.canonical_key || (isUserAction 
       ? `user_canon:${getSafeUUID()}` 
-      : `canon:${normAmount}:${ts}:${normPayee}:${tx.type || 'expense'}`);
+      : generateCanonicalKey({
+          amount: tx.amount,
+          date: tx.date,
+          payee: tx.description || tx.payee || "",
+          type: tx.type || "expense"
+        }));
 
     // Pass full tx to generator to ensure correct source detection
     const idempotencyKey = tx.idempotency_key || tx.idempotencyKey || await generateIdempotencyKey({ ...tx, entry_source: source });
-
-    console.log(`🧪 [SQLITE_SAVE_TRACE] Identity: ${idempotencyKey} Canon: ${canonicalKey} Source: ${source} ID: ${tx.id}`);
 
     const query = `
       INSERT INTO transactions (
@@ -488,7 +510,8 @@ export const saveLocalTransaction = async (tx: any, silent: boolean = false, syn
 
     // 🛡️ [PIPELINE_SYNCHRONIZATION]
     // Rule: Every new expense transaction (Manual, Voice, SMS) must attempt auto-mapping.
-    if (tx.type !== 'income' && !tx.is_deleted) {
+    // 🚀 [STORM_FIX] Respect silent flag: skip mapping during batch operations (restore/feeder).
+    if (!silent && tx.type !== 'income' && !tx.is_deleted) {
       try {
         const { autoMapTransactionToGroup } = await import('@/features/auto-group/AutoGroupMapper');
         // Ensure we pass the full resolved object for mapping with the PRE-SET ID
@@ -504,7 +527,6 @@ export const saveLocalTransaction = async (tx: any, silent: boolean = false, syn
     if (!silent) {
       window.dispatchEvent(new Event('newTransaction'));
       window.dispatchEvent(new Event('newLocalTransaction'));
-      console.log(`🔄 [SQLITE_REFRESH] Events dispatched for ID: ${tx.id}`);
     }
 
     return tx;

@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "@/contexts/LanguageContext"; // Aapka translation engine
-import { toast } from "sonner"; // Notification ke liye
+import { useLanguage } from "@/contexts/LanguageContext";
+import { toast } from "sonner";
 
 const LogoutButton = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -19,15 +19,13 @@ const LogoutButton = () => {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      
-      // 🚀 Step 1: Supabase ko bolna "Bye Bye"
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
-      // 🚀 Step 2: User ko Auth page par wapas bhejna
       toast.success(t('auth_logout_success', 'Successfully logged out!'));
       navigate("/auth", { replace: true });
-      
+
     } catch (error: any) {
       toast.error(error.message || "Logout failed");
     } finally {
@@ -40,15 +38,19 @@ const LogoutButton = () => {
       variant="ghost"
       onClick={handleLogout}
       disabled={isLoggingOut}
-      className="w-full justify-start gap-3 px-4 py-6 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all duration-300 group"
+      className="w-full justify-start gap-3 px-4 py-6 text-muted-foreground hover:text-foreground hover:bg-background rounded-2xl transition-all duration-200 group"
+      aria-label={isLoggingOut ? t('auth_logging_out', 'Logging out…') : t('auth_logout', 'Log out')}
     >
       {isLoggingOut ? (
-        <Loader2 className="h-5 w-5 animate-spin" />
+        <Loader2 className="h-5 w-5 animate-spin shrink-0" />
       ) : (
-        <LogOut className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+        /* Icon slides left on hover — correct direction for "exit" */
+        <LogOut className="h-5 w-5 shrink-0 group-hover:-translate-x-0.5 transition-transform duration-200" />
       )}
-      <span className="font-bold text-base">
-        {isLoggingOut ? t('auth_logging_out', 'Processing...') : t('auth_logout', 'Logout')}
+      <span className="font-semibold text-sm">
+        {isLoggingOut
+          ? t('auth_logging_out', 'Logging out…')
+          : t('auth_logout', 'Log out')}
       </span>
     </Button>
   );

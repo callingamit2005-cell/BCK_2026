@@ -16,45 +16,45 @@ const PricingComparison = () => {
   return (
     <section className="py-24 px-6 max-w-7xl mx-auto" id="pricing">
       <div className="text-center mb-16">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#666666] mb-6">
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-text-muted mb-6">
           <Sparkles className="h-3 w-3" />
           Comparison
         </div>
-        <h2 className="text-3xl md:text-5xl font-black text-[#111111] mb-6 tracking-tight uppercase">
+        <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6 tracking-tight uppercase">
           Standard vs Elite
         </h2>
-        <p className="text-[#999999] text-lg max-w-2xl mx-auto font-bold uppercase tracking-wide">
+        <p className="text-text-muted text-lg max-w-2xl mx-auto font-bold uppercase tracking-wide">
           Evaluate the features available in each service tier.
         </p>
       </div>
 
-      <div className="relative overflow-hidden rounded-[24px] border border-border bg-background backdrop-blur-xl shadow-sm">
+      <div className="relative overflow-hidden rounded-premium border border-border bg-background backdrop-blur-xl shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-background">
-                <th className="py-8 px-8 text-[10px] font-bold uppercase tracking-[0.2em] text-[#999999]">Capability</th>
-                <th className="py-8 px-8 text-[10px] font-bold uppercase tracking-[0.2em] text-[#999999]">Standard</th>
-                <th className="py-8 px-8 text-[10px] font-black uppercase tracking-[0.3em] text-[#111111]">Elite</th>
+                <th className="py-8 px-8 text-xs font-bold uppercase tracking-wider text-text-muted">Capability</th>
+                <th className="py-8 px-8 text-xs font-bold uppercase tracking-wider text-text-muted">Standard</th>
+                <th className="py-8 px-8 text-xs font-black uppercase tracking-wider text-foreground">Elite</th>
               </tr>
             </thead>
             <tbody className="divide-y border-border">
               {comparisonData.map((item, index) => (
                 <tr key={index} className="group hover:bg-black/[0.02] transition-colors">
-                  <td className="py-6 px-8 text-[#111111] font-bold text-sm uppercase tracking-widest">{item.feature}</td>
-                  <td className="py-6 px-8 text-[#999999] font-medium text-xs">
+                  <td className="py-6 px-8 text-foreground font-bold text-sm uppercase tracking-wider">{item.feature}</td>
+                  <td className="py-6 px-8 text-text-muted font-medium text-xs">
                     <div className="flex items-center gap-3">
                       {item.free === "Not Available" ? (
-                        <Minus className="h-4 w-4 text-[#999999]/20" />
+                        <Minus className="h-4 w-4 text-text-muted/20" />
                       ) : (
-                        <Check className="h-4 w-4 text-[#999999]/20" />
+                        <Check className="h-4 w-4 text-text-muted/20" />
                       )}
                       {item.free}
                     </div>
                   </td>
-                  <td className="py-6 px-8 text-[#111111] font-bold text-xs uppercase tracking-widest">
+                  <td className="py-6 px-8 text-foreground font-bold text-xs uppercase tracking-wider">
                     <div className="flex items-center gap-3">
-                      <Check className="h-4 w-4 text-[#111111]" />
+                      <Check className="h-4 w-4 text-foreground" />
                       {item.premium}
                     </div>
                   </td>
@@ -65,7 +65,7 @@ const PricingComparison = () => {
         </div>
         
         <div className="p-8 md:p-12 border-t border-border bg-background">
-          <p className="text-center text-[#999999] font-bold italic text-sm uppercase tracking-widest">
+          <p className="text-center text-text-muted font-bold italic text-sm uppercase tracking-wider">
             "All system capabilities are currently unlocked during the beta cycle."
           </p>
         </div>

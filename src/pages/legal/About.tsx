@@ -15,9 +15,9 @@ const About = () => {
         <div>
           <Link 
             to="/" 
-            className="inline-flex items-center gap-3 text-[#111111] font-black hover:text-primary transition-all active:scale-[0.965] group"
+            className="inline-flex items-center gap-3 text-slate-900 font-black hover:text-primary transition-all active:scale-[0.965] group"
           >
-            <div className="p-3 rounded-full bg-surface group-hover:bg-primary/10 transition-colors">
+            <div className="p-3 rounded-full bg-slate-100 group-hover:bg-primary/10 transition-colors">
               <ArrowLeft size={22} />
             </div>
             {t('btn_back_home', 'Home')}
@@ -25,12 +25,12 @@ const About = () => {
         </div>
 
         {/* 🚀 Section 1: The Brand's Vision */}
-        <section className="relative p-8 rounded-3xl bg-surface border-2 border-border overflow-hidden shadow-sm">
+        <section className="relative p-8 rounded-3xl bg-slate-50 border-2 border-slate-100 overflow-hidden shadow-sm">
           <div className="relative z-10">
-            <h2 className="text-2xl font-display font-bold text-[#111111] mb-4 flex items-center gap-2">
+            <h2 className="text-2xl font-display font-bold text-slate-900 mb-4 flex items-center gap-2">
               <Award className="text-primary" /> {t('about_vision_title', 'The Vision Behind BachatKaro')}
             </h2>
-            <p className="text-[#111111] leading-relaxed text-lg font-medium">
+            <p className="text-slate-800 leading-relaxed text-lg font-medium">
               <strong>BachatKaro</strong> India ka sabse smart expense tracking platform hai. 
               Hamara maanna hai ki paisa bachana mushkil nahi hona chahiye. Isliye humne ek aisa tool banaya hai jo aapke daily kharche track karne mein madad karta hai, taaki aap apni mehnat ki kamai ko fizool kharchi se bacha sakein.
             </p>
@@ -39,20 +39,20 @@ const About = () => {
 
         {/* 🎯 Section 2: Mission & Security */}
         <section className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-4 p-6 rounded-2xl border-2 border-border bg-background">
-            <h3 className="text-xl font-bold text-[#111111] flex items-center gap-2">
+          <div className="space-y-4 p-6 rounded-2xl border-2 border-slate-100 bg-white">
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <Target className="text-primary" /> {t('about_mission_title', 'Our Mission')}
             </h3>
-            <p className="text-[#111111] font-semibold leading-relaxed">
+            <p className="text-slate-700 font-semibold leading-relaxed">
               Hamara mission simple hai: Har Hindustani ke liye finance ko aasan banana. 
               <strong> Bachat karega India, tabhi toh sapne pure karega India!</strong>
             </p>
           </div>
-          <div className="space-y-4 p-6 rounded-2xl border-2 border-border bg-background">
-            <h3 className="text-xl font-bold text-[#111111] flex items-center gap-2">
+          <div className="space-y-4 p-6 rounded-2xl border-2 border-slate-100 bg-white">
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <ShieldCheck className="text-primary" /> {t('about_security_title', 'Bank-Grade Security')}
             </h3>
-            <p className="text-[#111111] font-semibold leading-relaxed">
+            <p className="text-slate-700 font-semibold leading-relaxed">
               Aapka data 100% secure hai. BachatKaro <strong>Bank-grade encryption</strong> use karta hai aur aapka data aapke device par hi process hota hai, taaki privacy hamesha bani rahe.
             </p>
           </div>
@@ -78,9 +78,9 @@ const About = () => {
 
         {/* 💡 Section 4: Stats */}
         <section className="grid sm:grid-cols-3 gap-6">
-          <div className="text-center p-8 bg-surface border-2 border-border rounded-2xl hover:border-primary/30 transition-all">
-            <div className="text-4xl font-black text-[#111111] mb-2">100%</div>
-            <p className="text-xs text-[#999999] uppercase tracking-widest font-bold">Secure Data</p>
+          <div className="text-center p-8 bg-slate-100 border-2 border-slate-200 rounded-2xl hover:border-primary/30 transition-all">
+            <div className="text-4xl font-black text-slate-900 mb-2">100%</div>
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Secure Data</p>
           </div>
           <div className="text-center p-8 bg-primary rounded-2xl shadow-lg shadow-primary/20">
             <div className="text-4xl font-black text-white mb-2">
@@ -90,18 +90,18 @@ const About = () => {
               {featureFlags.hidePricing ? "Free During Beta" : "Basic is Always Free"}
             </p>
           </div>
-          <div className="text-center p-8 bg-surface border-2 border-border rounded-2xl hover:border-primary/30 transition-all">
-            <div className="text-4xl font-black text-[#111111] mb-2">₹5,000+</div>
-            <p className="text-xs text-[#999999] uppercase tracking-widest font-bold">Monthly Savings</p>
+          <div className="text-center p-8 bg-slate-100 border-2 border-slate-200 rounded-2xl hover:border-primary/30 transition-all">
+            <div className="text-4xl font-black text-slate-900 mb-2">₹5,000+</div>
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Monthly Savings</p>
           </div>
         </section>
 
         {/* 🤝 Section 5: Brand Promise */}
-        <section className="text-center py-12 border-t-2 border-border">
-          <p className="italic text-[#111111] text-xl max-w-2xl mx-auto font-bold leading-relaxed">
+        <section className="text-center py-12 border-t-2 border-slate-100">
+          <p className="italic text-slate-800 text-xl max-w-2xl mx-auto font-bold leading-relaxed">
             "Hum jaante hain aapki mehnat ki kamai ke ek-ek rupaye ki keemat kya hai."
           </p>
-          <div className="mt-6 font-display font-bold text-[#111111] text-2xl">— Team BachatKaro</div>
+          <div className="mt-6 font-display font-bold text-slate-900 text-2xl">— Team BachatKaro</div>
         </section>
 
       </div>

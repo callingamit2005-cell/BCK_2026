@@ -82,6 +82,92 @@ export const clearGroupLedger = async (groupId: string) => {
  * 🛡️ [PHASE_0A] Edit Transaction Title
  * Purpose: Surgical update of bill names.
  */
+/**
+ * 🛡️ [OPERATION_VALENTINE]
+ * Purpose: Allows external components (Voice Engine) to record group expenses.
+ * Mandate: Zero bypass of existing financial guards.
+ */
+export const createGroupExpense = async (input: {
+  userId: string;
+  groupId: string;
+  amount: number;
+  title: string;
+  payerId: string;
+  activeMembers: any[];
+}) => {
+  const { userId, groupId, amount, title, payerId, activeMembers } = input;
+
+  // 🛡️ CRITICAL UUID FORENSIC GUARD
+  const isUUID = (str: string) => /^[0-9a-fA-F-]{36}$/.test(str);
+  if (!isUUID(groupId) || !isUUID(payerId) || !isUUID(userId)) {
+    throw new Error(`Integrity Failure: Invalid UUID in payload (Group: ${groupId}, Payer: ${payerId}, User: ${userId})`);
+  }
+
+  // 🛡️ [MONETARY_INTEGRITY] Normalize to Paisa
+  const { convertToPaisa } = await import('@/utils/currencyFormatter');
+  const amountPaisa = convertToPaisa(amount);
+
+  // 🛡️ [SPLIT_ENGINE] Always split equally for voice entries to ensure speed
+  const { calculateSplit } = await import('@/features/split-expense/utils/splitCalculator');
+  const splitResults = calculateSplit({ 
+    amountPaisa, 
+    splitType: 'equal', 
+    members: activeMembers.map((m: any) => ({ memberId: m.id, name: m.name }))
+  });
+
+  const rpcPayload = {
+    p_group_id: groupId,
+    p_user_id: userId,
+    p_title: title || "Voice Expense",
+    p_amount: amountPaisa,
+    p_paid_by_member_id: payerId,
+    p_split_type: 'equal',
+    p_splits: splitResults.map(sr => {
+      const member = activeMembers.find((m: any) => m.id === sr.memberId);
+      return {
+        user_id: member?.user_id ?? null,
+        member_id: sr.memberId,
+        share_amount: sr.shareAmount
+      };
+    }),
+    p_idempotency_key: null
+  };
+
+  const expenseId = crypto.randomUUID();
+  const idempotencyKey = `voice_${expenseId}`;
+  const finalRpcPayload = { ...rpcPayload, p_id: expenseId, p_idempotency_key: idempotencyKey };
+
+  // 📱 [OFFLINE_FIRST] Android Local Injection
+  if (Capacitor.getPlatform() === 'android') {
+    const { getDB } = await import('@/integrations/sqlite');
+    const db = getDB();
+    if (db) {
+      await db.run(`
+        INSERT INTO group_expenses (id, group_id, title, category, amount, paid_by, paid_by_member_id, user_id, split_type, idempotency_key, sync_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [expenseId, groupId, title, "Others", amountPaisa, payerId, payerId, userId, 'equal', idempotencyKey, 'pending']);
+
+      for (const s of finalRpcPayload.p_splits) {
+        const splitId = `spl_${Math.random().toString(36).substring(2, 9)}`;
+        await db.run(`
+          INSERT INTO expense_splits (id, expense_id, group_id, member_id, user_id, share_amount, sync_status)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [splitId, expenseId, groupId, s.member_id, s.user_id, s.share_amount, 'pending']);
+      }
+    }
+  }
+
+  // 🌐 [SYNC] Queue for Cloud
+  const { saveAndSync } = await import('@/integrations/sqliteService');
+  await saveAndSync("insert_group_expense_with_split", finalRpcPayload, "RPC");
+
+  return finalRpcPayload;
+};
+
+/**
+ * 🛡️ [PHASE_0A] Edit Transaction Title
+ * Purpose: Surgical update of bill names.
+ */
 export const updateGroupExpenseTitle = async (expenseId: string, newTitle: string) => {
   const isAndroid = Capacitor.getPlatform() === 'android';
 

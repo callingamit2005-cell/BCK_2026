@@ -37,6 +37,10 @@ export interface SmsBridgePlugin {
   scanHistoricalSms(options?: { days?: number }): Promise<{ scanned: number }>;
   isAppInstalled(options: { packageName: string }): Promise<{ installed: boolean }>;
   checkSmsPermission(): Promise<{ status: string }>;
+  requestSmsPermission(): Promise<{ status: string }>;
+  checkNotificationPermission(): Promise<{ status: string }>;
+  requestNotificationPermission(): Promise<{ status: string }>;
+  openAppSettings(): Promise<void>;
   setSession(options: { userId: string; accessToken: string }): Promise<void>;
   updateSyncStatus(options: { id: number; status: string }): Promise<void>;
   updateSyncSession(options: {
@@ -268,6 +272,67 @@ export const checkSmsPermission = async () => {
   } catch (err) {
     console.error("SmsBridge.checkSmsPermission failed:", err);
     return { status: 'denied' };
+  }
+};
+
+/**
+ * PRODUCTION GUARD:
+ * Safe wrapper for requestSmsPermission.
+ */
+export const requestSmsPermission = async () => {
+  if (Capacitor.getPlatform() !== 'android') {
+    return { status: 'denied' };
+  }
+  try {
+    return await SmsBridge.requestSmsPermission();
+  } catch (err) {
+    console.error("SmsBridge.requestSmsPermission failed:", err);
+    return { status: 'denied' };
+  }
+};
+
+/**
+ * PRODUCTION GUARD:
+ * Safe wrapper for checkNotificationPermission.
+ */
+export const checkNotificationPermission = async () => {
+  if (Capacitor.getPlatform() !== 'android') {
+    return { status: 'granted' }; // Implicit on web for UI purposes
+  }
+  try {
+    return await SmsBridge.checkNotificationPermission();
+  } catch (err) {
+    console.error("SmsBridge.checkNotificationPermission failed:", err);
+    return { status: 'denied' };
+  }
+};
+
+/**
+ * PRODUCTION GUARD:
+ * Safe wrapper for requestNotificationPermission.
+ */
+export const requestNotificationPermission = async () => {
+  if (Capacitor.getPlatform() !== 'android') {
+    return { status: 'granted' };
+  }
+  try {
+    return await SmsBridge.requestNotificationPermission();
+  } catch (err) {
+    console.error("SmsBridge.requestNotificationPermission failed:", err);
+    return { status: 'denied' };
+  }
+};
+
+/**
+ * PRODUCTION GUARD:
+ * Safe wrapper for openAppSettings.
+ */
+export const openAppSettings = async () => {
+  if (Capacitor.getPlatform() !== 'android') return;
+  try {
+    await SmsBridge.openAppSettings();
+  } catch (err) {
+    console.error("SmsBridge.openAppSettings failed:", err);
   }
 };
 

@@ -21,8 +21,10 @@ export type DashboardTransaction = {
   source?: string;
   origin?: string;
   direction?: 'debit' | 'credit';
+  canonicalKey?: string;
   idempotencyKey?: string;
   updatedAt?: string;
+  _ts?: number; // 🛡️ [PERF_OPTIMIZATION] Pre-calculated timestamp
 };
 
 export const toDashboardTransaction = (entry: UnifiedLedgerEntry): DashboardTransaction => ({
@@ -38,8 +40,10 @@ export const toDashboardTransaction = (entry: UnifiedLedgerEntry): DashboardTran
   source: entry.source,
   origin: entry.origin,
   direction: entry.direction,
+  canonicalKey: entry.canonicalKey || undefined,
   idempotencyKey: entry.idempotencyKey || undefined,
   updatedAt: entry.updatedAt || undefined,
+  _ts: entry._ts,
 });
 
 export const getSalaryAmount = (salary: SalaryRecord | null | undefined) => {

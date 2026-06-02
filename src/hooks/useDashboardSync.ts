@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -47,7 +47,6 @@ export const useDashboardSync = (
 
   // --- SMS PERMISSIONS & LISTENERS ---
   useEffect(() => {
-    let listener: any = null;
     let isMounted = true;
 
     const initListener = async () => {
@@ -62,8 +61,6 @@ export const useDashboardSync = (
         if (permission?.status === 'granted') {
           // Initial hydration on boot/permission grant
           await loadNativeTransactions();
-        } else {
-          console.warn("SMS permission not granted");
         }
       } catch (err) {
         console.error("SMS Initialization failed", err);
@@ -74,16 +71,15 @@ export const useDashboardSync = (
 
     return () => {
       isMounted = false;
-      if (listener && listener.remove) {
-        listener.remove();
-      }
     };
   }, [user?.id, canReadSms, loadNativeTransactions]);
 
   // --- FIRST LOAD SYNC & BOOTSTRAP ---
+  const hasRunBootstrapRef = useRef(false);
   useEffect(() => {
-    if (!isReady || !user?.id) return;
-
+    if (!isReady || !user?.id || hasRunBootstrapRef.current) return;
+    
+    hasRunBootstrapRef.current = true;
     let active = true;
 
     const runFirstLoadSync = async () => {
@@ -93,14 +89,9 @@ export const useDashboardSync = (
         }
 
         // 🛡️ [HYDRATION_WINDOW_STRATEGY]
-        // Fetch Current + Previous month for initial bootstrap (2-month window)
-        // This ensures the dashboard cards and recent lists are populated correctly 
-        // without loading all 36 months of history synchronously.
         const bootstrapStart = startOfMonth(subMonths(new Date(), 1)).toISOString();
 
-        console.log(`[HYDRATION_TRACE] Starting bootstrap fetch from ${bootstrapStart}`);
-
-        const [localData, { data: cloudData, error }] = await Promise.all([
+        const [localData, { data: cloudData }] = await Promise.all([
           canReadSms ? getNativeTransactions(user.id, user.created_at) : Promise.resolve({ transactions: [] }),
           supabase
             .from('transactions')
@@ -109,7 +100,7 @@ export const useDashboardSync = (
             .eq('is_deleted', false)
             .gte('date', bootstrapStart)
             .order('date', { ascending: false })
-            .limit(500) // Sufficient for 2 months of high-velocity users
+            .limit(500) 
         ]);
 
         if (!active) return;
@@ -119,31 +110,53 @@ export const useDashboardSync = (
         const bootstrapKey = `bstrap_v2_${user.id}`;
         const isBootstrapDone = localStorage.getItem(bootstrapKey) === 'true';
 
-        console.log(`[HYDRATION_TRACE] Bootstrap Results - Cloud: ${cloudCount}, Local: ${localCount}`);
-
         // SEED SQLITE FROM CLOUD IF ON ANDROID
         if (Capacitor.getPlatform() === 'android' && cloudData && cloudData.length > 0) {
           console.log(`🚀 [SQLite] Seeding ${cloudData.length} bootstrap records to local storage SILENTLY`);
+          let seeded = 0;
           for (const row of cloudData) {
-            // 🛡️ [SILENT_HYDRATION] Use silent: true and syncStatus: 'completed' during bootstrap
             await saveLocalTransaction(row, true, 'completed').catch(() => undefined);
+            seeded++;
+            
+            if (seeded % 50 === 0) {
+               await new Promise(resolve => setTimeout(resolve, 50));
+            }
           }
           // 🚀 [DETERMINISTIC_SINGLE_SIGNAL] One event after batch is complete
           window.dispatchEvent(new Event('sync_queue_updated'));
+          window.dispatchEvent(new Event('newLocalTransaction')); 
         }
 
-        // ... rest of error check ...
-
         if (cloudCount === 0 && localCount === 0 && canReadSms && !isBootstrapDone) {
-          console.log("🚀 [Bootstrap] Starting emergency scan (2 months)...");
           try {
-            const scanRes = await scanHistoricalSms(62);
+            // 🚀 [PHASE_P1E] Enable silent batch mode for historical hydration
+            (window as any).BK_IS_SCANNING = true;
+            await scanHistoricalSms(62);
+            (window as any).BK_IS_SCANNING = false;
+            
             if (!active) return;
-            console.log(`🚀 [Bootstrap] Scan complete: ${scanRes.scanned} messages processed`);
             
             localStorage.setItem(bootstrapKey, 'true');
             // Feeder also emits internal events, so we use it as a settled trigger
             await loadNativeTransactions();
+
+            // 🚀 [PHASE_6C_BACKGROUND_HYDRATION]
+            // After fast bootstrap is visible, trigger a deeper 180-day scan in the background.
+            // Using a 5s delay to ensure the UI has finished its first render cycle.
+            setTimeout(async () => {
+              if (active) {
+                console.log("🚀 [Background] Starting full history hydration (180 days)...");
+                // 🚀 [PHASE_P1E] Enable silent batch mode for historical hydration
+                (window as any).BK_IS_SCANNING = true;
+                await scanHistoricalSms(180);
+                (window as any).BK_IS_SCANNING = false;
+                
+                await loadNativeTransactions();
+                // 🚀 [STORM_FIX] Final 'settled' signal after background hydration
+                window.dispatchEvent(new Event('newLocalTransaction'));
+                console.log("🚀 [Background] History hydration complete.");
+              }
+            }, 5000);
 
             if (Capacitor.getPlatform() === 'android') {
               if (active) void syncEngine.processQueue();
@@ -156,7 +169,6 @@ export const useDashboardSync = (
           }
         }
         else if (cloudCount === 0 && localCount > 0) {
-          console.log("🚀 [Sync] Found local data but no cloud, starting sync engine...");
           if (Capacitor.getPlatform() === 'android') {
             if (active) void syncEngine.processQueue();
           }
@@ -201,3 +213,4 @@ export const useDashboardSync = (
     void runRetentionCleanup();
   }, [user?.id, queryClient, ledgerWindow, canReadSms]);
 };
+

@@ -22,28 +22,31 @@ interface MonthlySnapshotProps {
  * is assumed to reflect only actual monthly cash flow. Loan principal and total
  * loan values are excluded at the data layer to ensure an accurate cash flow view.
  */
+const MonthlySnapshot: React.FC<MonthlySnapshotProps> = ({ month, totalIncome, totalExpense, savings }) => {
+  const { t } = useTranslation();
+
   // Polished UI Classes - Emotionally Premium System
-  const cardClass = "bg-surface rounded-[32px] border border-border/40 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-700 ease-butter-soft";
-  const labelClass = "text-[11px] font-black text-fintech-graphite-muted uppercase tracking-[0.2em]";
-  const valueClass = "text-[28px] font-black text-[#1a1a1a] font-mono tracking-tighter leading-none";
+  const cardClass = "bg-surface rounded-3xl border border-border/40 shadow-premium hover:shadow-[0_8px_30_rgb(0,0,0,0.04)] transition-all duration-700 ease-butter-soft";
+  const labelClass = "text-xs font-black text-text-muted uppercase tracking-wider";
+  const valueClass = "text-2xl font-black text-foreground font-mono tracking-tighter leading-none";
 
   return (
-    <div className={`${cardClass} p-8 relative overflow-hidden group`}>
+    <div className={`${cardClass} p-6 relative overflow-hidden group`}>
       {/* Subtle Premium Background Accent - Refined for breathing room */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-[#111111]/[0.01] rounded-full -mr-32 -mt-32 blur-[100px] group-hover:bg-[#111111]/[0.03] transition-colors duration-1000" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-foreground/[0.01] rounded-full -mr-32 -mt-32 blur-[100px] group-hover:bg-foreground/[0.03] transition-colors duration-1000" />
       
       {/* Header - Improved whitespace rhythm */}
-      <div className="flex items-center justify-between mb-12 relative z-10">
+      <div className="flex items-center justify-between mb-10 relative z-10">
         <div className="flex items-center gap-6">
           {/* Circular Premium Icon Container - Calendar Style */}
-          <div className="h-16 w-16 rounded-full bg-[#F3F4F6] border border-border/60 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 hover:scale-110">
-            <Calendar className="h-8 w-8 text-[#DC2626]" />
+          <div className="h-14 w-14 rounded-full bg-background border border-border/60 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 hover:scale-110">
+            <Calendar className="h-7 w-7 text-foreground" />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-[#1a1a1a] uppercase tracking-tighter leading-tight">
+            <h3 className="text-2xl font-black text-foreground uppercase tracking-tighter leading-tight">
               {t('monthlySnapshot.title', { month })}
             </h3>
-            <p className="text-[11px] text-fintech-graphite-muted font-black uppercase tracking-[0.3em] mt-2 opacity-60">
+            <p className="text-xs text-text-muted font-black uppercase tracking-wider mt-2 opacity-60">
               {t('monthlySnapshot.description', 'Velocity Audit')}
             </p>
           </div>
@@ -51,11 +54,11 @@ interface MonthlySnapshotProps {
       </div>
 
       {/* Stats Grid - Premium spacing and hierarchy */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
         {/* Income */}
-        <div className="bg-background/[0.02] rounded-[32px] p-8 border border-transparent hover:bg-background/40 hover:border-border/40 transition-all duration-500 flex items-start gap-6 group/item">
-          <div className="h-12 w-12 rounded-full bg-[#F3F4F6] border border-border/40 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 group-hover/item:scale-110">
-            <TrendingUp className="h-5 w-5 text-[#525252]" />
+        <div className="bg-background rounded-2xl p-6 border border-transparent hover:border-border transition-all duration-500 flex items-start gap-4 group/item">
+          <div className="h-10 w-10 rounded-full bg-surface border border-border/40 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 group-hover/item:scale-110">
+            <TrendingUp className="h-5 w-5 text-text-secondary" />
           </div>
           <div className="flex-1">
             <p className={labelClass + " mb-2"}>
@@ -68,30 +71,30 @@ interface MonthlySnapshotProps {
         </div>
 
         {/* Expenses */}
-        <div className="bg-background/[0.02] rounded-[32px] p-8 border border-transparent hover:bg-red-50/[0.02] hover:border-red-100/30 transition-all duration-500 flex items-start gap-6 group/item">
-          <div className="h-12 w-12 rounded-full bg-[#FEE2E2] border border-[#FECACA] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 group-hover/item:scale-110">
-            <TrendingDown className="h-5 w-5 text-[#DC2626]" />
+        <div className="bg-background rounded-2xl p-6 border border-transparent hover:border-border transition-all duration-500 flex items-start gap-4 group/item">
+          <div className="h-10 w-10 rounded-full bg-surface border border-border/40 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 group-hover/item:scale-110">
+            <TrendingDown className="h-5 w-5 text-text-secondary" />
           </div>
           <div className="flex-1">
             <p className={labelClass + " mb-2"}>
               {t('monthlySnapshot.expenses')}
             </p>
-            <p className="text-[28px] font-black text-[#DC2626] font-mono tracking-tighter leading-none">
+            <p className={valueClass}>
               {formatCurrency(totalExpense)}
             </p>
           </div>
         </div>
 
         {/* Savings */}
-        <div className="bg-background/[0.02] rounded-[32px] p-8 border border-transparent hover:bg-emerald-50/[0.02] hover:border-emerald-100/30 transition-all duration-500 flex items-start gap-6 group/item">
-          <div className="h-12 w-12 rounded-full bg-[#DCFCE7] border border-[#BBF7D0] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 group-hover/item:scale-110">
-            <PiggyBank className="h-5 w-5 text-[#DC2626]" />
+        <div className="bg-background rounded-2xl p-6 border border-transparent hover:border-border transition-all duration-500 flex items-start gap-4 group/item">
+          <div className="h-10 w-10 rounded-full bg-surface border border-border/40 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-700 group-hover/item:scale-110">
+            <PiggyBank className="h-5 w-5 text-text-secondary" />
           </div>
           <div className="flex-1">
             <p className={labelClass + " mb-2"}>
               {t('monthlySnapshot.savings')}
             </p>
-            <p className="text-[28px] font-black text-fintech-emerald-dark font-mono tracking-tighter leading-none">
+            <p className={valueClass}>
               {formatCurrency(savings)}
             </p>
           </div>

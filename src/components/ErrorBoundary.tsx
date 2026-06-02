@@ -38,29 +38,29 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen w-full flex items-center justify-center bg-background p-6 antialiased">
-          <div className="relative w-full max-w-md overflow-hidden rounded-[24px] border border-border bg-surface p-8 shadow-sm">
+          <div className="relative w-full max-w-md overflow-hidden rounded-premium border border-border bg-surface p-8 shadow-sm">
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="mb-6 rounded-2xl bg-background p-4 border border-border shadow-inner">
-                <AlertTriangle className="h-10 w-10 text-[#999999]" />
+                <AlertTriangle className="h-10 w-10 text-text-muted" />
               </div>
 
-              <h1 className="mb-2 text-2xl font-black tracking-tighter text-[#111111] uppercase">
+              <h1 className="mb-2 text-2xl font-black tracking-tighter text-foreground uppercase">
                 Circuit Breaker Active
               </h1>
               
-              <p className="mb-6 text-[10px] font-bold text-[#999999] uppercase tracking-widest leading-relaxed">
+              <p className="mb-6 text-xs font-bold text-text-muted uppercase tracking-wider leading-relaxed">
                 The application encountered an unexpected state. High-integrity safety protocols have been activated.
               </p>
 
               <div className="mb-8 w-full rounded-xl border border-border bg-background/[0.02] p-4 text-left">
-                <p className="font-mono text-[10px] text-[#666666] break-all leading-tight uppercase font-bold">
+                <p className="font-mono text-xs text-text-muted break-all leading-tight uppercase font-bold">
                   {this.state.error?.message || "Unknown State Failure"}
                 </p>
               </div>
 
               <Button
                 onClick={this.handleReload}
-                className="w-full h-14 bg-[#111111] text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-[#111111]/90 active:scale-[0.98] transition-all"
+                className="w-full h-14 bg-foreground text-surface rounded-xl font-black uppercase text-xs tracking-wider shadow-institutional hover:bg-foreground/90 active:scale-[0.98] transition-all"
               >
                 <div className="flex items-center justify-center gap-2">
                   <RefreshCw className="h-4 w-4" />

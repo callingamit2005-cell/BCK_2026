@@ -45,14 +45,7 @@ async function getMemberId(groupId: string, userId: string) {
   }
 }
 
-export async function autoMapTransactionToGroup(transaction: any) {
-  console.log("🚀 [AutoGroupMapper] Entry - Transaction:", {
-    hash: transaction.sms_hash,
-    amt: transaction.amount,
-    date: transaction.date,
-    user: transaction.user_id
-  });
-
+export async function autoMapTransactionToGroup(transaction: any, silent: boolean = false) {
   try {
     if (!transaction || !transaction.user_id || !transaction.amount) {
       console.error("❌ [AutoGroupMapper] Missing required fields in transaction object");
@@ -149,7 +142,7 @@ export async function autoMapTransactionToGroup(transaction: any) {
 
     // 6. Enqueue Atomic RPC via Unified SDK
     console.log("📡 [AutoGroupMapper] Enqueueing RPC: insert_group_expense_with_split");
-    await saveAndSync("insert_group_expense_with_split", rpcPayload, "RPC");
+    await saveAndSync("insert_group_expense_with_split", rpcPayload, "RPC", silent);
 
     console.log("✨ [AutoGroupMapper] MAPPING ENQUEUED SUCCESSFULLY");
 

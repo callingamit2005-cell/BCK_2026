@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { convertToPaisa, convertToRupees } from "@/utils/currencyFormatter";
 import { Capacitor } from '@capacitor/core';
 import { getLocalTransactions, saveLocalTransaction, enqueueSync, getDB } from '@/integrations/sqlite';
-import { safeDate, isValidDate, isCurrentMonth, isLastMonth, toLocalStart, toLocalEnd } from "@/utils/dateFilters";
+import { safeDate, isValidDate, isCurrentMonth, isLastMonth, toLocalStart, toLocalEnd, generateCanonicalKey } from "@/utils/dateFilters";
 import { getNativeTransactions } from "@/integrations/smsBridge";
 
 export const NEW_USER_RETENTION_MONTHS = 2;
@@ -36,6 +36,7 @@ export interface UnifiedLedgerEntry {
   canonicalKey?: string | null;
   updatedAt?: string | null;
   isDeleted?: boolean;
+  _ts: number; // 🛡️ [PERF_OPTIMIZATION] Pre-calculated timestamp for sorting
 }
 
 export interface LedgerWindow {
@@ -194,13 +195,14 @@ export const toUnifiedTransactionEntry = (row: any): UnifiedLedgerEntry => {
   const source = normalizeLedgerSource(row.entry_source || row.source);
   const payee = derivePayeeName(row);
   const smsHash = row.sms_hash || row.smsHash || null;
+  const date = row.date || row.created_at;
 
   return {
     id: String(row.id),
     amount,
     category: row.category || "General",
     paymentMode: row.payment_mode || row.paymentMode || "Direct",
-    date: row.date || row.created_at,
+    date,
     note: row.description || row.note || "",
     payee,
     direction: type === "income" ? "credit" : "debit",
@@ -209,29 +211,37 @@ export const toUnifiedTransactionEntry = (row: any): UnifiedLedgerEntry => {
     origin: row.origin || "cloud-transaction",
     smsHash,
     idempotencyKey: row.idempotency_key || row.idempotencyKey || smsHash || null,
-    canonicalKey: row.canonical_key || row.canonicalKey || null,
+    // 🛡️ [IDENTITY_RECOVERY]
+    // If canonical_key is missing (legacy records), fallback to ID-based identity
+    // to prevent primary key collisions during edits.
+    canonicalKey: row.canonical_key || row.canonicalKey || `legacy:${row.id}`,
     updatedAt: row.updated_at || row.updatedAt || row.created_at || null,
     isDeleted: Boolean(row.is_deleted),
+    _ts: safeDate(date)?.getTime() || 0,
   };
 };
 
 export const toUnifiedExpenseEntry = (row: any): UnifiedLedgerEntry => {
   const amount = Number(row.amount || 0);
   const payee = derivePayeeName(row);
+  const date = row.expense_date || row.date || row.created_at;
 
   return {
     id: String(row.id),
     amount,
     category: row.category || "General",
     paymentMode: row.payment_mode || row.paymentMode || "App",
-    date: row.expense_date || row.date || row.created_at,
+    date,
     note: row.description || row.note || "",
     payee,
     direction: "debit",
     type: "expense",
     source: "manual",
     origin: "cloud-expense",
+    // 🛡️ [IDENTITY_RECOVERY]
+    canonicalKey: row.canonical_key || row.canonicalKey || `legacy:${row.id}`,
     updatedAt: row.updated_at || row.created_at || null,
+    _ts: safeDate(date)?.getTime() || 0,
   };
 };
 
@@ -260,6 +270,7 @@ export const toUnifiedNativeEntry = (row: any): UnifiedLedgerEntry => {
     canonicalKey: row.canonicalKey || row.canonical_key || null,
     updatedAt: row.updatedAt || row.updated_at || row.created_at || null,
     isDeleted,
+    _ts: safeDate(date)?.getTime() || 0,
     };
 };
 
@@ -278,6 +289,7 @@ export const toUnifiedSalaryEntry = (salaryAmount: number, date: string): Unifie
     source: "salary",
     origin: "salary",
     updatedAt: date,
+    _ts: safeDate(date)?.getTime() || 0,
   };
 };
 
@@ -304,24 +316,20 @@ export const mergeUnifiedLedgerEntries = (
   const groups: UnifiedLedgerEntry[][] = [];
   const entryToGroupIndex = new Map<string, number>();
 
-  const getCanonicalKey = (entry: UnifiedLedgerEntry): string | null => {
-    const normAmount = Math.round(Number(entry.amount || 0));
-    const dateObj = safeDate(entry.date);
-    const ts = Math.floor((dateObj?.getTime() || 0) / 1000);
-    // 🛡️ [PARITY_NORMALIZATION] Match SQL REPLACE(REPLACE(REPLACE(..., ' ', ''), '.', ''), '-', '') logic.
-    const normPayee = (entry.payee || "").toLowerCase().replace(/\s/g, "").replace(/\./g, "").replace(/-/g, "");
-    return (ts > 0 && normAmount > 0) ? `canon:${normAmount}:${ts}:${normPayee}:${entry.type}` : null;
-  };
-
   for (const entry of entries) {
     if (entry.isDeleted) continue;
+
+    // 🛡️ [COLLISION_FIX]
+    // Manual user actions must NEVER be deduplicated against financial SMS records.
+    // They are unique "intent-based" entries and must survive independently.
+    const isManualAction = entry.source === 'manual' || entry.source === 'voice' || entry.source === 'paste' || String(entry.id).startsWith('manual');
 
     const keys = [
       `id:${entry.id}`,
       entry.smsHash ? `hash:${entry.smsHash}` : null,
       entry.idempotencyKey ? `idem:${entry.idempotencyKey}` : null,
       entry.canonicalKey ? (entry.canonicalKey.startsWith('canon:') ? entry.canonicalKey : `canon:${entry.canonicalKey}`) : null,
-      getCanonicalKey(entry)
+      isManualAction ? null : generateCanonicalKey(entry)
     ].filter(Boolean) as string[];
 
     let targetGroupIndex = -1;
@@ -388,8 +396,8 @@ export const mergeUnifiedLedgerEntries = (
 
   // Global sort for render stability
   const sorted = finalResult.sort((a, b) => {
-    const getTs = (e: UnifiedLedgerEntry) => safeDate(e.date)?.getTime() || 0;
-    const diff = getTs(b) - getTs(a);
+    // 🛡️ [PERF_SORT] Use pre-calculated timestamp
+    const diff = b._ts - a._ts;
     if (diff !== 0) return diff;
     return String(b.id).localeCompare(String(a.id));
   });
@@ -401,7 +409,7 @@ export const mergeUnifiedLedgerEntries = (
   return sorted;
 };
 
-export const fetchUnifiedLedger = async (userId: string, window: LedgerWindow, limit: number = 500) => {
+export const fetchUnifiedLedger = async (userId: string, window: LedgerWindow, limit: number = 2000) => {
   let nativeRows: any[] = [];
   let localSqlRows: any[] = [];
   let localSqlExpRows: any[] = [];

@@ -75,7 +75,7 @@ export default function Dashboard() {
 
   // --- UI COMPONENTS: SKELETON LOADERS ---
   const Skeleton = () => (
-    <div className="animate-pulse bg-white/5 border border-white/10 rounded-3xl h-32 w-full" />
+    <div className="animate-pulse bg-surface/5 border border-white/10 rounded-3xl h-32 w-full" />
   );
 
   return (
@@ -110,14 +110,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           
           {/* HERO CARD: PREMIUM LIQUIDITY VIEW */}
-          <div className="md:col-span-2 relative group rounded-[32px] bg-surface border border-border shadow-sm overflow-hidden">
+          <div className="md:col-span-2 relative group rounded-modal bg-surface border border-border shadow-sm overflow-hidden">
             <div className="p-10 h-full flex flex-col justify-between relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-foreground/5 blur-[100px] pointer-events-none" />
               
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="h-2 w-2 rounded-full bg-foreground animate-pulse" />
-                  <p className="text-text-secondary uppercase tracking-[0.2em] text-[11px] font-bold">Net Liquidity</p>
+                  <p className="text-text-secondary uppercase tracking-wider text-xs font-bold">Net Liquidity</p>
                 </div>
                 <h2 className="text-6xl font-mono font-bold tracking-tighter tabular-nums text-foreground">
                   {loading ? "----" : formatINR(stats.balance)}
@@ -127,11 +127,11 @@ export default function Dashboard() {
               <div className="flex gap-4 mt-12">
                 <button className="flex-1 bg-background border border-border hover:border-foreground transition-all duration-300 rounded-2xl p-4 flex items-center justify-center gap-3 active:scale-[0.98] group/btn shadow-sm">
                   <ArrowUpRight className="text-text-secondary group-hover:text-foreground transition-colors" size={20} />
-                  <span className="font-bold text-xs uppercase tracking-widest text-text-secondary group-hover:text-foreground">Income</span>
+                  <span className="font-bold text-xs uppercase tracking-wider text-text-secondary group-hover:text-foreground">Income</span>
                 </button>
                 <button className="flex-1 bg-foreground text-surface hover:bg-foreground/90 transition-all duration-300 rounded-2xl p-4 flex items-center justify-center gap-3 active:scale-[0.98] shadow-lg">
                   <Plus size={22} strokeWidth={2.5} />
-                  <span className="font-bold text-xs uppercase tracking-widest">Expense</span>
+                  <span className="font-bold text-xs uppercase tracking-wider">Expense</span>
                 </button>
               </div>
             </div>
@@ -139,21 +139,21 @@ export default function Dashboard() {
 
           {/* SIDE STATS: MINIMAL STAT CARDS */}
           <div className="space-y-6">
-            <div className="bg-surface border border-border rounded-[28px] p-8 hover:border-foreground/20 transition-all group shadow-sm">
+            <div className="bg-surface border border-border rounded-3xl p-6 hover:border-foreground/20 transition-all group shadow-sm">
               <div className="flex items-center gap-5">
                 <div className="p-4 rounded-2xl bg-background border border-border text-text-secondary group-hover:text-foreground transition-colors"><ArrowDownLeft size={28}/></div>
                 <div>
-                  <p className="text-[11px] text-text-secondary font-bold uppercase tracking-widest">Monthly Burn</p>
+                  <p className="text-xs text-text-secondary font-bold uppercase tracking-wider">Monthly Burn</p>
                   <p className="text-2xl font-mono mt-1 font-bold text-foreground">{loading ? "..." : formatINR(stats.spent)}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-surface border border-border rounded-[28px] p-8 group shadow-sm">
+            <div className="bg-surface border border-border rounded-3xl p-6 group shadow-sm">
               <div className="flex items-center gap-5">
                 <div className="p-4 rounded-2xl bg-background border border-border text-text-secondary group-hover:text-foreground transition-colors"><PieChart size={28}/></div>
                 <div>
-                  <p className="text-[11px] text-text-secondary font-bold uppercase tracking-widest">Savings Goal</p>
+                  <p className="text-xs text-text-secondary font-bold uppercase tracking-wider">Savings Goal</p>
                   <p className="text-2xl font-mono mt-1 font-bold text-foreground">0%</p>
                 </div>
               </div>
@@ -171,20 +171,20 @@ export default function Dashboard() {
               <History size={26} className="text-text-secondary" />
               Recent Activity
             </h3>
-            <button className="text-text-secondary hover:text-foreground text-[11px] font-bold uppercase tracking-[0.2em] transition-all border-b border-transparent hover:border-foreground">Audit All</button>
+            <button className="text-text-secondary hover:text-foreground text-xs font-bold uppercase tracking-wider transition-all border-b border-transparent hover:border-foreground">Audit All</button>
           </div>
 
           <div className="space-y-4">
             {loading ? [1,2,3].map(i => <Skeleton key={i} />) : currentMonthTransactions.length > 0 ? (
               currentMonthTransactions.map((t) => (
-                <div key={t.id} className="group bg-surface hover:bg-background transition-all border border-border hover:border-foreground/20 p-6 rounded-[24px] flex items-center justify-between shadow-sm active:scale-[0.995] cursor-pointer">
+                <div key={t.id} className="group bg-surface hover:bg-background transition-all border border-border hover:border-foreground/20 p-6 rounded-2xl flex items-center justify-between shadow-sm active:scale-[0.995] cursor-pointer">
                   <div className="flex items-center gap-5">
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-background border border-border group-hover:border-foreground/20 transition-all">
                       <Wallet size={24} className="text-text-secondary group-hover:text-foreground" />
                     </div>
                     <div>
                       <p className="font-bold text-base text-foreground group-hover:translate-x-1 transition-transform tracking-tight uppercase">{t.note}</p>
-                      <p className="text-[11px] text-text-secondary mt-1 font-bold uppercase tracking-widest opacity-80">
+                      <p className="text-xs text-text-secondary mt-1 font-bold uppercase tracking-wider opacity-80">
                         {t.category} • {new Date(t.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                       </p>
                     </div>
@@ -197,8 +197,8 @@ export default function Dashboard() {
                 </div>
               ))
             ) : (
-              <div className="p-20 text-center border border-dashed border-border rounded-[32px] bg-surface">
-                <p className="text-text-muted font-mono uppercase tracking-widest text-[11px] font-bold">Zero records detected in current cycle</p>
+              <div className="p-12 text-center border border-dashed border-border rounded-3xl bg-surface">
+                <p className="text-text-muted font-mono uppercase tracking-wider text-xs font-bold">Zero records detected in current cycle</p>
               </div>
             )}
           </div>

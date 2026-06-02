@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { saveAndSync } from "@/integrations/sqliteService";
 
 // TRUE DARK NEON GLASS V2: Standard Neon Button with Butter-Soft Physics
-const neonBtn = "h-14 rounded-xl bg-white text-background hover:bg-white/90 font-black uppercase text-[10px] tracking-widest transition-all active:scale-[0.98] shadow-lg";
+const neonBtn = "h-14 rounded-xl bg-surface text-background hover:bg-surface/90 font-black uppercase text-xs tracking-wider transition-all active:scale-[0.98] shadow-lg";
 
 // ==================== ✅ ADDED: PREPAYMENT + FORECLOSURE ENGINE ====================
 
@@ -209,13 +209,12 @@ const LoanDetailsContent: React.FC<LoanDetailsContentProps> = ({
   const { t } = useLanguage();
 
   // ==================== PREMIUM UI SYSTEM ====================
-  const neonGradientBg = "bg-surface border border-border shadow-sm";
-  // TRUE DARK NEON GLASS V2: Butter-Soft Interactive Button
-  const neonBtnInteractive = "bg-[#111111] text-white hover:bg-[#111111]/90 shadow-md transition-all duration-300 active:scale-[0.98]";
-  const neonText = "text-[#111111] font-mono";
-  const brightNeonText = "text-[#111111] font-black font-mono tracking-tighter"; 
-  const pinkNeonText = "text-[#666666] font-bold uppercase tracking-widest";
-  const glassInside = "bg-background border border-border";
+  const premiumCard = "bg-surface border border-border/40 shadow-premium rounded-premium overflow-hidden transform-gpu transition-all";
+  const neonBtnInteractive = "bg-foreground text-surface rounded-xl h-14 px-8 font-black uppercase text-xs tracking-widest shadow-institutional hover:bg-foreground/90 active:scale-[0.98] transition-all";
+  const neonText = "text-foreground font-mono tracking-tighter";
+  const brightNeonText = "text-foreground font-black font-mono tracking-tighter"; 
+  const mutedLabel = "text-text-muted font-black uppercase tracking-[0.2em] text-[10px]";
+  const glassInside = "bg-background border border-border/40";
 
   const monthsPaid = useMemo(() => loanDetails.startDate ? getMonthsPaid(loanDetails.startDate) : 0, [loanDetails.startDate]);
   const summary = useMemo(() => getLoanSummary({
@@ -246,161 +245,161 @@ const LoanDetailsContent: React.FC<LoanDetailsContentProps> = ({
 
   return (
     <div className="space-y-4">
-      <Card className={cn("rounded-[24px] overflow-hidden relative border shadow-sm transition-all duration-500", neonGradientBg, className)}>
+      <Card className={cn(premiumCard, className)}>
         
-        <CardHeader className="pb-4 border-b border-border bg-background/[0.02] relative z-10">
+        <CardHeader className="pb-4 border-b border-border/40 bg-background/[0.02] relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
             <div className="space-y-3">
               <CardTitle className={cn("flex items-center gap-3 text-2xl font-black tracking-tighter uppercase", neonText)}>
-                <div className="p-2.5 bg-background rounded-xl border border-border shadow-sm">
-                  <IndianRupee className="h-6 w-6 text-[#999999]" /> 
+                <div className="p-2.5 bg-background rounded-xl border border-border/40 shadow-inner">
+                  <IndianRupee className="h-6 w-6 text-institutional-blue" /> 
                 </div>
                 {loanDetails.loanType || loanDetails.title || t('emi.loanDetails')}
               </CardTitle>
-              <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-[#999999]">
-                <span className="flex items-center gap-1.5 bg-background px-3 py-1.5 rounded-xl border border-border"><Landmark className="h-3 w-3" /> {loanDetails.bank_app_name || "Unknown Bank"}</span>
-                <span className="flex items-center gap-1.5 bg-background px-3 py-1.5 rounded-xl border border-border font-mono text-[#666666]"><Percent className="h-3 w-3" /> {loanDetails.annualInterestRate}%</span>
-                <span className="flex items-center gap-1.5 bg-background px-3 py-1.5 rounded-xl border border-border font-mono text-[#666666]"><CalendarClock className="h-3 w-3" /> {loanDetails.deduction_date || "5"}th</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="flex items-center gap-1.5 bg-background px-3 py-1.5 rounded-xl border border-border/40 text-[10px] font-black uppercase tracking-wider text-text-secondary"><Landmark className="h-3 w-3 text-institutional-blue" /> {loanDetails.bank_app_name || t('emi.bank', "Unknown Bank")}</span>
+                <span className="flex items-center gap-1.5 bg-background px-3 py-1.5 rounded-xl border border-border/40 font-mono text-[10px] font-black text-text-muted"><Percent className="h-3 w-3 text-institutional-blue" /> {loanDetails.annualInterestRate}%</span>
+                <span className="flex items-center gap-1.5 bg-background px-3 py-1.5 rounded-xl border border-border/40 font-mono text-[10px] font-black text-text-muted"><CalendarClock className="h-3 w-3 text-institutional-blue" /> {loanDetails.deduction_date || "5"}th</span>
               </div>
             </div>
             <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Badge className={cn("py-1.5 px-4 font-bold uppercase tracking-widest text-[8px] border border-border shadow-sm", isCompleted ? "bg-emerald-500/10 text-emerald-400" : "bg-[#111111]/10 text-[#666666]")}>
-                {isCompleted ? t('emi.completed') : t('emi.active')}
-              </Badge>
-              <div className="flex items-center ml-2 border-l border-border pl-3 gap-2">
-                <Button variant="ghost" size="icon" onClick={onEdit} className="h-11 w-11 text-[#999999] hover:text-[#111111] hover:bg-background rounded-xl border border-transparent transition-all duration-300 active:scale-[0.98]">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={onDelete} className="h-11 w-11 text-[#999999] hover:text-rose-500 hover:bg-background rounded-xl border border-transparent transition-all duration-300 active:scale-[0.98]">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+            <Badge className={cn("py-1.5 px-4 font-black uppercase tracking-widest text-[10px] border border-border/40 shadow-sm", isCompleted ? "bg-secondary text-text-muted" : "bg-foreground text-surface")}>
+              {isCompleted ? t('emi.completed') : t('emi.active')}
+            </Badge>
+            <div className="flex items-center ml-2 border-l border-border/40 pl-3 gap-2">
+              <Button variant="ghost" size="icon" onClick={onEdit} className="h-11 w-11 text-text-muted hover:text-foreground hover:bg-background rounded-xl border border-transparent transition-all duration-300 active:scale-[0.98]">
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onDelete} className="h-11 w-11 text-text-muted hover:text-rose-500 hover:bg-rose-500/5 rounded-xl border border-transparent transition-all duration-300 active:scale-[0.98]">
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
-          </div>
-        </CardHeader>
+            </div>
+            </div>
+            </CardHeader>
 
-        <CardContent className="p-6 sm:p-8 space-y-8 relative z-10">
-          <div className="space-y-3">
+            <CardContent className="p-6 sm:p-8 space-y-8 relative z-10">
+            <div className="space-y-3">
             <div className="flex justify-between items-end">
-              <span className={cn("font-bold flex items-center gap-2 uppercase tracking-widest text-[9px]", neonText)}>
-                <PieChart className="h-4 w-4 text-[#999999]" /> {t('emi.loanProgress', 'Progress')}
-              </span>
-              <span className={cn("font-black text-sm font-mono text-[#111111]", neonText)}>
-                {monthsPaid} / {totalMonths} <span className="text-[#999999] text-[9px] ml-1 uppercase font-sans">{t('emi.months')}</span>
-              </span>
+            <span className={mutedLabel}>
+               {t('emi.loanProgress', 'Progress')}
+            </span>
+            <span className={cn("font-black text-sm font-mono tabular-nums text-foreground", neonText)}>
+              {monthsPaid} / {totalMonths} <span className="text-text-muted text-[10px] ml-1 uppercase font-sans tracking-widest">{t('emi.months')}</span>
+            </span>
             </div>
-            <div className="w-full bg-background rounded-full h-1.5 overflow-hidden border border-border">
-              <div className={cn("h-full transition-all duration-1500 ease-butter-soft bg-[#111111]")} style={{ width: `${progressPercent}%` }} />
+            <div className="w-full bg-background rounded-full h-2 overflow-hidden border border-border/20 shadow-inner">
+              <div className={cn("h-full transition-all duration-1500 ease-butter-soft bg-institutional-blue")} style={{ width: `${progressPercent}%` }} />
             </div>
-          </div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className={cn("rounded-2xl p-5 shadow-inner", glassInside)}>
-              <p className="text-[8px] font-bold text-[#999999] uppercase tracking-[0.2em] mb-1">{t('emi.principalAmount', 'Principal')}</p>
-              <p className={cn("text-xl font-black font-mono tracking-tighter", neonText)}>{formatCurrency(loanDetails.principal)}</p>
+            <p className={mutedLabel}>{t('emi.principalAmount', 'Principal')}</p>
+            <p className={cn("text-xl font-black font-mono tabular-nums tracking-tighter text-foreground")}>{formatCurrency(loanDetails.principal)}</p>
             </div>
             <div className={cn("rounded-2xl p-5 shadow-inner", glassInside)}>
-              <p className="text-[8px] font-bold text-[#999999] uppercase tracking-[0.2em] mb-1">{t('emi.totalInterest', 'Interest')}</p>
-              <p className={cn("text-xl font-black font-mono text-[#666666] tracking-tighter")}>{formatCurrency(summary.totalInterest)}</p>
+            <p className={mutedLabel}>{t('emi.totalInterest', 'Interest')}</p>
+            <p className={cn("text-xl font-black font-mono tabular-nums text-text-muted tracking-tighter")}>{formatCurrency(summary.totalInterest)}</p>
             </div>
-            <div className={cn("rounded-2xl p-5 border border-border bg-background shadow-sm")}>
-              <p className="text-[8px] font-bold text-[#999999] uppercase tracking-[0.2em] mb-1">EMI OUTFLOW</p>
-              <p className={cn("text-xl font-black font-mono tracking-tighter", brightNeonText)}>{formatCurrency(summary.emi)}</p>
+            <div className={cn("rounded-2xl p-5 border border-border/40 bg-background shadow-premium")}>
+            <p className={mutedLabel}>{t('emi.emiOutflow', 'EMI OUTFLOW')}</p>
+            <p className={cn("text-xl font-black font-mono tabular-nums tracking-tighter text-foreground")}>{formatCurrency(summary.emi)}</p>
             </div>
-          </div>
+            </div>
 
-          <div className="bg-background rounded-2xl p-7 border border-border shadow-sm relative group overflow-hidden">
-            <div className="absolute top-0 right-0 p-6 opacity-5"><Receipt className="h-24 w-24 text-[#111111]" /></div>
-            <p className={cn("text-[10px] font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-[#999999]")}><TrendingUp className="h-4 w-4" /> {t('emi.currentMonthBreakdown', 'Audit')}</p>
+            <div className="bg-background rounded-2xl p-7 border border-border/40 shadow-premium relative group overflow-hidden">
+            <div className="absolute top-0 right-0 p-6 opacity-[0.03]"><Receipt className="h-24 w-24 text-foreground" /></div>
+            <p className={cn(mutedLabel, "mb-6 flex items-center gap-2")}><TrendingUp className="h-4 w-4 text-institutional-blue" /> {t('emi.audit', 'Audit')}</p>
             <div className="space-y-4 relative z-10">
-              <div className="flex justify-between items-center text-sm"><span className="text-[#999999] font-bold uppercase tracking-widest text-[9px]">{t('emi.principal')}</span><span className={cn("font-black font-mono tracking-tighter", neonText)}>{formatCurrency(summary.principalComponent)}</span></div>
-              <div className="flex justify-between items-center text-sm"><span className="text-[#999999] font-bold uppercase tracking-widest text-[9px]">{t('emi.interest')}</span><span className="font-black font-mono text-[#999999] tracking-tighter">{formatCurrency(summary.interestComponent)}</span></div>
-              <div className="flex justify-between items-end pt-5 mt-4 border-t border-border"><span className="text-[9px] font-bold text-[#999999] uppercase tracking-widest">Monthly Charge</span><span className={cn("font-black text-3xl font-mono tracking-tighter", brightNeonText)}>{formatCurrency(summary.emi)}</span></div>
+            <div className="flex justify-between items-center text-sm"><span className={mutedLabel}>{t('emi.principal')}</span><span className={cn("font-black font-mono tabular-nums tracking-tighter text-foreground")}>{formatCurrency(summary.principalComponent)}</span></div>
+            <div className="flex justify-between items-center text-sm"><span className={mutedLabel}>{t('emi.interest')}</span><span className="font-black font-mono tabular-nums text-text-muted tracking-tighter">{formatCurrency(summary.interestComponent)}</span></div>
+            <div className="flex justify-between items-end pt-5 mt-4 border-t border-border/40"><span className={mutedLabel}>{t('emi.monthlyCharge', 'Monthly Charge')}</span><span className={cn("font-black text-3xl font-mono tabular-nums tracking-tighter text-foreground")}>{formatCurrency(summary.emi)}</span></div>
             </div>
-          </div>
-
-          {/* ✅ ADDED: Prepayment + Foreclosure Simulation UI Block */}
-          {!isCompleted && (
-            <div className="bg-background rounded-2xl p-7 border border-border shadow-sm relative group overflow-hidden">
-              {/* Decorative background icon */}
-              <div className="absolute top-0 right-0 p-6 opacity-5">
-                <Zap className="h-24 w-24 text-[#111111]" />
-              </div>
-
-              {/* Section Header */}
-              <p className="text-[10px] font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-[#666666]">
-                <Zap className="h-4 w-4" /> Prepayment &amp; Foreclosure Simulator
-              </p>
-
-              {/* Prepayment Input */}
-              <div className="space-y-2 mb-6 relative z-10">
-                <Label className="text-[#999999] text-[9px] font-bold uppercase tracking-[0.2em] ml-1">
-                  Prepayment Amount (₹)
-                </Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#999999]" />
-                  <Input
-                    type="number"
-                    min={0}
-                    placeholder="Enter amount"
-                    className="pl-12 h-14 rounded-xl bg-background border-border text-[#111111] placeholder:text-[#999999] font-mono focus:border-border transition-all text-xl"
-                    value={prepaymentAmount === 0 ? "" : prepaymentAmount}
-                    onChange={(e) =>
-                      setPrepaymentAmount(Math.max(0, Number(e.target.value) || 0))
-                    }
-                  />
-                </div>
-              </div>
-
-              {/* Results Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
-                {/* Remaining Loan */}
-                <div className={cn("rounded-xl p-5", glassInside)}>
-                  <p className="text-[8px] font-bold text-[#999999] uppercase tracking-[0.2em] mb-1">
-                    Remaining
-                  </p>
-                  <p className={cn("text-lg font-black font-mono tracking-tighter", neonText)}>
-                    {formatCurrency(prepaymentResult.remainingPrincipal)}
-                  </p>
-                </div>
-
-                {/* Interest Saved */}
-                <div className="rounded-xl p-5 bg-emerald-500/5 border border-emerald-500/10">
-                  <p className="text-[8px] font-bold text-emerald-600/40 uppercase tracking-[0.2em] mb-1">
-                    Saved
-                  </p>
-                  <p className="text-lg font-black font-mono text-emerald-600 tracking-tighter">
-                    {formatCurrency(prepaymentResult.interestSaved)}
-                  </p>
-                </div>
-
-                {/* New Tenure */}
-                <div className="rounded-xl p-5 bg-background border border-border">
-                  <p className="text-[8px] font-bold text-[#666666] uppercase tracking-[0.2em] mb-1">
-                    Tenure
-                  </p>
-                  <p className="text-lg font-black font-mono text-[#111111] tracking-tighter">
-                    {prepaymentResult.newTenure}{" "}
-                    <span className="text-[#999999] text-[8px] font-sans uppercase">
-                      {t('emi.months')}
-                    </span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Foreclosure savings summary line */}
-              {prepaymentAmount > 0 && prepaymentResult.interestSaved > 0 && (
-                <div className="mt-5 pt-5 border-t border-border flex justify-between items-center relative z-10">
-                  <span className="text-[9px] font-bold text-[#999999] uppercase tracking-widest flex items-center gap-2">
-                    <Info className="h-3.5 w-3.5 text-[#999999]" /> Total Interest No Prepay
-                  </span>
-                  <span className="font-black font-mono text-[#999999] text-sm tracking-tighter">
-                    {formatCurrency(prepaymentResult.originalInterestRemaining)}
-                  </span>
-                </div>
-              )}
             </div>
-          )}
+
+            {/* ✅ ADDED: Prepayment + Foreclosure Simulation UI Block */}
+            {!isCompleted && (
+            <div className="bg-background rounded-2xl p-7 border border-border/40 shadow-premium relative group overflow-hidden">
+            {/* Decorative background icon */}
+            <div className="absolute top-0 right-0 p-6 opacity-[0.03]">
+              <Zap className="h-24 w-24 text-foreground" />
+            </div>
+
+            {/* Section Header */}
+            <p className={cn(mutedLabel, "mb-6 flex items-center gap-2")}>
+              <Zap className="h-4 w-4 text-institutional-blue" /> Prepayment &amp; Foreclosure Simulator
+            </p>
+
+            {/* Prepayment Input */}
+            <div className="space-y-2 mb-6 relative z-10">
+              <Label className={mutedLabel}>
+                Prepayment Amount (₹)
+              </Label>
+              <div className="relative">
+                <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-institutional-blue" />
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="Enter amount"
+                  className="pl-12 h-14 rounded-xl bg-background border-border/40 text-foreground placeholder:text-text-muted/40 font-mono focus:border-institutional-blue transition-all text-xl font-black"
+                  value={prepaymentAmount === 0 ? "" : prepaymentAmount}
+                  onChange={(e) =>
+                    setPrepaymentAmount(Math.max(0, Number(e.target.value) || 0))
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Results Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
+              {/* Remaining Loan */}
+              <div className={cn("rounded-xl p-5 shadow-inner", glassInside)}>
+                <p className={mutedLabel}>
+                  Remaining
+                </p>
+                <p className={cn("text-lg font-black font-mono tabular-nums tracking-tighter text-foreground")}>
+                  {formatCurrency(prepaymentResult.remainingPrincipal)}
+                </p>
+              </div>
+
+              {/* Interest Saved */}
+              <div className="rounded-xl p-5 bg-background border border-border/40 shadow-premium">
+                <p className={mutedLabel}>
+                  Saved
+                </p>
+                <p className="text-lg font-black font-mono tabular-nums text-institutional-blue tracking-tighter">
+                  {formatCurrency(prepaymentResult.interestSaved)}
+                </p>
+              </div>
+
+              {/* New Tenure */}
+              <div className="rounded-xl p-5 bg-background border border-border/40 shadow-premium">
+                <p className={mutedLabel}>
+                  Tenure
+                </p>
+                <p className="text-lg font-black font-mono tabular-nums text-foreground tracking-tighter">
+                  {prepaymentResult.newTenure}{" "}
+                  <span className="text-text-muted text-[10px] font-sans uppercase tracking-widest">
+                    {t('emi.months')}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            {/* Foreclosure savings summary line */}
+            {prepaymentAmount > 0 && prepaymentResult.interestSaved > 0 && (
+              <div className="mt-5 pt-5 border-t border-border/40 flex justify-between items-center relative z-10">
+                <span className={cn(mutedLabel, "flex items-center gap-2")}>
+                  <Info className="h-3.5 w-3.5 text-institutional-blue" /> Total Interest No Prepay
+                </span>
+                <span className="font-black font-mono tabular-nums text-text-muted text-sm tracking-tighter">
+                  {formatCurrency(prepaymentResult.originalInterestRemaining)}
+                </span>
+              </div>
+            )}
+            </div>
+            )}
           {/* ✅ END ADDED: Prepayment + Foreclosure Simulation UI Block */}
 
         </CardContent>
@@ -424,7 +423,7 @@ export const EMILoanDetailsBlock: React.FC<EMILoanDetailsBlockProps> = ({
 }) => {
   const { t } = useLanguage();
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const neonBtnInteractive = "bg-[#111111] text-white rounded-xl h-14 px-8 font-black uppercase text-[10px] tracking-widest shadow-lg hover:bg-[#111111]/90 active:scale-[0.98] transition-all";
+  const neonBtnInteractive = "bg-foreground text-surface rounded-xl h-14 px-8 font-black uppercase text-xs tracking-widest shadow-institutional hover:bg-foreground/90 active:scale-[0.98] transition-all";
 
   if (!entry || !entry.loanDetails) {
     return (
@@ -435,10 +434,10 @@ export const EMILoanDetailsBlock: React.FC<EMILoanDetailsBlockProps> = ({
           </Button>
         )}
         <EMIFormModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} onSave={onSaveNewEMI!} />
-        <Card className={cn("bg-surface border-dashed border-2 border-border p-10 rounded-[24px] shadow-sm", className)}>
+        <Card className={cn("bg-surface border-dashed border-2 border-border/40 p-10 rounded-premium shadow-premium", className)}>
           <div className="flex flex-col items-center text-center gap-4">
-            <FileQuestion className="h-10 w-10 text-[#999999]/10" />
-            <p className="text-[#999999] font-bold uppercase tracking-widest text-[9px]">No Loan Configuration Found</p>
+            <FileQuestion className="h-10 w-10 text-text-muted opacity-10" />
+            <p className="text-text-muted font-black uppercase tracking-[0.2em] text-[10px]">No Loan Configuration Found</p>
           </div>
         </Card>
       </div>
@@ -494,12 +493,12 @@ const EMIFormModal: React.FC<EMIFormModalProps> = ({ isOpen, onClose, onSave, in
     const emiDay = parseInt(formData.emiDate);
 
     if (!P || isNaN(R) || !N || !formData.startDate || !formData.loanName || isNaN(emiDay)) {
-      toast({ title: "Incomplete Details", description: "All fields are required. Ensure numeric fields are valid.", variant: "destructive" });
+      toast({ title: t('common.invalid', "Incomplete Details"), description: t('emi.validationError', "All fields are required. Ensure numeric fields are valid."), variant: "destructive" });
       return;
     }
 
     if (emiDay < 1 || emiDay > 31) {
-      toast({ title: "Invalid EMI Day", description: "EMI Day must be between 1 and 31.", variant: "destructive" });
+      toast({ title: t('common.invalid', "Invalid EMI Day"), description: t('emi.dayError', "EMI Day must be between 1 and 31."), variant: "destructive" });
       return;
     }
 
@@ -535,93 +534,93 @@ const EMIFormModal: React.FC<EMIFormModalProps> = ({ isOpen, onClose, onSave, in
       monthly_emi: Math.round(calculatedEMI)
     });
 
-    toast({ title: "Operation Successful! 🚀", className: "bg-emerald-600 text-white border-none shadow-lg" });
+    toast({ title: t('emi.opSuccess', "Operation Successful! 🚀"), className: "bg-foreground text-surface shadow-institutional border-none font-black uppercase text-xs tracking-widest" });
     onClose();
   };
 
-  const inputStyle = "h-14 rounded-xl bg-background border-border text-[#111111] placeholder:text-[#999999] font-mono focus:border-border transition-all shadow-sm";
-  const labelStyle = "text-[#999999] text-[9px] font-bold uppercase tracking-[0.2em] ml-1";
+  const inputStyle = "h-14 rounded-xl bg-background border-border/40 text-foreground placeholder:text-text-muted/40 font-mono focus:border-institutional-blue transition-all shadow-inner font-black";
+  const labelStyle = "text-text-muted text-[10px] font-black uppercase tracking-[0.2em] ml-1";
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] sm:max-w-2xl rounded-[32px] p-0 border border-border shadow-2xl overflow-hidden bg-background">
+      <DialogContent className="w-[95vw] sm:max-w-2xl rounded-modal p-0 border border-border/40 shadow-institutional overflow-hidden bg-background">
         <DialogDescription className="sr-only">Loan setup form</DialogDescription>
-        <div className="h-1 w-full bg-background" />
+        <div className="h-1 w-full bg-secondary/50" />
         
         <div className="p-7 sm:p-10 space-y-8 max-h-[85vh] overflow-y-auto custom-scrollbar">
           <DialogHeader>
-            <DialogTitle className="text-3xl font-black tracking-tighter flex items-center gap-4 text-[#111111] uppercase">
-              <div className="p-3 bg-background rounded-2xl border border-border">
-                <Landmark className="w-7 h-7 text-[#999999]" />
+            <DialogTitle className="text-3xl font-black tracking-tighter flex items-center gap-4 text-foreground uppercase">
+              <div className="p-3 bg-background rounded-2xl border border-border/40 shadow-inner">
+                <Landmark className="w-7 h-7 text-institutional-blue" />
               </div>
-              Loan Audit
+              {t('emi.loanAudit', 'Loan Audit')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2 sm:col-span-2">
-              <Label className={labelStyle}>Loan Title</Label>
+              <Label className={labelStyle}>{t('emi.loanTitleLabel', 'Loan Title')}</Label>
               <Input placeholder="e.g. Dream Home Loan" className={inputStyle} value={formData.loanName} onChange={(e) => handleChange("loanName", e.target.value)} />
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <Label className={labelStyle}>Bank Name/App Name</Label>
+              <Label className={labelStyle}>{t('emi.bank', 'Bank Name/App Name')}</Label>
               <div className="relative">
-                <Landmark className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#999999]" />
+                <Landmark className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-institutional-blue" />
                 <Input placeholder="e.g. HDFC Bank" className={cn("pl-12", inputStyle)} value={formData.bankName} onChange={(e) => handleChange("bankName", e.target.value)} />
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label className={labelStyle}>Total Principal (₹)</Label>
+              <Label className={labelStyle}>{t('emi.principalAmount', 'Total Principal (₹)')}</Label>
               <div className="relative">
-                <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#999999]" />
+                <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-institutional-blue" />
                 <Input type="number" placeholder="5,00,000" className={cn("pl-12 text-xl font-black font-mono", inputStyle)} value={formData.loanAmount} onChange={(e) => handleChange("loanAmount", e.target.value)} />
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label className={labelStyle}>Interest Rate (%)</Label>
+              <Label className={labelStyle}>{t('emi.interestRatePlaceholder', 'Interest Rate (%)')}</Label>
               <div className="relative">
-                <Percent className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#999999]" />
+                <Percent className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-institutional-blue" />
                 <Input type="number" step="0.1" placeholder="8.5" className={cn("pl-12 text-xl font-black font-mono", inputStyle)} value={formData.interestRate} onChange={(e) => handleChange("interestRate", e.target.value)} />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className={labelStyle}>Tenure (Months)</Label>
+              <Label className={labelStyle}>{t('emi.months', 'Tenure (Months)')}</Label>
               <Input type="number" placeholder="60" className={cn("text-xl font-black font-mono", inputStyle)} value={formData.tenureMonths} onChange={(e) => handleChange("tenureMonths", e.target.value)} />
             </div>
 
             <div className="space-y-2">
-              <Label className={labelStyle}>Interest Logic</Label>
+              <Label className={labelStyle}>{t('emi.interestLogic', 'Interest Logic')}</Label>
               <RadioGroup defaultValue="REDUCING" value={formData.interestType} onValueChange={(v) => handleChange("interestType", v)} className="flex gap-4 h-14">
-                <div className="flex items-center space-x-2 bg-background px-4 rounded-xl border border-border flex-1">
-                  <RadioGroupItem value="REDUCING" id="red" className="text-[#111111]" />
-                  <Label htmlFor="red" className="text-[#111111] text-[10px] font-bold uppercase cursor-pointer">Reducing</Label>
+                <div className="flex items-center space-x-2 bg-background px-4 rounded-xl border border-border/40 flex-1 hover:border-institutional-blue/20 transition-all cursor-pointer">
+                  <RadioGroupItem value="REDUCING" id="red" className="text-foreground" />
+                  <Label htmlFor="red" className="text-foreground text-[10px] font-black uppercase tracking-widest cursor-pointer">{t('emi.reducing', 'Reducing')}</Label>
                 </div>
-                <div className="flex items-center space-x-2 bg-background px-4 rounded-xl border border-border flex-1">
-                  <RadioGroupItem value="FLAT" id="flt" className="text-[#111111]" />
-                  <Label htmlFor="flt" className="text-[#111111] text-[10px] font-bold uppercase cursor-pointer">Flat</Label>
+                <div className="flex items-center space-x-2 bg-background px-4 rounded-xl border border-border/40 flex-1 hover:border-institutional-blue/20 transition-all cursor-pointer">
+                  <RadioGroupItem value="FLAT" id="flt" className="text-foreground" />
+                  <Label htmlFor="flt" className="text-foreground text-[10px] font-black uppercase tracking-widest cursor-pointer">{t('emi.flat', 'Flat')}</Label>
                 </div>
               </RadioGroup>
             </div>
 
             <div className="space-y-2">
-              <Label className={labelStyle}>Inception Date</Label>
+              <Label className={labelStyle}>{t('emi.inceptionDate', 'Inception Date')}</Label>
               <Input type="date" className={inputStyle} value={formData.startDate} onChange={(e) => handleChange("startDate", e.target.value)} />
             </div>
 
             <div className="space-y-2">
-              <Label className={labelStyle}>Monthly EMI Day</Label>
+              <Label className={labelStyle}>{t('emi.monthlyEmiDay', 'Monthly EMI Day')}</Label>
               <Input type="number" min="1" max="31" className={inputStyle} value={formData.emiDate} onChange={(e) => handleChange("emiDate", e.target.value)} placeholder="1-31" />
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-border">
-            <button type="button" onClick={onClose} className="flex-1 h-14 font-bold uppercase tracking-widest text-[#999999] rounded-xl hover:bg-background transition-all duration-300 active:scale-[0.98]">Cancel</button>
-            <Button onClick={handleCalculateAndSave} className={cn("flex-1 h-14 font-black uppercase tracking-widest text-white bg-[#111111] rounded-xl hover:bg-[#111111]/90 active:scale-[0.98] shadow-lg")}>
-              <Check className="w-5 h-5 mr-3" /> {initialData ? "Save Changes" : "Commit Audit"}
+          <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-border/40">
+            <button type="button" onClick={onClose} className="flex-1 h-14 font-black uppercase text-[10px] tracking-[0.2em] text-text-muted rounded-xl hover:bg-secondary transition-all duration-300 active:scale-[0.98]">{t('common.cancel', 'Abort')}</button>
+            <Button onClick={handleCalculateAndSave} className={cn("flex-1 h-14 font-black uppercase tracking-widest text-surface bg-foreground rounded-xl hover:bg-foreground/90 active:scale-[0.98] shadow-institutional")}>
+              <Check className="w-5 h-5 mr-3" /> {initialData ? t('emi.saveChanges', "Update Profile") : t('emi.commitAudit', "Commit Audit")}
             </Button>
           </div>
         </div>

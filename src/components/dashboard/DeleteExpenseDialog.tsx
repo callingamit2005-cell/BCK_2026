@@ -1,8 +1,7 @@
 /**
- * DeleteExpenseDialog.tsx - BachatKaro Neon Enterprise Edition
- * UI: Deep Purple/Pink Gradient Background with High-Contrast White Text.
+ * DeleteExpenseDialog.tsx - BachatKaro Premium Fintech Edition
+ * UI: High-Security Deletion Terminal.
  * 🛡️ LOGIC LOCK: Optimistic Updates, AbortController & Supabase Logic 100% untouched.
- * ✅ FEATURES: Fixed Text Readability, Neon Warning Accents, Glassmorphic Dialog.
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -19,7 +18,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, Trash2 } from 'lucide-react';
+import { Loader2, AlertTriangle, Trash2, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
@@ -76,9 +75,9 @@ const DeleteExpenseDialog = ({ expenseId, open, onOpenChange }: DeleteExpenseDia
       if (error) throw error;
 
       toast({ 
-        title: 'Deleted Successfully', 
-        description: 'Transaction has been removed.',
-        className: 'bg-foreground text-surface border-none shadow-lg' 
+        title: 'Verified Deletion', 
+        description: 'Transaction permanently erased from ledger.',
+        className: 'bg-surface border-destructive text-foreground shadow-premium' 
       });
       queryClient.invalidateQueries({ queryKey });
       onOpenChange(false);
@@ -92,48 +91,42 @@ const DeleteExpenseDialog = ({ expenseId, open, onOpenChange }: DeleteExpenseDia
     }
   }, [isDeleting, expenseId, user, queryClient, toast, onOpenChange]);
 
-  // ==================== PREMIUM LIGHT UI SYSTEM ====================
-  const premiumCard = "bg-surface border border-border shadow-2xl rounded-[32px] overflow-hidden transform-gpu";
-  
-  // 🛠️ The visibility anchors
-  const clearText = "text-foreground"; 
-  const secondaryText = "text-text-secondary font-medium tracking-tight leading-relaxed";
-  const alertBox = "bg-background border border-border rounded-[24px] p-5 flex items-start gap-4 shadow-inner";
-
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className={cn("p-0 max-w-md mx-auto transition-all duration-500", premiumCard)}>
+      <AlertDialogContent className="p-0 max-w-md mx-auto transition-all duration-500 bg-surface border border-border shadow-institutional rounded-modal overflow-hidden">
         
         {/* Top Accent Bar */}
-        <div className="h-2 w-full bg-foreground opacity-5" />
+        <div className="h-1.5 w-full bg-destructive" />
 
-        <div className="p-8 sm:p-10 space-y-8">
-          <AlertDialogHeader className="space-y-5">
-            <AlertDialogTitle className={cn("text-2xl font-bold tracking-tight flex items-center gap-4 uppercase", clearText)}>
-              <div className="p-3 rounded-2xl bg-background border border-border shadow-sm">
-                <Trash2 className="h-6 w-6 text-text-secondary" />
+        <div className="p-6 sm:p-8 space-y-8">
+          <AlertDialogHeader className="space-y-4 text-left">
+            <AlertDialogTitle className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-center shadow-sm shrink-0">
+                <Trash2 className="h-6 w-6 text-destructive" />
               </div>
-              Delete Record?
+              <div>
+                <p className="text-[10px] font-bold text-destructive uppercase tracking-widest leading-none">Security Protocol</p>
+                <span className="text-xl font-bold tracking-tight text-foreground mt-1 block">Confirm Deletion</span>
+              </div>
             </AlertDialogTitle>
-            <AlertDialogDescription className={cn("mt-2 text-base", secondaryText)}>
-              This will permanently erase this transaction from your records and cloud synchronization. This action is irreversible.
+            <AlertDialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
+              This will permanently erase this transaction from your financial ledger and all synchronized cloud instances. <strong className="text-foreground">This action cannot be undone.</strong>
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          {/* Visibility-Fixed Error Display */}
           {deleteError && (
-            <div className={alertBox} role="alert">
-              <AlertTriangle className="h-5 w-5 text-text-muted shrink-0 mt-0.5" />
-              <p className={cn("text-sm font-bold uppercase tracking-widest", clearText)}>
+            <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 flex items-start gap-3 shadow-inner" role="alert">
+              <ShieldAlert className="h-5 w-5 text-destructive shrink-0" />
+              <p className="text-[11px] font-bold uppercase tracking-wider text-destructive mt-0.5">
                 {deleteError}
               </p>
             </div>
           )}
 
-          <AlertDialogFooter className="flex flex-col sm:flex-row gap-4 pt-4">
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 pt-2">
             <AlertDialogCancel
               disabled={isDeleting}
-              className="h-14 px-8 rounded-2xl border border-border bg-background text-text-secondary font-bold hover:bg-surface hover:text-foreground transition-all disabled:opacity-50 active:scale-95 uppercase tracking-widest text-[11px] shadow-sm"
+              className="flex-1 h-12 rounded-xl bg-surface border border-border text-muted-foreground hover:bg-muted hover:text-foreground font-bold text-[11px] uppercase tracking-widest shadow-sm transition-all active:scale-95"
             >
               Cancel
             </AlertDialogCancel>
@@ -141,7 +134,7 @@ const DeleteExpenseDialog = ({ expenseId, open, onOpenChange }: DeleteExpenseDia
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
-              className="h-14 px-8 rounded-2xl bg-foreground text-surface font-bold shadow-xl hover:bg-foreground/90 border-none transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center uppercase tracking-widest text-[11px]"
+              className="flex-1 h-12 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground border-none font-bold text-[11px] uppercase tracking-widest shadow-premium flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
             >
               {isDeleting ? (
                 <>
@@ -149,7 +142,7 @@ const DeleteExpenseDialog = ({ expenseId, open, onOpenChange }: DeleteExpenseDia
                   Wiping...
                 </>
               ) : (
-                'Confirm Delete'
+                'Erase Record'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

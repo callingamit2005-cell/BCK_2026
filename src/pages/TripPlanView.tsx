@@ -1,6 +1,9 @@
-// src/components/groups/TripAdvisor.tsx
-// 🛡️ LOGIC LOCK: 10-Point Executive Blueprint, Smart Destination Detector, Map Links & Warning Fixes.
-// 📱💻 RESPONSIVE MASTERCLASS: Mobile-first (Compact) -> Desktop-optimized (Spacious).
+/**
+ * TripPlanView.tsx (TripAdvisor) - BachatKaro Premium Fintech Edition
+ * UI: High-Precision Institutional Planning Terminal.
+ * 🛡️ LOGIC LOCK: Smart Destination Detector, Map Links & AI Generation untouched.
+ * 📱💻 RESPONSIVE MASTERCLASS: Mobile-first (Compact) -> Desktop-optimized (Spacious).
+ */
 
 import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -10,11 +13,12 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Share2, MapPin, Sparkles, CheckCircle2, AlertTriangle, Map as MapIcon, Navigation, Building, Clock, Star, ExternalLink, Zap } from 'lucide-react';
+import { Loader2, Share2, Sparkles, CheckCircle2, AlertTriangle, Map as MapIcon, Navigation, Info } from 'lucide-react';
 import { tripPlannerService } from '@/services/tripPlanner';
 import { useQuery } from '@tanstack/react-query';
+import { cn } from "@/lib/utils";
 
-// 🌍 100+ Top Destinations to auto-detect a valid trip
+// 🌍 100+ Top Destinations to auto-detect a valid trip (Locked)
 const KNOWN_PLACES = [
   'goa', 'kerala', 'jaipur', 'ayodhya', 'manali', 'shimla', 'mumbai', 'delhi', 'bangalore', 'pune', 
   'chennai', 'kolkata', 'hyderabad', 'agra', 'rishikesh', 'haridwar', 'varanasi', 'kasol', 'udaipur', 
@@ -29,7 +33,7 @@ const KNOWN_PLACES = [
   'mahabalipuram', 'kochi', 'trivandrum', 'alleppey', 'sultanpur', 'lucknow', 'kanpur', 'prayagraj', 'patna'
 ];
 
-// 🛑 Strict Blacklist for expenses
+// 🛑 Strict Blacklist for expenses (Locked)
 const BLACKLIST = ['rent', 'bill', 'purchase', 'emi', 'salary', 'grocery', 'paid', 'due', 'expense', 'split', 'settle', 'loan', 'fee', 'hisaab', 'kharcha', 'udhaar', 'maid', 'cook', 'petrol', 'amazon', 'flipkart'];
 
 const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => {
@@ -61,25 +65,16 @@ const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => 
     }
   }, [open, groupName]);
 
-  // 🧠 SMART DETECTOR LOGIC: Place = Plan, No Place = Expense
+  // 🧠 SMART DETECTOR LOGIC (Locked)
   const isTravelGroup = useMemo(() => {
     if (manualOverride) return true; 
-
     const lowerName = groupName.toLowerCase();
-
-    // 1. Direct Block if it contains expense words
     if (BLACKLIST.some(k => lowerName.includes(k))) return false;
-
-    // 2. Check if a valid place exists in the name
     const hasPlace = KNOWN_PLACES.some(place => lowerName.includes(place));
-
-    // 3. If it contains generic words but NO place, BLOCK IT!
     const genericTerms = ['honeymoon', 'friends', 'trip', 'tour', 'vacation', 'holiday', 'weekend', 'party', 'family'];
     const hasGenericTerm = genericTerms.some(term => lowerName.includes(term));
-
     if (hasPlace) return true; 
     if (hasGenericTerm && !hasPlace) return false; 
-
     return false; 
   }, [groupName, manualOverride]);
 
@@ -108,7 +103,7 @@ const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => 
         userId: user?.id 
       });
       setTripPlan(plan);
-      toast({ title: "Blueprint Ready!", className: "bg-emerald-600 text-white" });
+      toast({ title: "Trip plan ready!", className: "bg-surface border-primary text-foreground shadow-premium" });
     } catch (error: any) { 
       toast({ title: "Error", description: error.message, variant: 'destructive' }); 
     } finally { 
@@ -116,18 +111,11 @@ const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => 
     }
   };
 
-  // 🚀 VIRAL WHATSAPP SHARE LOGIC (With Emojis & Map Links)
+  // 🚀 VIRAL WHATSAPP SHARE LOGIC (Locked)
   const handleWhatsAppShare = async () => {
     if (!p) return;
-    
     try {
-      // TASK 1: CREATE TOKEN ON INVITE
       const token = crypto.randomUUID();
-      
-      if (import.meta.env.DEV) {
-        console.log("[NEW TOKEN CREATED]", token);
-      }
-
       const { error: insertError } = await supabase.from("group_share_links").insert({
         group_id: groupId,
         token: token,
@@ -137,24 +125,22 @@ const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => 
       });
 
       if (insertError) {
-        console.error("❌ [Share] Token Insertion Failed:", insertError);
+        if (process.env.NODE_ENV === 'development') console.error("❌ [Share] Token Insertion Failed:", insertError);
         toast({ title: "Invite Error", description: "Failed to secure an invite link. Please try again.", variant: "destructive" });
         return;
       }
 
       const appUrl = `${window.location.origin}/join?token=${token}`;
-
-      // 🌍 Helper Function: Creates a direct Google Maps search link
       const getMapLink = (query: string) => `https://maps.google.com/?q=$${encodeURIComponent(query + ' ' + targetDestination)}`;
       
-      const msg = `✈️ *EXECUTIVE BLUEPRINT: ${targetDestination.toUpperCase()} TRIP* 🌴
+      const msg = `✈️ *TRIP PLAN: ${targetDestination.toUpperCase()} TRIP* 🌴
 
 Hey team! Check out our smart trip plan generated via BachatKaro App:
 
-1️⃣ 📊 *Executive Overview*
-This is a ready-to-execute ${targetDestination} trip blueprint.
+1️⃣ 📊 *Overview*
+Smart trip plan for ${targetDestination}.
 ✔ Balanced: fun + adventure + relax
-✔ Optimized: budget + time + comfort
+✔ Covered: budget + time + comfort
 👉 Ideal Duration: ${p.overview?.duration || 'TBD'}
 👉 Best Fit: ${p.overview?.bestFit || 'TBD'}
 
@@ -197,7 +183,7 @@ ${appUrl}`;
 
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     } catch (e: any) {
-      console.error("❌ [Share] System Error:", e);
+      if (process.env.NODE_ENV === 'development') console.error("❌ [Share] System Error:", e);
       toast({ title: "Invite Error", description: "Could not generate a secure link.", variant: "destructive" });
     }
   };
@@ -209,21 +195,22 @@ ${appUrl}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 overflow-hidden bg-background rounded-[2.5rem] border border-border shadow-2xl z-50 max-h-[92vh] flex flex-col outline-none">
+      <DialogContent
+        className="fixed left-[50%] translate-x-[-50%] translate-y-0 w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 bg-background rounded-modal border border-border shadow-institutional z-50 flex flex-col outline-none overflow-hidden"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 70px)', maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 140px)' }}
+      >
         
-        {/* Radix UI Accessibility Fixes */}
-        <DialogTitle className="sr-only">Executive Blueprint Planner</DialogTitle>
+        <DialogTitle className="sr-only">Trip Planner</DialogTitle>
         <DialogDescription className="sr-only">Plan your next trip and calculate budget.</DialogDescription>
 
-        {/* 📱 Mobile visual handle */}
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-[#111111]/20 rounded-full z-20 md:hidden" />
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-primary z-20" />
 
-        <div className="flex-1 overflow-y-auto no-scrollbar pb-8 md:pb-12">
+        <div className="flex-1 overflow-y-auto custom-scrollbar pb-8 md:pb-12">
           
-          <div className="relative pt-12 pb-6 md:pt-16 md:pb-8 bg-gradient-to-b from-purple-900/10 to-transparent">
-             <div className="text-center mb-6 md:mb-8">
-                <h3 className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#666666] mb-1 md:mb-2">EXECUTIVE BLUEPRINT</h3>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-[#111111] truncate px-4" style={{ textShadow: "0 0 10px #FF007A, 0 0 20px #FF007A" }}>
+          <div className="relative pt-10 pb-6 md:pt-12 md:pb-8 bg-surface border-b border-border/50">
+             <div className="text-center px-6">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Destination Intelligence</p>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground truncate">
                   {targetDestination || groupName}
                 </h2>
              </div>
@@ -231,122 +218,139 @@ ${appUrl}`;
              {/* 🛑 BLOCKED EXPENSE UI */}
              {!isTravelGroup ? (
                <div className="px-6 md:px-12 py-10 text-center animate-in fade-in">
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-6 md:p-8">
-                    <p className="text-emerald-400 font-black text-lg md:text-2xl italic mb-2 tracking-tighter">No trip plan for this. Enjoy! 🚀</p>
-                    <p className="text-[#666666] text-[10px] md:text-xs uppercase font-bold mt-2">Manage your group expenses wisely.</p>
+                  <div className="bg-muted/20 border border-border/50 rounded-2xl p-6 md:p-8 shadow-sm max-w-md mx-auto">
+                    <Info className="h-8 w-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+                    <p className="text-foreground font-bold text-lg md:text-xl tracking-tight mb-2">No valid trip destination detected.</p>
+                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest leading-relaxed">Proceed to manage group settlements.</p>
                   </div>
                   
                   {/* 🌍 FALLBACK: Manual Override Button */}
-                  <div className="mt-8 pt-6 border-t border-border max-w-sm mx-auto">
-                     <p className="text-[#666666] text-xs font-bold mb-3">Wait, is this actually a trip?</p>
-                     <Button onClick={handleManualOverride} variant="outline" className="w-full bg-surface border-border text-[#111111] rounded-xl h-12">
-                       <MapIcon className="w-4 h-4 mr-2" /> Yes, let me add the destination
+                  <div className="mt-8 pt-6 border-t border-border/50 max-w-sm mx-auto">
+                     <p className="text-muted-foreground text-[10px] font-bold mb-3 uppercase tracking-widest">Wait, is this actually a trip?</p>
+                     <Button onClick={handleManualOverride} variant="outline" className="w-full bg-surface border-border text-foreground rounded-xl h-12 hover:bg-muted font-bold uppercase text-[11px] tracking-widest shadow-sm active:scale-95 transition-all">
+                       <MapIcon className="w-4 h-4 mr-2 text-primary" /> Yes, set destination
                      </Button>
                   </div>
                </div>
              ) : (
                /* ✈️ TRAVEL PLANNER UI */
-               <div className="px-6 md:px-12 lg:px-20 space-y-4 md:space-y-6">
-                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-[#666666] text-[10px] md:text-xs font-black uppercase ml-1">📍 Where to?</Label>
-                      <Input value={targetDestination} onChange={(e) => setTargetDestination(e.target.value)} placeholder="Enter a City/Place" className="bg-surface border-border text-[#111111] h-12 md:h-14 rounded-xl font-bold text-sm md:text-base px-4" />
+               <div className="px-6 md:px-12 lg:px-20 space-y-5 md:space-y-6 mt-6 md:mt-8">
+                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground text-[10px] font-bold uppercase ml-1 tracking-widest flex items-center gap-1.5">
+                        <MapIcon size={12} className="text-primary/60" /> Target
+                      </Label>
+                      <Input value={targetDestination} onChange={(e) => setTargetDestination(e.target.value)} placeholder="e.g. Goa, Manali" className="bg-muted/20 border-border/50 text-foreground h-12 md:h-14 rounded-xl font-bold text-sm md:text-base px-4 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 shadow-sm" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[#666666] text-[10px] md:text-xs font-black uppercase ml-1">👥 Members</Label>
-                      <Input type="number" value={members} onChange={(e) => setMembers(e.target.value)} className="bg-surface border-border text-[#111111] h-12 md:h-14 rounded-xl font-bold text-sm md:text-base px-4" />
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground text-[10px] font-bold uppercase ml-1 tracking-widest">Members</Label>
+                      <Input type="number" value={members} onChange={(e) => setMembers(e.target.value)} className="bg-muted/20 border-border/50 text-foreground h-12 md:h-14 rounded-xl font-bold font-mono text-sm md:text-base px-4 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 shadow-sm" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[#666666] text-[10px] md:text-xs font-black uppercase ml-1">💰 Total Budget</Label>
-                      <Input type="number" value={totalBudget} onChange={(e) => setTotalBudget(e.target.value)} className="bg-surface border-border text-[#111111] h-12 md:h-14 rounded-xl font-bold text-sm md:text-base px-4" />
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground text-[10px] font-bold uppercase ml-1 tracking-widest">Total Budget</Label>
+                      <div className="relative group">
+                        <Input type="number" value={totalBudget} onChange={(e) => setTotalBudget(e.target.value)} className="bg-muted/20 border-border/50 text-foreground h-12 md:h-14 rounded-xl font-bold font-mono text-sm md:text-base pl-9 pr-4 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 shadow-sm" />
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground group-focus-within:text-primary">₹</span>
+                      </div>
                     </div>
                  </div>
 
-                 <div className={`flex items-center gap-2 text-xs md:text-sm font-black px-2 ${isLowBudget ? 'text-red-400' : 'text-emerald-400'}`}>
-                   {isLowBudget ? <AlertTriangle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                   {isLowBudget 
-                     ? `⚠️ Very Low! Just ₹${perPersonCost}/head. Bhai budget badao ya dharamshala mein ruko!` 
-                     : `👉 Great! Per Person Budget: ₹${perPersonCost}`}
+                 <div className={cn(
+                   "flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl border w-fit mx-auto transition-all shadow-sm",
+                   isLowBudget
+                     ? "bg-warning/5 text-warning border-warning/20"
+                     : "bg-income/5 text-income border-income/20"
+                 )}>
+                   {isLowBudget ? <AlertTriangle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                   {isLowBudget
+                     ? `Tight Allocation · ₹${perPersonCost.toLocaleString()}/person`
+                     : `₹${perPersonCost.toLocaleString()} per person`}
                  </div>
-
-                 <Button onClick={handleGenerate} disabled={isGenerating} className="w-full h-12 md:h-16 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black rounded-xl md:rounded-2xl shadow-xl transition-all active:scale-95 text-sm md:text-lg uppercase tracking-tight mt-2">
-                   {isGenerating ? <Loader2 className="h-5 w-5 md:h-6 md:w-6 animate-spin" /> : <Sparkles className="h-4 w-4 md:h-6 md:w-6 mr-2 md:mr-3" />}
-                   {isGenerating ? "Generating Blueprint..." : "Create Blueprint 🚀"}
+                 <Button onClick={handleGenerate} disabled={isGenerating} className="w-full h-12 md:h-14 bg-primary text-primary-foreground font-bold uppercase text-[11px] tracking-widest rounded-xl shadow-premium active:scale-[0.98] transition-all hover:opacity-90 mt-2 disabled:opacity-50">
+                   {isGenerating ? <Loader2 className="h-5 w-5 md:h-6 md:w-6 animate-spin" /> : <Sparkles className="h-4 w-4 md:h-5 md:w-5 mr-2 md:mr-3" />}
+                   {isGenerating ? "Analyzing Logistics…" : "Generate Intelligence"}
                  </Button>
                </div>
              )}
           </div>
 
-          {/* ✨ 10-POINT EXECUTIVE UI */}
+          {/* ✨ GENERATED PLAN */}
           {p && (
-            <div className="px-6 md:px-12 lg:px-20 space-y-6 md:space-y-8 mt-4 md:mt-8 animate-in fade-in duration-500 text-[#111111]/90">
+            <div className="px-6 md:px-12 lg:px-20 space-y-6 md:space-y-8 mt-6 md:mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 text-foreground">
                
                {/* 🗺️ LIVE GOOGLE MAP EMBED */}
-               <section className="space-y-3 md:space-y-5">
-                  <h4 className="text-[10px] md:text-sm font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                    <Navigation className="h-3 w-3 md:h-5 md:w-5" /> Destination Map
+               <section className="space-y-3 md:space-y-4">
+                  <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+                    <Navigation className="h-3.5 w-3.5" /> Destination Map
                   </h4>
-                  <div className="w-full h-48 md:h-72 bg-surface rounded-2xl md:rounded-3xl overflow-hidden border border-border relative">
+                  <div className="w-full h-48 md:h-72 bg-muted/20 rounded-2xl overflow-hidden border border-border/50 relative shadow-inner">
                     <iframe 
                       width="100%" 
                       height="100%" 
-                      style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg)' }} 
+                      style={{ border: 0 }} 
                       loading="lazy" 
                       allowFullScreen 
                       src={`https://maps.google.com/maps?q=$${encodeURIComponent(targetDestination)}&t=&z=11&ie=UTF8&iwloc=&output=embed`}
                     ></iframe>
-                    <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-border rounded-2xl md:rounded-3xl"></div>
+                    <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-border/50 rounded-2xl"></div>
                   </div>
                </section>
 
                {/* 1 & 2: Overview & Assumptions */}
                <div className="grid md:grid-cols-2 gap-4">
-                 <div className="p-5 bg-surface rounded-2xl border border-border">
-                   <h4 className="text-xs font-black text-pink-400 uppercase mb-3">1️⃣ Executive Overview</h4>
-                   <ul className="text-sm space-y-2">
-                     <li>✔ Balanced: fun + adventure + relax</li>
-                     <li>👉 Duration: {typeof p.overview?.duration === 'object' ? (p.overview.duration.name || 'TBD') : (p.overview?.duration || 'TBD')}</li>
-                     <li>👉 Best Fit: {typeof p.overview?.bestFit === 'object' ? (p.overview.bestFit.name || 'TBD') : (p.overview?.bestFit || 'TBD')}</li>
+                 <div className="p-5 bg-surface rounded-2xl border border-border/60 shadow-sm hover:border-primary/20 transition-colors group">
+                   <h4 className="text-[10px] font-bold text-muted-foreground uppercase mb-3 tracking-widest">1. Overview</h4>
+                   <ul className="text-sm space-y-2 font-medium text-foreground leading-relaxed">
+                     <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-income" /> Balanced: fun + adventure + relax</li>
+                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary/40 group-hover:bg-primary" /> Duration: {typeof p.overview?.duration === 'object' ? (p.overview.duration.name || 'TBD') : (p.overview?.duration || 'TBD')}</li>
+                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary/40 group-hover:bg-primary" /> Best Fit: {typeof p.overview?.bestFit === 'object' ? (p.overview.bestFit.name || 'TBD') : (p.overview?.bestFit || 'TBD')}</li>
                    </ul>
                  </div>
-                 <div className="p-5 bg-surface rounded-2xl border border-border">
-                   <h4 className="text-xs font-black text-pink-400 uppercase mb-3">2️⃣ Assumptions</h4>
-                   <ul className="text-sm space-y-2">
-                     <li>• Group: {typeof p.assumptions?.group === 'object' ? (p.assumptions.group.name || 'TBD') : (p.assumptions?.group || 'TBD')}</li>
-                     <li>• Target: {typeof p.assumptions?.budgetTarget === 'object' ? (p.assumptions.budgetTarget.name || 'TBD') : (p.assumptions?.budgetTarget || 'TBD')}</li>
-                     <li>• Mode: {typeof p.assumptions?.travelMode === 'object' ? (p.assumptions.travelMode.name || 'TBD') : (p.assumptions?.travelMode || 'TBD')}</li>
+                 <div className="p-5 bg-surface rounded-2xl border border-border/60 shadow-sm hover:border-primary/20 transition-colors group">
+                   <h4 className="text-[10px] font-bold text-muted-foreground uppercase mb-3 tracking-widest">2. Parameters</h4>
+                   <ul className="text-sm space-y-2 font-medium text-foreground leading-relaxed">
+                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary/40 group-hover:bg-primary" /> Group: {typeof p.assumptions?.group === 'object' ? (p.assumptions.group.name || 'TBD') : (p.assumptions?.group || 'TBD')}</li>
+                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary/40 group-hover:bg-primary" /> Target: {typeof p.assumptions?.budgetTarget === 'object' ? (p.assumptions.budgetTarget.name || 'TBD') : (p.assumptions?.budgetTarget || 'TBD')}</li>
+                     <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary/40 group-hover:bg-primary" /> Mode: {typeof p.assumptions?.travelMode === 'object' ? (p.assumptions.travelMode.name || 'TBD') : (p.assumptions?.travelMode || 'TBD')}</li>
                    </ul>
                  </div>
                </div>
 
                {/* 3 & 4: Travel & Stay */}
                <div className="grid md:grid-cols-2 gap-4">
-                 <div className="p-5 bg-surface rounded-2xl border border-border">
-                   <h4 className="text-xs font-black text-indigo-400 uppercase mb-3">3️⃣ Travel Plan</h4>
-                   <p className="text-sm font-bold">✈️ Flight Route: {typeof p.travelPlan?.flight?.route === 'object' ? (p.travelPlan.flight.route.name || 'TBD') : (p.travelPlan?.flight?.route || 'TBD')}</p>
-                   <p className="text-xs text-[#666666] mb-2">{typeof p.travelPlan?.flight?.postLanding === 'object' ? (p.travelPlan.flight.postLanding.desc || 'Standard arrival protocol') : (p.travelPlan?.flight?.postLanding || 'Standard arrival protocol')}</p>
-                   <p className="text-sm font-bold">🚆 Train Route: {typeof p.travelPlan?.train?.route === 'object' ? (p.travelPlan.train.route.name || 'TBD') : (p.travelPlan?.train?.route || 'TBD')}</p>
+                 <div className="p-5 bg-surface rounded-2xl border border-border/60 shadow-sm">
+                   <h4 className="text-[10px] font-bold text-muted-foreground uppercase mb-3 tracking-widest">3. Logistics</h4>
+                   <p className="text-sm font-bold tracking-tight">Flight: {typeof p.travelPlan?.flight?.route === 'object' ? (p.travelPlan.flight.route.name || 'TBD') : (p.travelPlan?.flight?.route || 'TBD')}</p>
+                   <p className="text-[10px] text-muted-foreground mb-3 font-bold uppercase tracking-widest mt-0.5">{typeof p.travelPlan?.flight?.postLanding === 'object' ? (p.travelPlan.flight.postLanding.desc || 'Standard arrival') : (p.travelPlan?.flight?.postLanding || 'Standard arrival')}</p>
+                   <p className="text-sm font-bold tracking-tight pt-3 border-t border-border/40">Train: {typeof p.travelPlan?.train?.route === 'object' ? (p.travelPlan.train.route.name || 'TBD') : (p.travelPlan?.train?.route || 'TBD')}</p>
                  </div>
-                 <div className="p-5 bg-surface rounded-2xl border border-border">
-                   <h4 className="text-xs font-black text-indigo-400 uppercase mb-3">4️⃣ Stay Strategy</h4>
-                   <p className="text-sm font-bold">🟡 {typeof p.stayStrategy?.location === 'object' ? (p.stayStrategy.location.name || 'TBD') : (p.stayStrategy?.location || 'TBD')}</p>
-                   <p className="text-xs text-[#666666] mb-2">Areas: {typeof p.stayStrategy?.areas === 'object' ? (p.stayStrategy.areas.name || 'Optimized') : (p.stayStrategy?.areas || 'Optimized')}</p>
-                   <p className="text-xs font-bold text-indigo-300">Hotels: {p.stayStrategy?.hotels?.map((h: any) => (typeof h === 'object' ? (h.name || 'Hotel') : h)).join(', ') || 'Selection active'}</p>
+                 <div className="p-5 bg-surface rounded-2xl border border-border/60 shadow-sm">
+                   <h4 className="text-[10px] font-bold text-muted-foreground uppercase mb-3 tracking-widest">4. Accommodation</h4>
+                   <p className="text-sm font-bold tracking-tight">Location: {typeof p.stayStrategy?.location === 'object' ? (p.stayStrategy.location.name || 'TBD') : (p.stayStrategy?.location || 'TBD')}</p>
+                   <p className="text-[10px] text-muted-foreground mb-3 font-bold uppercase tracking-widest mt-0.5">Zones: {typeof p.stayStrategy?.areas === 'object' ? (p.stayStrategy.areas.name || 'Covered') : (p.stayStrategy?.areas || 'Covered')}</p>
+                   <div className="mt-3 pt-3 border-t border-border/40">
+                     <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1.5">Recommendations</p>
+                     <p className="text-xs font-semibold leading-relaxed">{p.stayStrategy?.hotels?.map((h: any) => (typeof h === 'object' ? (h.name || 'Hotel') : h)).join(', ') || 'Processing'}</p>
+                   </div>
                  </div>
                </div>
+
                {/* 5: Itinerary */}
                <div className="space-y-4">
-                 <h4 className="text-xs font-black text-emerald-400 uppercase">5️⃣ Day-Wise Premium Itinerary</h4>
-                 <div className="grid gap-4">
+                 <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">5. Itinerary Matrix</h4>
+                 <div className="grid gap-3">
                    {p.itinerary?.map((d: any, i: number) => (
-                     <div key={i} className="p-4 bg-surface border-l-2 border-emerald-500 rounded-r-2xl">
-                       <h5 className="text-sm font-black mb-2">🔹 Day {d.day} — {d.title}</h5>
-                       <ul className="text-xs text-[#666666] space-y-1 mb-2">
+                     <div key={i} className="p-5 bg-surface border-l-[3px] border-primary rounded-r-2xl shadow-sm">
+                       <h5 className="text-sm font-bold mb-3 tracking-tight">Day {d.day} — {d.title}</h5>
+                       <ul className="text-xs text-muted-foreground space-y-1.5 mb-4 font-medium">
                          {d.activities?.map((act: any, idx: number) => (
-                           <li key={idx}>• {typeof act === 'object' ? (act.desc || act.name || 'Activity') : act}</li>
+                           <li key={idx} className="flex items-start gap-2"><span className="text-primary/40">•</span> <span className="flex-1">{typeof act === 'object' ? (act.desc || act.name || 'Activity') : act}</span></li>
                          ))}
                        </ul>
-                       <p className="text-[10px] font-bold text-emerald-400 uppercase">👉 Budget: {d.dailyBudget}</p>
+                       <div className="inline-flex items-center gap-2 bg-muted/20 px-3 py-1.5 rounded-lg border border-border/50">
+                         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Allocation</span>
+                         <span className="text-xs font-bold font-mono text-foreground">{d.dailyBudget}</span>
+                       </div>
                      </div>
                    ))}
                  </div>
@@ -354,33 +358,36 @@ ${appUrl}`;
 
                {/* 6, 7 & 8: Transport, Food, Cost */}
                <div className="grid md:grid-cols-3 gap-4">
-                 <div className="p-4 bg-surface rounded-2xl">
-                   <h4 className="text-[10px] font-black text-yellow-400 uppercase mb-2">6️⃣ Transport</h4>
-                   <p className="text-xs">• {typeof p.transportStrategy?.bestOption === 'object' ? (p.transportStrategy.bestOption.name || p.transportStrategy.bestOption.desc) : (p.transportStrategy?.bestOption || 'TBD')}</p>
+                 <div className="p-5 bg-surface rounded-2xl border border-border/60 shadow-sm">
+                   <h4 className="text-[10px] font-bold text-muted-foreground uppercase mb-2 tracking-widest">6. Transit</h4>
+                   <p className="text-sm font-medium leading-relaxed">{typeof p.transportStrategy?.bestOption === 'object' ? (p.transportStrategy.bestOption.name || p.transportStrategy.bestOption.desc) : (p.transportStrategy?.bestOption || 'TBD')}</p>
                  </div>
-                 <div className="p-4 bg-surface rounded-2xl">
-                   <h4 className="text-[10px] font-black text-orange-400 uppercase mb-2">7️⃣ Food</h4>
-                   <p className="text-xs">• {p.foodStrategy?.mustTry?.map((f: any) => (typeof f === 'object' ? f.name : f)).join(', ') || 'Local recommendations'}</p>
+                 <div className="p-5 bg-surface rounded-2xl border border-border/60 shadow-sm">
+                   <h4 className="text-[10px] font-bold text-muted-foreground uppercase mb-2 tracking-widest">7. Culinary</h4>
+                   <p className="text-sm font-medium leading-relaxed">{p.foodStrategy?.mustTry?.map((f: any) => (typeof f === 'object' ? f.name : f)).join(', ') || 'Local recommendations'}</p>
                  </div>
-                 <div className="p-4 bg-surface rounded-2xl border border-pink-500/30 bg-pink-500/10">
-                   <h4 className="text-[10px] font-black text-pink-400 uppercase mb-2">8️⃣ Total Cost</h4>
-                   <p className="text-sm font-black text-[#111111]">{typeof p.costBreakdown?.total === 'object' ? p.costBreakdown.total.amount : (p.costBreakdown?.total || 'TBD')}</p>
+                 <div className="p-5 bg-primary/10 border border-primary/20 rounded-2xl shadow-sm flex flex-col justify-center">
+                   <h4 className="text-[10px] font-bold text-primary uppercase mb-2 tracking-widest">8. Total Estimate</h4>
+                   <p className="text-2xl font-bold font-mono tracking-tighter tabular-nums leading-none text-foreground">{typeof p.costBreakdown?.total === 'object' ? p.costBreakdown.total.amount : (p.costBreakdown?.total || 'TBD')}</p>
                  </div>
                </div>
 
                {/* 10: Checklist */}
-               <div className="p-5 bg-surface rounded-2xl border border-border">
-                 <h4 className="text-xs font-black text-[#111111] uppercase mb-3">🔟 Execution Checklist</h4>
-                 <div className="space-y-2">
+               <div className="p-5 bg-muted/20 rounded-2xl border border-border/50 shadow-inner">
+                 <h4 className="text-[10px] font-bold text-muted-foreground uppercase mb-4 tracking-widest">Pre-Execution Protocol</h4>
+                 <div className="space-y-2.5">
                    {p.checklist?.map((c: string, i: number) => (
-                     <div key={i} className="flex items-center gap-2 text-sm text-[#111111]/80"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> {c}</div>
+                     <div key={i} className="flex items-start gap-2.5 text-xs text-foreground font-medium">
+                       <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" /> 
+                       <span className="leading-snug">{c}</span>
+                     </div>
                    ))}
                  </div>
                </div>
 
-               <div className="pt-4 pb-8">
-                 <Button onClick={handleWhatsAppShare} className="w-full h-14 md:h-16 rounded-2xl bg-[#25D366] hover:bg-[#128C7E] text-white font-black flex items-center justify-center gap-2 shadow-lg text-sm md:text-lg">
-                   <Share2 className="h-5 w-5 md:h-6 md:w-6" /> Copy Blueprint to WhatsApp
+               <div className="pt-6 pb-4">
+                 <Button onClick={handleWhatsAppShare} className="w-full h-14 rounded-xl bg-[#25D366] hover:bg-[#128C7E] text-white font-bold uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 shadow-premium active:scale-95 transition-all">
+                   <Share2 className="h-4 w-4" /> Share WhatsApp Briefing
                  </Button>
                </div>
             </div>

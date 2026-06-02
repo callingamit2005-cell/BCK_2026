@@ -1,176 +1,143 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, Wallet, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import AdSensePlaceholder from "@/components/landing/AdSensePlaceholder";
-import { ArrowLeft } from "lucide-react";
-import { fetchBlogPostBySlug } from "@/services/blogService";
-import { useSeoMeta } from "@/hooks/useSeoMeta";
-
-const BlogPostSkeleton = () => (
-  <div className="min-h-screen bg-[#0a0014] overflow-x-hidden relative flex items-start justify-center">
-    <div className="w-full max-w-5xl mx-auto px-6 py-12 md:py-16 md:px-8 relative z-10">
-      <Skeleton className="h-[400px] w-full rounded-[32px] bg-white/[0.06] mb-8 shadow-[0_0_30px_rgba(255,15,123,0.1)]" />
-      <Skeleton className="h-[40px] w-3/4 rounded-xl bg-white/[0.04] mb-4" />
-      <Skeleton className="h-[20px] w-full rounded-md bg-white/[0.02] mb-2" />
-      <Skeleton className="h-[20px] w-5/6 rounded-md bg-white/[0.02]" />
-    </div>
-  </div>
-);
 
 const BlogPost = () => {
-  const { slug = "" } = useParams();
-  const navigate = useNavigate();
+  const { slug } = useParams();
+  const [post, setPost] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // STRICT RULE: Business Logic Locked
-  const { data: post, isLoading } = useQuery({
-    queryKey: ["post", slug],
-    queryFn: () => fetchBlogPostBySlug(slug),
-    enabled: Boolean(slug),
-    staleTime: 5 * 60 * 1000, // 5 minutes – reduce unnecessary refetches
-  });
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("*")
+          .eq("slug", slug)
+          .single();
 
-  // SEO Optimization
-  useSeoMeta(
-    post ? `${post.title} | BachatKaro Blog` : "BachatKaro Blog",
-    post?.excerpt ?? "Read practical finance insights from BachatKaro.",
-    `${window.location.origin}/blog/${slug}`
-  );
+        if (error) throw error;
+        setPost(data);
+      } catch (err: any) {
+        console.error("Error fetching blog post:", err.message);
+        setError("Article not found.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (isLoading) return <BlogPostSkeleton />;
-  
-  if (!post)
-    return (
-      <div className="min-h-screen flex items-center justify-center !bg-[#0a0014]">
-        <p className="!text-[#b3b3b3] font-mono text-xl uppercase tracking-widest border border-[rgba(255,15,123,0.3)] p-6 md:p-8 rounded-2xl bg-white/[0.02] shadow-[0_0_40px_rgba(255,15,123,0.15)]">
-          Article not found
-        </p>
-      </div>
-    );
+    fetchPost();
+  }, [slug]);
 
   return (
-    // Base Container with !important overrides for Deep Void background
-    <div className="relative min-h-screen !bg-[#0a0014] !text-white overflow-x-hidden selection:bg-[#ff0f7b] selection:text-white pb-20 w-full">
+    <div className="min-h-screen bg-background overflow-x-hidden relative flex items-start justify-center">
       
-      {/* Luminescent Mesh Streaks (Zero Clipping) */}
-      <div className="absolute top-0 left-[-15%] w-[600px] h-[600px] bg-[#5f0a87] rounded-full mix-blend-screen filter blur-[150px] opacity-30 pointer-events-none fixed z-0"></div>
-      <div className="absolute bottom-[20%] right-[-10%] w-[700px] h-[700px] bg-[#ff0f7b] rounded-full mix-blend-screen filter blur-[180px] opacity-20 pointer-events-none fixed z-0"></div>
+      {/* Dynamic Background Surface (Themed) */}
+      <div className="absolute inset-0 bg-background pointer-events-none z-0" />
 
-      {/* Mobile-First Padding (p-6 to p-8) */}
-      <div className="w-full max-w-6xl mx-auto px-6 py-12 md:py-20 md:px-8 relative z-10">
-        
-        {/* Back Button (Butter-Soft Physics) */}
-        <button 
-          type="button"
-          onClick={() => navigate(-1)} 
-          className="group flex items-center gap-3 !text-[#b3b3b3] hover:!text-white transition-all duration-500 ease-butter-soft active:scale-[0.965] mb-12 outline-none bg-white/[0.03] hover:bg-white/[0.08] px-5 py-2.5 rounded-full border border-[rgba(255,255,255,0.05)] hover:border-[rgba(255,15,123,0.35)] hover:shadow-[0_0_20px_rgba(255,15,123,0.2)] w-fit"
-        >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 group-hover:drop-shadow-[0_0_8px_rgba(255,15,123,0.8)] transition-all duration-300" />
-          <span className="font-mono text-sm uppercase tracking-widest font-semibold">Back</span>
-        </button>
+      {error ? (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="p-10 rounded-premium bg-surface border border-border/40 text-center shadow-premium">
+            <p className="text-foreground font-black uppercase tracking-widest">{error}</p>
+          </div>
+        </div>
+      ) : loading || !post ? (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Loader2 className="h-10 w-10 animate-spin text-institutional-blue opacity-40" />
+        </div>
+      ) : (
+        <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-institutional-blue/10 pb-20 w-full">
+          {/* Institutional Glow (Themed) */}
+          <div className="absolute bottom-[20%] right-[-10%] w-[700px] h-[700px] bg-institutional-blue rounded-full mix-blend-soft-light filter blur-[180px] opacity-10 pointer-events-none fixed z-0"></div>
 
-        {/* Title (Neon Bloom) */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-12 !text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-[#ff0f7b] drop-shadow-[0_0_15px_rgba(255,15,123,0.4)] leading-[1.2]">
-          {post.title}
-        </h1>
+          <article className="relative z-10 max-w-4xl mx-auto px-6 pt-24 md:pt-32">
+            {/* Back Navigation */}
+            <Link 
+              to="/blog" 
+              className="inline-flex items-center gap-2 text-text-muted hover:text-foreground font-black text-[10px] uppercase tracking-[0.2em] mb-12 transition-all group"
+            >
+              <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform" />
+              Back to Library
+            </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 mt-8">
-          
-          <div className="lg:col-span-8 w-full">
-            
-            {/* High-Refraction Featured Image Box - FIXED: No Crop, No Oversize */}
-            {post.featured_image && (
-              <div className="mb-14 w-full h-[300px] md:h-[500px] rounded-[32px] overflow-hidden border-2 border-[rgba(255,15,123,0.35)] shadow-[0_0_50px_rgba(255,15,123,0.2)] bg-[#0a0014] relative group flex items-center justify-center">
-                <span className="absolute z-0 text-[#b3b3b3] font-mono text-sm tracking-widest">Loading Image...</span>
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0014] via-transparent to-transparent opacity-40 z-10 pointer-events-none"></div>
-                
+            {/* Title (Institutional Style) */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter mb-12 text-foreground uppercase drop-shadow-sm leading-[1.1]">
+              {post.title}
+            </h1>
+
+            {/* Featured Image Container */}
+            {post.image_url && (
+              <div className="mb-14 w-full h-[300px] md:h-[500px] rounded-modal overflow-hidden border border-border/40 shadow-premium bg-surface relative group flex items-center justify-center">
                 <img 
-                  src={post.featured_image} 
+                  src={post.image_url} 
                   alt={post.title} 
-                  // 👇 YAHAN MAGIC HAI: object-contain karega poori photo fit, bina kaate! 👇
-                  className="w-full h-full object-contain transform transition-transform duration-1000 ease-butter-soft group-hover:scale-105 relative z-10"
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-40 z-10 pointer-events-none"></div>
               </div>
             )}
 
-            {/* Markdown Content Block (Glassmorphism + Neon Edges) */}
-            <div className="bg-white/[0.04] backdrop-blur-[32px] border border-[rgba(255,255,255,0.05)] rounded-[32px] md:rounded-[40px] p-6 md:p-12 shadow-2xl w-full overflow-hidden">
-              <ReactMarkdown
+            {/* Markdown Content Block (Consolidated Design System) */}
+            <div className="prose prose-invert max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tighter prose-p:text-text-secondary prose-p:leading-relaxed prose-strong:text-foreground prose-strong:font-black">
+              <ReactMarkdown 
                 components={{
-                  h1: ({node, ...props}) => (
-                    <h1 className="text-3xl md:text-4xl font-extrabold !text-white mt-10 mb-6 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" {...props} />
-                  ),
                   h2: ({node, ...props}) => (
-                    <h2 className="text-2xl md:text-3xl font-extrabold !text-transparent bg-clip-text bg-gradient-to-r from-white to-[#ff0f7b] mt-16 mb-8 pb-4 border-b border-[rgba(255,15,123,0.2)] drop-shadow-[0_0_8px_rgba(255,15,123,0.4)] leading-tight block" {...props} />
-                  ),
-                  h3: ({node, ...props}) => (
-                    <h3 className="text-xl md:text-2xl font-bold !text-white mt-12 mb-6 block" {...props} />
-                  ),
-                  p: ({node, ...props}) => (
-                    <div className="!text-[#b3b3b3] text-lg md:text-xl leading-[1.9] mb-8 tracking-wide font-medium block" {...props} />
-                  ),
-                  ul: ({node, ...props}) => (
-                    <ul className="mt-8 mb-10 space-y-5 block" {...props} />
+                    <h2 className="text-2xl md:text-3xl font-black text-foreground mt-16 mb-8 pb-4 border-b border-border/40 tracking-tighter uppercase" {...props} />
                   ),
                   li: ({node, ...props}) => (
-                    <li className="!text-[#b3b3b3] text-lg md:text-xl flex items-start gap-3">
-                      <span className="!text-[#ff0f7b] font-bold mt-1 text-xl drop-shadow-[0_0_5px_rgba(255,15,123,0.8)]">✓</span>
-                      <div className="!text-[#b3b3b3]">{props.children}</div>
+                    <li className="flex gap-4 items-start mb-4">
+                      <span className="text-institutional-blue font-black mt-1 text-xl">✓</span>
+                      <span {...props} />
                     </li>
                   ),
                   strong: ({node, ...props}) => (
-                    <strong className="!text-white font-extrabold bg-gradient-to-r from-[rgba(255,15,123,0.2)] to-transparent px-2 py-1 rounded-md border-l-2 border-[#ff0f7b]" {...props} />
+                    <strong className="text-foreground font-black bg-secondary/50 px-2 py-0.5 rounded-md border-l-2 border-institutional-blue" {...props} />
                   ),
                   a: ({node, ...props}) => (
-                    <a className="!text-[#ff0f7b] font-bold no-underline hover:underline hover:drop-shadow-[0_0_8px_rgba(255,15,123,0.8)] transition-all duration-300" {...props} />
+                    <a className="text-institutional-blue font-black no-underline hover:underline transition-all duration-300" {...props} />
                   ),
-                  // 🔥 NEW IMAGE HANDLER 🔥
                   img: ({node, ...props}) => (
-                    <span className="flex justify-center my-10 w-full relative z-10">
-                      <img 
-                        className="max-w-full h-auto max-h-[500px] object-contain rounded-[24px] border border-[rgba(255,15,123,0.3)] shadow-[0_0_30px_rgba(255,15,123,0.15)] bg-[#0a0014]" 
-                        {...props} 
-                      />
-                    </span>
-                  )
+                    <img 
+                      className="max-w-full h-auto max-h-[500px] object-contain rounded-premium border border-border/40 shadow-premium bg-surface"
+                      {...props} 
+                    />
+                  ),
                 }}
               >
                 {post.content}
               </ReactMarkdown>
             </div>
-          </div>
 
-          {/* Sidebar Section */}
-          <aside className="lg:col-span-4 space-y-10 w-full mt-10 lg:mt-0">
-            <AdSensePlaceholder />
-            
-            <div className="sticky top-10 bg-white/[0.04] backdrop-blur-[32px] border border-[rgba(255,15,123,0.35)] rounded-[32px] p-8 shadow-[0_0_50px_rgba(255,15,123,0.15)] transition-all duration-500 hover:shadow-[0_0_60px_rgba(255,15,123,0.25)] hover:border-[rgba(255,15,123,0.5)]">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#ff0f7b] to-[#5f0a87] rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(255,15,123,0.4)]">
-                <span className="!text-white font-extrabold text-2xl font-mono">B!</span>
-              </div>
-              <h4 className="text-xl font-extrabold !text-white mb-4">
-                Unlock Your Financial Future
-              </h4>
-              <p className="!text-[#b3b3b3] text-base leading-relaxed mb-8">
-                BachatKaro is an exclusive community. Secure your spot on the waitlist before the official app drops.
-              </p>
-              <button 
-                type="button"
-                onClick={() => navigate('/')} 
-                className="w-full relative group overflow-hidden rounded-2xl bg-gradient-to-r from-[#ff0f7b] to-[#5f0a87] p-[1px] transition-transform duration-500 ease-butter-soft active:scale-[0.965] outline-none"
-              >
-                <div className="flex items-center justify-center w-full h-full bg-[#0a0014]/80 backdrop-blur-md rounded-[15px] p-4 transition-all duration-300 group-hover:bg-transparent">
-                  <span className="!text-white font-mono text-sm tracking-widest font-bold group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.9)] transition-all duration-300 uppercase">
-                    Join Waitlist
-                  </span>
-                </div>
-              </button>
+            {/* Social Footer */}
+            <div className="mt-24 pt-12 border-t border-border/40">
+               <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center shadow-premium">
+                      <Wallet className="h-8 w-8 text-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-black text-foreground uppercase tracking-tight">Join the Mission</p>
+                      <p className="text-xs font-black text-text-muted uppercase tracking-widest opacity-60">Precision Wealth for India</p>
+                    </div>
+                  </div>
+
+                  <Link 
+                    to="/#waitlist"
+                    className="w-full md:w-auto relative group overflow-hidden rounded-xl bg-foreground p-[1px] transition-transform duration-500 ease-butter-soft active:scale-[0.965] outline-none"
+                  >
+                    <div className="flex items-center justify-center w-full h-full bg-foreground rounded-[11px] px-12 py-4 transition-all duration-300 text-surface font-black uppercase text-xs tracking-[0.2em] group-hover:bg-foreground/90">
+                      Secure Access
+                    </div>
+                  </Link>
+               </div>
             </div>
-          </aside>
-
+          </article>
         </div>
-      </div>
+      )}
     </div>
   );
 };

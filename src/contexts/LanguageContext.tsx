@@ -56,7 +56,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, preferences, refreshPreferences } = useAuth();
+  const { user, preferences, refreshPreferences, userProfile } = useAuth();
   const { toast } = useToast();
   const { t: i18nT, i18n } = useTranslation();
   
@@ -110,12 +110,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!initialized || !user) return;
     if (window.location.pathname.startsWith('/setup')) return;
     
+    // 🚀 FIXED: Only trigger language selection AFTER privacy is accepted.
+    if (!userProfile?.privacy_completed) return;
+
     // 🚀 FIX: Load directly from localStorage
     const hasCompletedOnboarding = localStorage.getItem(LANGUAGE_ONBOARDING_KEY) === 'true';
     if (!hasCompletedOnboarding) {
       setShowFirstLoginLanguageModal(true);
     }
-  }, [initialized, user]);
+  }, [initialized, user, userProfile]);
 
   const setLanguage = useCallback(async (lang: Language) => {
     try {
@@ -147,7 +150,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         toast({
           title: t('common.save', 'Saved'),
           description: t('common.languageChanged', `Language changed to ${LANGUAGE_NAMES[lang]?.name}`),
-          className: "bg-green-600 text-white",
+          className: "bg-foreground text-surface",
           duration: 2000,
         });
       }
@@ -208,46 +211,46 @@ const LanguageSelectorModal: React.FC<{
     setSelectedLang(currentLang);
   }, [currentLang]);
 
-  const gradientClass = "bg-gradient-to-r from-purple-600 to-pink-500";
+  const gradientClass = "bg-foreground";
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-[9999] p-0 sm:p-4 animate-in fade-in duration-300 backdrop-blur-sm">
-      <div className="bg-white rounded-t-[32px] sm:rounded-3xl w-full max-w-md mx-auto shadow-2xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 duration-500 flex flex-col max-h-[92vh] sm:max-h-[85vh] overflow-hidden">
+      <div className="bg-surface rounded-t-[28px] sm:rounded-modal w-full max-w-md mx-auto shadow-institutional animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 duration-500 flex flex-col max-h-[92vh] sm:max-h-[85vh] overflow-hidden border-t sm:border border-border/40">
         
         {/* Header - Fixed */}
-        <div className="p-6 pb-4 border-b border-slate-100 shrink-0">
-          <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden" />
-          <h2 className="text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent tracking-tight">
+        <div className="p-6 pb-4 border-b border-border/40 shrink-0 text-center bg-background/50">
+          <div className="w-12 h-1.5 bg-border/40 rounded-full mx-auto mb-4 sm:hidden" />
+          <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">
             {t('common.selectLanguage', 'Select Language')}
           </h2>
-          <p className="text-sm font-medium text-slate-500 mt-1">{t('common.chooseLanguage', 'Choose your preferred language')}</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted mt-1.5 opacity-60">{t('common.chooseLanguage', 'Choose your preferred language')}</p>
         </div>
 
         {/* List - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 overscroll-contain custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 overscroll-contain custom-scrollbar bg-surface">
           {availableLanguages.map(({ code, name }) => (
             <button
               key={code}
               onClick={() => setSelectedLang(code)}
-              className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center gap-4 group ${
+              className={`w-full p-5 rounded-2xl border-2 transition-all flex items-center gap-5 group ${
                 selectedLang === code
-                  ? 'border-purple-600 bg-purple-50/50 ring-4 ring-purple-600/5'
-                  : 'border-slate-100 hover:border-purple-200 hover:bg-slate-50'
+                  ? 'border-institutional-blue bg-background ring-4 ring-institutional-blue/5'
+                  : 'border-border/40 hover:border-institutional-blue/20 hover:bg-background'
               }`}
             >
-              <div className="w-14 h-14 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-3xl group-active:scale-95 transition-transform shrink-0">
+              <div className="w-14 h-14 rounded-xl bg-surface-elevated shadow-inner border border-border/40 flex items-center justify-center text-3xl group-active:scale-95 transition-transform shrink-0">
                 {LANGUAGE_NAMES[code]?.flag || '🌐'}
               </div>
               <div className="flex-1 text-left min-w-0">
-                <p className={`font-bold text-lg truncate ${selectedLang === code ? 'text-purple-900' : 'text-slate-800'}`}>
+                <p className={`font-black text-lg uppercase tracking-tight truncate ${selectedLang === code ? 'text-foreground' : 'text-text-secondary'}`}>
                   {LANGUAGE_NAMES[code]?.name || name}
                 </p>
-                <p className="text-sm font-medium text-slate-500 truncate">
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted truncate mt-1 opacity-60">
                   {LANGUAGE_NAMES[code]?.nativeName || name}
                 </p>
               </div>
               {selectedLang === code && (
-                <div className="w-6 h-6 bg-gradient-to-r from-purple-600 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/40 shrink-0">
+                <div className="w-6 h-6 bg-institutional-blue rounded-full flex items-center justify-center shadow-lg shrink-0">
                   <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                   </svg>
@@ -258,13 +261,13 @@ const LanguageSelectorModal: React.FC<{
         </div>
 
         {/* Actions - Fixed at Bottom */}
-        <div className="p-6 bg-slate-50/50 border-t border-slate-100 shrink-0">
-          <div className="flex gap-3 mb-4">
+        <div className="p-6 bg-background/50 border-t border-border/40 shrink-0">
+          <div className="flex gap-4 mb-5">
             {!mandatory && (
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 h-14 rounded-2xl border-slate-200 text-slate-700 font-bold hover:bg-white hover:border-slate-300 transition-all active:scale-95"
+                className="flex-1 h-14 rounded-xl border-border/40 bg-surface text-foreground font-black uppercase text-[10px] tracking-[0.2em] hover:bg-background transition-all active:scale-95 shadow-sm"
               >
                 {t('common.cancel', 'Cancel')}
               </Button>
@@ -273,21 +276,21 @@ const LanguageSelectorModal: React.FC<{
               <Button
                 variant="outline"
                 onClick={() => onSelect('en')}
-                className="flex-1 h-14 rounded-2xl border-slate-200 text-slate-700 font-bold hover:bg-white hover:border-slate-300 transition-all active:scale-95"
+                className="flex-1 h-14 rounded-xl border-border/40 bg-surface text-foreground font-black uppercase text-[10px] tracking-[0.2em] hover:bg-background transition-all active:scale-95 shadow-sm"
               >
                 {t('common.continueEnglish', 'English')}
               </Button>
             )}
             <Button
               onClick={() => onSelect(selectedLang)}
-              className={`flex-[1.5] h-14 ${gradientClass} text-white rounded-2xl font-bold text-lg shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/35 transition-all active:scale-95`}
+              className={`flex-[1.5] h-14 bg-foreground text-surface rounded-xl font-black uppercase text-[10px] tracking-[0.2em] shadow-institutional hover:bg-foreground/90 transition-all active:scale-95`}
             >
               {t('common.apply', 'Apply')}
             </Button>
           </div>
           
-          <p className="text-[10px] text-center font-bold uppercase tracking-widest text-slate-400">
-            {t('common.languagePersistMessage', 'Saved for all future visits')}
+          <p className="text-[10px] text-center font-black uppercase tracking-widest text-text-muted opacity-40 italic">
+            {t('common.languagePersistMessage', 'Identity Saved Locally')}
           </p>
         </div>
       </div>

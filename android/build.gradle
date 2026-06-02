@@ -23,6 +23,16 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // 🛡️ [PHASE_BUILD_STABILIZATION]
+    // Surgically substitute legacy Kotlin artifacts with the project's unified stdlib.
+    // Resolves: :capacitor-cordova-android-plugins:checkDebugAndroidTestDuplicateClasses
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk7') using module("org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.kotlin_version}")
+            substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') using module("org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.kotlin_version}")
+        }
+    }
 }
 
 task clean(type: Delete) {

@@ -47,10 +47,14 @@ export const useGroupSmsDetection = (
     const upiId = (targetMember as any)?.upi_id || null;
     const name = targetMember?.name || "User";
 
-    console.log("🎯 [SMS DETECT] Tracking UPI Payment:", { amount, toUserId, upiId, name });
+    if (import.meta.env.DEV) {
+      console.log("🎯 [SMS DETECT] Tracking UPI Payment:", { amount, toUserId, upiId, name });
+    }
     
     if (!upiId) {
-        console.warn("⚠️ [SMS DETECT] Cannot track payment without valid UPI ID.");
+        if (import.meta.env.DEV) {
+          console.warn("⚠️ [SMS DETECT] Cannot track payment without valid UPI ID.");
+        }
         return;
     }
 
@@ -81,12 +85,16 @@ export const useGroupSmsDetection = (
 
         // 🛡️ 2. CHECK: Time limit (2 minutes)
         if (now - currentActive.timestamp > 120000) {
-          console.log("⚠️ [SMS DETECT] Tracking window expired. Resetting state.");
+          if (import.meta.env.DEV) {
+            console.log("⚠️ [SMS DETECT] Tracking window expired. Resetting state.");
+          }
           setActivePayment(null);
           return;
         }
 
-        console.log("🚀 [SMS DETECT] Incoming SMS Data:", data);
+        if (import.meta.env.DEV) {
+          console.log("🚀 [SMS DETECT] Incoming SMS Data:", data);
+        }
         
         const message = (data.message || "").toLowerCase();
         const smsAmount = Number(data.amount); // amount in paisa

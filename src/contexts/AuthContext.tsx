@@ -16,6 +16,7 @@ interface AuthContextType {
   preferences: { language: string; country: string | null } | null;
   userProfile: any | null;
   preferencesLoading: boolean;
+  profileFetchError: Error | null;
   signOut: () => Promise<void>;
   refreshPreferences: () => Promise<void>;
 }
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [preferences, setPreferences] = useState<{ language: string; country: string | null } | null>(null);
   const [userProfile, setUserProfile] = useState<any | null>(null);
   const [preferencesLoading, setPreferencesLoading] = useState(false);
+  const [profileFetchError, setProfileFetchError] = useState<Error | null>(null);
   const navigate = useNavigate();
 
   // 🛡️ [RUNTIME_STABILIZATION] Singleton Guards
@@ -45,15 +47,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (isFetchingPreferences.current) return;
     if (!force && lastFetchedUserId.current === userId && Date.now() - lastFetchTime.current < 5000) return;
 
+    console.log(`[AUTH] fetchProfileAndPreferences START (force: ${force}, userId: ${userId})`);
     isFetchingPreferences.current = true;
+    console.log(`[AUTH] preferencesLoading TRUE`);
     setPreferencesLoading(true);
+    setProfileFetchError(null);
     try {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
-      if (profile) setUserProfile(profile);
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          email,
+          full_name,
+          phone,
+          upi_id,
+          preferred_upi_app,
+          upi_verification_state,
+          created_at,
+          updated_at,
+          privacy_completed,
+          has_completed_setup,
+          country,
+          preferred_language
+        `)
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (profileError) {
+        console.error('PROFILE_QUERY_ERROR', profileError);
+        setProfileFetchError(new Error(profileError.message));
+        return;
+      }
 
-      const { data } = await supabase.rpc("get_or_create_user_preferences", { p_user_id: userId });
-      if (data && data.length > 0) {
-        const pref = data[0];
+      if (profile) {
+        setUserProfile(profile);
+      } else {
+        // Explicitly handle profile_missing state
+        setUserProfile(null);
+      }
+
+      const { data: prefData, error: prefError } = await supabase.rpc("get_or_create_user_preferences", { p_user_id: userId });
+      if (prefError) {
+        console.error('PREFERENCES_RPC_ERROR', prefError);
+      } else if (prefData && prefData.length > 0) {
+        const pref = prefData[0];
         setPreferences({ language: pref.language, country: pref.country });
         if (pref.language) {
           localStorage.setItem('preferred-language', pref.language);
@@ -72,11 +109,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       lastFetchedUserId.current = userId;
       lastFetchTime.current = Date.now();
-    } catch (err) {
+    } catch (err: any) {
       console.error("fetchProfileAndPreferences error:", err);
+      setProfileFetchError(err instanceof Error ? err : new Error(String(err)));
     } finally {
+      console.log(`[AUTH] preferencesLoading FALSE`);
       setPreferencesLoading(false);
       isFetchingPreferences.current = false;
+      console.log(`[AUTH] fetchProfileAndPreferences END`);
     }
   };
 
@@ -229,7 +269,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 forensicState.userId = 'anonymous';
                 setSession(null); setUser(null); setUserProfile(null); setPreferences(null);
                 lastFetchedUserId.current = null; isFetchingPreferences.current = false; lastFetchTime.current = 0;
-                await SmsBridge.clearSyncSession();
+                
+                if (Capacitor.getPlatform() === 'android') {
+                  await SmsBridge.clearSyncSession();
+                }
+                return;
+              }
+
+              if (event === "PASSWORD_RECOVERY") {
+                console.log("🛡️ [AUTH_EVENT] Password recovery mode activated.");
+                navigate('/forgot-password', { replace: true });
                 return;
               }
 
@@ -275,9 +324,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     preferences, 
     userProfile, 
     preferencesLoading, 
+    profileFetchError,
     signOut, 
     refreshPreferences 
-  }), [user, session, loading, isAuthReady, preferences, userProfile, preferencesLoading, signOut, refreshPreferences]);
+  }), [user, session, loading, isAuthReady, preferences, userProfile, preferencesLoading, profileFetchError, signOut, refreshPreferences]);
 
   return (
     <AuthContext.Provider value={contextValue}>

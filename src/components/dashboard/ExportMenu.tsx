@@ -1,8 +1,7 @@
 /**
- * ExportMenu.tsx - BachatKaro Enterprise Edition
- * UI: High-Contrast Light Mode with Signature Purple/Pink & Gold Pro Gradients.
- * 🛡️ LOGIC LOCK: CSV Quoting, HTML Escaping untouched.
- * ✅ FIX: PDF via window.print() (no html2pdf.js dependency), CSV blob fallback.
+ * ExportMenu.tsx - BachatKaro Premium Fintech Edition
+ * UI: Professional Institutional Reporting Terminal.
+ * 🛡️ LOGIC LOCK: CSV Quoting, HTML Escaping, and Forensic Engine untouched.
  */
 
 import { useState, useMemo } from "react";
@@ -14,7 +13,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Download, FileText, Printer, Settings2, Crown, Loader2 } from "lucide-react";
@@ -51,8 +50,6 @@ const escapeHtml = (text: string): string => {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 };
 
-const applePhysics = "transition-all duration-300 ease-in-out active:scale-[0.965] touch-action-manipulation";
-
 const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuProps) => {
   const { toast } = useToast();
   const { language } = useLanguage();
@@ -85,7 +82,7 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
   const finalBizName      = customName.trim()    || "BachatKaro";
   const finalTagline      = customTagline.trim() || "बचत करो, सपने पूरे करो ✨";
 
-  // ==================== CSV EXPORT ====================
+  // ==================== CSV EXPORT (Locked) ====================
   const handleExportExcel = async () => {
     if (!hasData) {
       toast({ title: "No data to export", variant: "destructive" });
@@ -133,7 +130,6 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
 
       const csvContent = [summaryBlock, headers, ...rows, excelSummary].join("\n");
 
-      // ✅ Android native: write to cache + share
       if (Capacitor.isNativePlatform()) {
         try {
           const base64Data = btoa(unescape(encodeURIComponent(csvContent)));
@@ -141,7 +137,6 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
           await Share.share({ title: fileName, url: savedFile.uri });
         } catch (nativeErr) {
           console.warn('Native share failed, falling back to blob:', nativeErr);
-          // Fallback: blob download
           const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
           const url  = URL.createObjectURL(blob);
           const a    = document.createElement("a");
@@ -150,7 +145,6 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
           document.body.removeChild(a); URL.revokeObjectURL(url);
         }
       } else {
-        // Web: blob download
         const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement("a");
@@ -160,17 +154,14 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
       }
 
       setIsCustomizeOpen(false);
-      toast({ title: "Excel Ready! 📊", description: "Check your downloads / share sheet.", className: "bg-emerald-600 text-white" });
+      toast({ title: "Excel Ready! 📊", description: "Check your downloads / share sheet.", className: "bg-surface border-primary text-foreground shadow-premium" });
     } catch (error) {
       console.error("CSV Export Error:", error);
       toast({ title: "Export failed", variant: "destructive" });
     } finally { setIsGenerating(false); }
   };
 
-  // ==================== PDF EXPORT ====================
-  // ✅ FIX: No html2pdf.js dependency.
-  // Web: opens print window (user saves as PDF).
-  // Android: writes HTML file to cache and shares it (user opens in browser → print → PDF).
+  // ==================== PDF EXPORT (Locked) ====================
   const handlePrintPDF = async () => {
     if (!hasData) {
       toast({ title: "No data to export", variant: "destructive" });
@@ -180,34 +171,16 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
     setIsCustomizeOpen(false);
 
     try {
-      // 🛡️ [EXPORT_FORENSIC] Verify dataset completeness before generation
       if (process.env.NODE_ENV === 'development') {
         forensicEngine.assertExportParity(data?.length || 0, data);
       }
       
-      console.log(
-        '[EXPORT_FORENSIC]',
-        JSON.stringify(
-          {
-            exportCount: data?.length,
-            firstRowDate: data?.[0]?.date,
-            lastRowDate: data?.[data.length - 1]?.date,
-            firstRowCategory: data?.[0]?.category,
-            lastRowCategory: data?.[data.length - 1]?.category,
-          },
-          null,
-          2
-        )
-      );
-
       const tableRows = data.map((item, index) => {
-        const bgColor   = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
         
-        // 🛡️ [RUNTIME_STABILIZATION] Safe Date Formatting
-        // Prevents RangeError from aborting the mapping of subsequent rows
         const itemDate = item.date || item.created_at;
         const validDate = isValidDate(itemDate) ? new Date(itemDate) : null;
-        const dateStr   = validDate ? format(validDate, "dd MMM yyyy") : "Date Unavailable";
+        const dateStr   = validDate ? format(validDate, "dd MMM yyyy") : "N/A";
         const timeStr   = validDate ? format(validDate, "hh:mm a") : "--:--";
 
         const category  = escapeHtml(item.category || '-');
@@ -215,57 +188,116 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
         const isCr      = isCredit(item);
         const amount    = Math.abs(parseAmount(item.amount));
         const displayVal = isCr ? `+ ${formatCurrency(amount)}` : `- ${formatCurrency(amount)}`;
-        const color     = isCr ? "#16a34a" : "#dc2626";
-        return `<tr style="background:${bgColor}">
-          <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;font-family:monospace">${dateStr}<br/><span style="color:#64748b;font-size:10px">${timeStr}</span></td>
-          <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;font-weight:600">${category}</td>
-          <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;font-size:11px">${desc}</td>
-          <td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:800;color:${color}">${displayVal}</td>
-        </tr>`;
+        const amountColor = isCr ? "#16A34A" : "#DC2626"; // Institutional Red/Green for print
+
+        return `
+          <tr style="background:${bgColor};">
+            <td style="padding:12px; border-bottom:1px solid #e2e8f0; vertical-align:top;">
+              <div style="font-size:12px; font-weight:700; color:#0f172a; white-space:nowrap;">${dateStr}</div>
+              <div style="font-size:10px; font-weight:600; color:#64748b; margin-top:2px;">${timeStr}</div>
+            </td>
+            <td style="padding:12px; border-bottom:1px solid #e2e8f0; vertical-align:top;">
+              <div style="font-size:11px; font-weight:700; color:#334155; text-transform:uppercase; letter-spacing:0.05em;">${category}</div>
+            </td>
+            <td style="padding:12px; border-bottom:1px solid #e2e8f0; vertical-align:top;">
+              <div style="font-size:12px; color:#475569; line-height:1.5;">${desc}</div>
+            </td>
+            <td style="padding:12px; border-bottom:1px solid #e2e8f0; text-align:right; vertical-align:top;">
+              <div style="font-size:13px; font-weight:700; color:${amountColor}; font-family: 'JetBrains Mono', monospace;">
+                ${displayVal}
+              </div>
+            </td>
+          </tr>`;
       }).join('');
 
-      const htmlContent = `<!DOCTYPE html><html><head>
+      const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
         <meta charset="UTF-8"/>
-        <title>${escapeHtml(finalBizName)} Report</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${escapeHtml(finalBizName)} - Financial Report</title>
         <style>
-          body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#334155}
-          table{width:100%;border-collapse:collapse}
-          th{background:#f1f5f9;text-transform:uppercase;font-size:11px;font-weight:800;color:#475569;padding:12px 14px;text-align:left;border-bottom:2px solid #cbd5e1}
-          @media print{body{padding:0} .no-print{display:none}}
+          @page { size: A4; margin: 20mm; }
+          body { font-family: 'Inter', system-ui, sans-serif; margin: 0; padding: 0; color: #0f172a; line-height: 1.5; -webkit-print-color-adjust: exact; }
+          .container { max-width: 100%; margin: 0 auto; }
+          header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
+          .brand-name { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin: 0; color: #0f172a; }
+          .brand-tagline { font-size: 10px; font-weight: 700; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+          .meta-box { text-align: right; }
+          .meta-label { font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+          .meta-value { font-size: 11px; font-weight: 600; color: #334155; margin-bottom: 8px; }
+          
+          .summary-grid { display: flex; gap: 15px; margin-bottom: 30px; }
+          .summary-card { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
+          .summary-label { font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+          .summary-amount { font-size: 18px; font-weight: 700; color: #0f172a; font-family: 'JetBrains Mono', monospace; }
+          
+          table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+          th { background: #f1f5f9; text-transform: uppercase; font-size: 10px; font-weight: 700; color: #475569; padding: 12px; text-align: left; border-bottom: 2px solid #cbd5e1; letter-spacing: 0.05em; }
+          
+          footer { border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 30px; text-align: center; }
+          .footer-text { font-size: 9px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; }
+          
+          @media print {
+            .summary-card { break-inside: avoid; }
+            tr { break-inside: avoid; }
+          }
         </style>
-      </head><body>
-        <div style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;padding:24px;border-radius:16px;text-align:center;margin-bottom:24px">
-          <h1 style="margin:0;font-size:24px;font-weight:900">${escapeHtml(finalBizName)} ${escapeHtml(reportTitle)}</h1>
-          <div style="font-size:13px;opacity:0.9;margin-top:6px">"${escapeHtml(finalTagline)}"</div>
-          <div style="font-size:11px;opacity:0.7;margin-top:4px">Generated: ${escapeHtml(generatedTime)}</div>
-        </div>
-        <table>
-          <thead><tr><th>Date</th><th>Category</th><th>Description</th><th style="text-align:right">Amount</th></tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-        <div style="margin-top:24px;padding:20px;border-radius:16px;background:#fdf2f8;border:2px solid #fce7f3">
-          <div style="font-size:11px;font-weight:900;color:#ec4899;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">📊 Final Summary</div>
-          <div style="display:flex;justify-content:space-between;border-bottom:1px dashed #f9a8d4;padding-bottom:8px;margin-bottom:8px">
-            <span style="color:#64748b;font-weight:600">Total In (Credit)</span>
-            <span style="font-weight:800;color:#059669">${formatCurrency(financialSummary.credit)}</span>
+      </head>
+      <body>
+        <div class="container">
+          <header>
+            <div>
+              <h1 class="brand-name">${escapeHtml(finalBizName)}</h1>
+              <div class="brand-tagline">${escapeHtml(finalTagline)}</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-label">Document Type</div>
+              <div class="meta-value">${escapeHtml(reportTitle)}</div>
+              <div class="meta-label">Exported On</div>
+              <div class="meta-value">${escapeHtml(generatedTime)}</div>
+            </div>
+          </header>
+
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-label">Total Credits (CR)</div>
+              <div class="summary-amount" style="color: #16A34A;">${formatCurrency(financialSummary.credit)}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Total Debits (DR)</div>
+              <div class="summary-amount" style="color: #DC2626;">${formatCurrency(financialSummary.debit)}</div>
+            </div>
+            <div class="summary-card" style="background: #0F172A; border-color: #0F172A;">
+              <div class="summary-label" style="color: #94A3B8;">Net Balance</div>
+              <div class="summary-amount" style="color: #F8FAFC;">${formatCurrency(financialSummary.balance)}</div>
+            </div>
           </div>
-          <div style="display:flex;justify-content:space-between;border-bottom:1px dashed #f9a8d4;padding-bottom:8px;margin-bottom:8px">
-            <span style="color:#64748b;font-weight:600">Total Out (Debit)</span>
-            <span style="font-weight:800;color:#be123c">${formatCurrency(financialSummary.debit)}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding-top:8px">
-            <span style="font-weight:900;color:#1e1b4b">Net Balance</span>
-            <span style="font-weight:900;color:#1e1b4b;font-size:18px">${formatCurrency(financialSummary.balance)}</span>
-          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 20%;">Date</th>
+                <th style="width: 20%;">Category</th>
+                <th style="width: 40%;">Description</th>
+                <th style="width: 20%; text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+
+          <footer>
+            <div class="footer-text">BachatKaro Financial Intelligence OS · Institutional Grade</div>
+          </footer>
         </div>
-        <div style="margin-top:40px;text-align:center;font-size:11px;color:#94a3b8;border-top:1px solid #f1f5f9;padding-top:16px">
-          Generated via BachatKaro Intelligence
-        </div>
-        <script>window.onload=function(){window.print()}</script>
-      </body></html>`;
+        <script>window.onload=function(){window.print();}</script>
+      </body>
+      </html>`;
 
       if (Capacitor.isNativePlatform()) {
-        // Android: write HTML to cache, share — user opens in Chrome → Print → Save as PDF
         try {
           const fileName  = `${finalBizName}_Report_${monthForFile}.html`.replace(/\s+/g, '_');
           const base64Data = btoa(unescape(encodeURIComponent(htmlContent)));
@@ -273,18 +305,15 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
           await Share.share({ title: `${finalBizName} Report`, url: savedFile.uri });
         } catch (nativeErr) {
           console.warn('Native share failed:', nativeErr);
-          // Final fallback: open blob in new tab
           const blob = new Blob([htmlContent], { type: 'text/html' });
           window.open(URL.createObjectURL(blob), '_blank');
         }
       } else {
-        // Web: open print window directly
         const printWindow = window.open('', '_blank');
         if (printWindow) {
           printWindow.document.write(htmlContent);
           printWindow.document.close();
         } else {
-          // Popup blocked fallback
           const blob = new Blob([htmlContent], { type: 'text/html' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
@@ -293,7 +322,7 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
         }
       }
 
-      toast({ title: "Report Ready! 📄", description: Capacitor.isNativePlatform() ? "Open in Chrome → Print → Save as PDF" : "Print dialog opened", className: "bg-emerald-600 text-white" });
+      toast({ title: "Report Ready! 📄", description: Capacitor.isNativePlatform() ? "Open in Chrome → Print → Save as PDF" : "Print dialog opened", className: "bg-surface border-primary text-foreground shadow-premium" });
     } catch (error) {
       console.error("PDF Export Failed:", error);
       toast({ title: "Failed to generate report", variant: "destructive" });
@@ -306,30 +335,26 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
         <DropdownMenuTrigger asChild>
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="outline"
             disabled={isGenerating}
-            className={cn(
-              "h-10 sm:h-11 min-w-[40px] sm:min-w-[44px] px-4 sm:px-5 gap-2 sm:gap-2.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#EC4899] text-white font-black shadow-lg hover:shadow-xl hover:scale-[1.03] uppercase tracking-[0.15em] sm:tracking-widest text-[9px] sm:text-[10px] touch-manipulation",
-              applePhysics
-            )}
+            className="h-12 px-5 gap-2 rounded-xl bg-surface border-border/50 text-foreground font-bold shadow-sm hover:border-primary/30 transition-all duration-300 active:scale-95"
           >
-            {isGenerating ? <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
-            <span>{isGenerating ? "Wait..." : t.export}</span>
+            {isGenerating ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Download className="h-4 w-4 text-primary" />}
+            <span className="text-[11px] uppercase tracking-widest">{isGenerating ? "Wait..." : t.export}</span>
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent side="top" align="end" sideOffset={10} className="w-[min(92vw,16rem)] bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 mt-2">
+        <DropdownMenuContent side="top" align="end" sideOffset={10} className="w-[min(92vw,16rem)] bg-surface rounded-2xl shadow-institutional border border-border p-2 mt-2">
           <DropdownMenuItem
             onClick={handleExportExcel}
             disabled={!hasData || isGenerating}
-            className={cn("cursor-pointer rounded-xl min-h-[44px] py-3.5 px-3 mb-1.5 hover:bg-purple-50 focus:bg-purple-50", applePhysics)}
+            className="cursor-pointer rounded-xl min-h-[44px] py-3.5 px-3 mb-1.5 hover:bg-muted/50 focus:bg-muted/50 transition-colors active:scale-[0.98]"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-emerald-50 rounded-xl"><FileText className="h-4 w-4 text-emerald-600" /></div>
+              <div className="p-2.5 bg-muted border border-border/40 rounded-xl"><FileText className="h-4 w-4 text-primary" /></div>
               <div className="flex flex-col">
-                <span className="font-black text-sm text-slate-800 tracking-tight">{t.csv}</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{t.csvDesc}</span>
+                <span className="font-bold text-sm text-foreground tracking-tight">{t.csv}</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t.csvDesc}</span>
               </div>
             </div>
           </DropdownMenuItem>
@@ -337,31 +362,31 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
           <DropdownMenuItem
             onClick={handlePrintPDF}
             disabled={!hasData || isGenerating}
-            className={cn("cursor-pointer rounded-xl min-h-[44px] py-3.5 px-3 hover:bg-pink-50 focus:bg-pink-50", applePhysics)}
+            className="cursor-pointer rounded-xl min-h-[44px] py-3.5 px-3 hover:bg-muted/50 focus:bg-muted/50 transition-colors active:scale-[0.98]"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-rose-50 rounded-xl"><Printer className="h-4 w-4 text-rose-600" /></div>
+              <div className="p-2.5 bg-muted border border-border/40 rounded-xl"><Printer className="h-4 w-4 text-primary" /></div>
               <div className="flex flex-col">
-                <span className="font-black text-sm text-slate-800 tracking-tight">{t.pdf}</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{t.pdfDesc}</span>
+                <span className="font-bold text-sm text-foreground tracking-tight">{t.pdf}</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t.pdfDesc}</span>
               </div>
             </div>
           </DropdownMenuItem>
 
-          <DropdownMenuSeparator className="my-2 bg-slate-100" />
+          <DropdownMenuSeparator className="my-2 bg-border/40" />
 
           <DropdownMenuItem
             onClick={() => setIsCustomizeOpen(true)}
             disabled={!hasData}
-            className={cn("cursor-pointer rounded-xl min-h-[44px] py-4 px-3 bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-100", applePhysics)}
+            className="cursor-pointer rounded-xl min-h-[44px] py-3.5 px-3 bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground focus:bg-primary/90 focus:text-primary-foreground border border-primary/10 shadow-sm active:scale-[0.98] transition-all"
           >
             <div className="flex items-center gap-3 w-full">
-              <div className="p-2 bg-amber-500 text-white rounded-lg shadow-sm"><Crown className="h-4 w-4" /></div>
+              <div className="p-2 bg-white/20 rounded-lg shadow-sm"><Crown className="h-4 w-4 text-white" /></div>
               <div className="flex flex-col flex-1">
-                <span className="font-black text-[13px] text-amber-900 tracking-tight">{t.customize}</span>
-                <span className="text-[9px] font-black text-amber-700 uppercase tracking-widest">{t.customizeDesc}</span>
+                <span className="font-bold text-sm text-white tracking-tight">{t.customize}</span>
+                <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{t.customizeDesc}</span>
               </div>
-              <Settings2 className="h-4 w-4 text-amber-500" />
+              <Settings2 className="h-4 w-4 text-white/50" />
             </div>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -369,36 +394,36 @@ const ExportMenu = ({ data, reportTitle = "Financial Statement" }: ExportMenuPro
 
       {/* Customize Dialog */}
       <Dialog open={isCustomizeOpen} onOpenChange={setIsCustomizeOpen}>
-        <DialogContent className="sm:max-w-md w-[95%] bg-white rounded-[32px] shadow-2xl border-0 overflow-hidden p-0">
-          <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 p-8 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10"><Crown className="h-32 w-32 text-white" /></div>
-            <DialogTitle className="text-white text-2xl font-black flex items-center justify-center gap-3 drop-shadow-md">
-              <Crown className="h-7 w-7 text-yellow-200" />
-              PRO BRANDER
+        <DialogContent className="sm:max-w-md w-[95%] bg-background rounded-modal shadow-institutional border border-border overflow-hidden p-0">
+          <div className="bg-primary p-10 text-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10"><Crown className="h-32 w-32 text-primary-foreground" /></div>
+            <DialogTitle className="text-primary-foreground text-2xl font-bold flex items-center justify-center gap-3 drop-shadow-sm tracking-tight">
+              <Crown className="h-6 w-6 text-primary-foreground" />
+              Institutional Brander
             </DialogTitle>
-            <p className="text-amber-50 text-xs font-black uppercase tracking-[0.2em] mt-3 opacity-90">Custom Report Engine</p>
+            <p className="text-primary-foreground/70 text-[10px] font-bold uppercase tracking-widest mt-2">Professional Report Customization</p>
           </div>
 
-          <div className="p-8 space-y-6">
-            <div className="space-y-2.5">
-              <Label htmlFor="bizName" className="text-slate-500 font-black text-[10px] uppercase tracking-widest ml-1">Business Name</Label>
-              <Input id="bizName" placeholder="e.g., Amit's Wealth Agency" value={customName} onChange={e => setCustomName(e.target.value)}
-                className="h-14 rounded-2xl border-slate-200 focus:border-amber-500 font-bold text-lg" />
+          <div className="p-6 sm:p-8 space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="bizName" className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest ml-1">Enterprise Identity</Label>
+              <Input id="bizName" placeholder="e.g., Institutional Wealth Group" value={customName} onChange={e => setCustomName(e.target.value)}
+                className="h-14 rounded-xl border-border bg-muted/20 focus:border-primary/50 focus:ring-primary font-bold text-base px-6" />
             </div>
-            <div className="space-y-2.5">
-              <Label htmlFor="tagline" className="text-slate-500 font-black text-[10px] uppercase tracking-widest ml-1">Report Tagline</Label>
-              <Input id="tagline" placeholder="e.g., Building wealth, one step at a time!" value={customTagline} onChange={e => setCustomTagline(e.target.value)}
-                className="h-14 rounded-2xl border-slate-200 focus:border-amber-500 font-bold" />
+            <div className="space-y-2">
+              <Label htmlFor="tagline" className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest ml-1">Report Narrative</Label>
+              <Input id="tagline" placeholder="e.g., Forensic Transparency Engine" value={customTagline} onChange={e => setCustomTagline(e.target.value)}
+                className="h-14 rounded-xl border-border bg-muted/20 focus:border-primary/50 focus:ring-primary font-bold text-sm px-6" />
             </div>
-            <DialogFooter className="flex flex-col sm:flex-row gap-4 pt-4">
+            <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-6">
               <Button variant="outline" onClick={handleExportExcel} disabled={isGenerating}
-                className={cn("flex-1 h-14 rounded-2xl border-amber-200 text-amber-700 hover:bg-amber-50 font-black text-xs uppercase tracking-widest", applePhysics)}>
-                <FileText className="h-4 w-4 mr-2" /> Excel Pro
+                className="flex-1 h-14 rounded-xl border-border/50 text-foreground hover:bg-muted font-bold text-[11px] uppercase tracking-widest transition-all active:scale-95 shadow-sm">
+                <FileText className="h-4 w-4 mr-2 text-primary" /> Excel Logic
               </Button>
               <Button onClick={handlePrintPDF} disabled={isGenerating}
-                className={cn("flex-1 h-14 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-xs uppercase tracking-widest shadow-lg", applePhysics)}>
+                className="flex-1 h-14 rounded-xl bg-primary text-primary-foreground font-bold text-[11px] uppercase tracking-widest shadow-premium hover:bg-primary/90 transition-all active:scale-95">
                 {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
-                {isGenerating ? "Wait..." : "Print PDF"}
+                {isGenerating ? "Wait..." : "Generate PDF"}
               </Button>
             </DialogFooter>
           </div>

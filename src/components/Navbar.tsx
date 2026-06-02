@@ -23,8 +23,8 @@ const Navbar = () => {
 
   // ==================== PREMIUM UI SYSTEM ====================
   const navBackground = "bg-background/80 backdrop-blur-xl border-b border-border shadow-sm";
-  const linkStyle = "text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:text-foreground transition-all duration-300";
-  const mobileLinkStyle = "block text-sm font-bold uppercase tracking-widest text-text-secondary hover:text-foreground py-4";
+  const linkStyle = "text-xs font-bold uppercase tracking-wider text-text-secondary hover:text-foreground transition-all duration-300";
+  const mobileLinkStyle = "block text-sm font-bold uppercase tracking-wider text-text-secondary hover:text-foreground py-4";
 
   return (
     <nav className={cn("fixed top-0 left-0 right-0 z-[100] transition-all duration-500", navBackground)}>
@@ -66,14 +66,14 @@ const Navbar = () => {
               className="flex items-center gap-2.5 text-text-secondary hover:text-foreground transition-colors bg-background border border-border px-4 py-2.5 rounded-xl shadow-sm"
             >
               <Globe className="w-4 h-4" />
-              <span className="uppercase text-[10px] font-bold tracking-widest">{language}</span>
+              <span className="uppercase text-xs font-bold tracking-wider">{language}</span>
             </button>
 
             {/* 🚀 Primary CTA Button */}
             <Link 
               to="/auth" 
               className={cn(
-                "bg-foreground text-surface px-8 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-xl hover:bg-foreground/90 active:scale-[0.98] transition-all"
+                "bg-foreground text-surface px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-xl hover:bg-foreground/90 active:scale-[0.98] transition-all"
               )}
             >
               {t('nav_get_started', 'Access App')}
@@ -123,7 +123,7 @@ const Navbar = () => {
               className="flex w-full items-center justify-center gap-4 text-text-secondary bg-background px-6 py-5 rounded-2xl border border-border shadow-sm active:scale-[0.98] transition-all"
             >
               <Globe className="w-5 h-5" />
-              <span className="uppercase text-[11px] font-bold tracking-[0.2em]">{language} Selection</span>
+              <span className="uppercase text-xs font-bold tracking-wider">{language} Selection</span>
             </button>
 
             {/* 🚀 Mobile Action Button */}
@@ -131,7 +131,7 @@ const Navbar = () => {
               to="/auth" 
               onClick={closeMenu}
               className={cn(
-                "block w-full text-center bg-foreground text-surface py-5 rounded-2xl font-bold text-sm uppercase tracking-[0.25em] shadow-2xl active:scale-[0.98] transition-all"
+                "block w-full text-center bg-foreground text-surface py-5 rounded-2xl font-bold text-sm uppercase tracking-wider shadow-2xl active:scale-[0.98] transition-all"
               )}
             >
               {t('nav_get_started', 'Launch Experience')}

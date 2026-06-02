@@ -119,8 +119,8 @@ export const WhatsAppShareButton: React.FC<WhatsAppShareButtonProps> = ({
         'hover:scale-105 transition-transform duration-200',
         // Active state for mobile
         'active:scale-95',
-        // WhatsApp green color scheme for default variant
-        variant === 'default' && !shareStatus && 'bg-green-600 hover:bg-green-700 text-white',
+        // Monochrome color scheme for default variant
+        variant === 'default' && !shareStatus && 'bg-foreground hover:bg-foreground/90 text-surface',
         className
       )}
       disabled={isSharing}

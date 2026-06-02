@@ -8,9 +8,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { LanguageProvider } from "@/contexts/LanguageContext";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import React, { lazy, Suspense, useEffect, useRef } from "react";
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
@@ -76,12 +76,57 @@ function releaseLock() {
 
 /** 🛡️ SMART PROTECTED ROUTE: Forced Setup Check */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading, userProfile } = useAuth();
+  const { session, loading, userProfile, preferencesLoading, profileFetchError } = useAuth();
+  const { t } = useLanguage();
+  const location = useLocation();
 
-  if (loading) return <FullScreenLoader />;
+  useEffect(() => {
+    console.log("[ROUTE] Dashboard Mounted");
+    return () => console.log("[ROUTE] Dashboard Unmounted");
+  }, []);
+
+  // 🛡️ [STATE_MACHINE] Fail-Closed Connection Error
+  if (profileFetchError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-background text-foreground p-8 text-center space-y-6">
+        <div className="h-20 w-20 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 shadow-inner">
+          <svg className="h-10 w-10 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 15c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-black uppercase tracking-tight">{t('common.connection_error', 'Connection Error')}</h3>
+          <p className="text-[12px] text-text-muted font-medium max-w-[280px] leading-relaxed">
+            {t('common.profile_fetch_fail', 'We couldn\'t load your profile. Please check your connection and try again.')}
+          </p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="h-14 px-10 bg-foreground text-surface rounded-xl font-black uppercase text-[10px] tracking-widest shadow-institutional active:scale-95 transition-all"
+        >
+          {t('common.retry', 'Retry Connection')}
+        </button>
+      </div>
+    );
+  }
+
+  // 🛡️ [STATE_MACHINE] Wait for hydration
+  if (loading) {
+    console.log("[ROUTE] FullScreenLoader Rendered (loading: " + loading + ", prefLoading: " + preferencesLoading + ")");
+    return <FullScreenLoader />;
+  }
+
   if (!session) return <Navigate to="/auth" replace />;
 
-  if (userProfile && userProfile.has_completed_setup === false) {
+  // 🛡️ [RECOVERY_EXCEPTION] Allow password reset flow to bypass setup guard
+  if (location.pathname === '/forgot-password') {
+    return <>{children}</>;
+  }
+
+  // 🛡️ [STATE_MACHINE] Enforcement
+  // If userProfile is missing (null) or has_completed_setup is explicitly false
+  const needsSetup = !userProfile || userProfile.has_completed_setup === false;
+  if (needsSetup) {
     return <Navigate to="/setup" replace />;
   }
 
@@ -90,18 +135,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 /** 🛡️ SMART PUBLIC ROUTE: Handle Auth Redirection */
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading, userProfile } = useAuth();
+  const { session, loading, userProfile, preferencesLoading, profileFetchError } = useAuth();
+  const location = useLocation();
   
-  if (loading) return <FullScreenLoader />;
+  if (loading || (session && preferencesLoading)) {
+    return <FullScreenLoader />;
+  }
   
-  if (session) {
+  if (session && !profileFetchError) {
     const redirectPath = getRedirectAfterLogin();
     if (redirectPath) {
       clearRedirectAfterLogin();
       return <Navigate to={redirectPath} replace />;
     }
 
-    if (userProfile && userProfile.has_completed_setup === false) {
+    // 🛡️ [RECOVERY_EXCEPTION] Allow authenticated users to reach reset flow
+    if (location.pathname === '/forgot-password') {
+      return <>{children}</>;
+    }
+
+    const needsSetup = !userProfile || userProfile.has_completed_setup === false;
+    if (needsSetup) {
       return <Navigate to="/setup" replace />;
     }
     return <Navigate to="/dashboard" replace />;

@@ -19,8 +19,13 @@ const TripShareHandler = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+      <div
+        className="flex flex-col items-center justify-center h-screen gap-4 bg-background"
+        role="status"
+        aria-label="Loading trip"
+      >
+        <Loader2 className="h-8 w-8 animate-spin text-teal-600 dark:text-teal-400" />
+        <p className="text-sm text-muted-foreground font-medium">Loading your trip…</p>
       </div>
     );
   }
