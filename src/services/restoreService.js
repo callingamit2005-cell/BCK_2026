@@ -100,6 +100,8 @@ class RestoreService {
                             description: ct.description,
                             date: ct.date,
                             sms_hash: ct.sms_hash,
+                            canonical_key: ct.canonical_key,
+                            idempotency_key: ct.idempotency_key,
                             entry_source: ct.entry_source || (ct.sms_hash?.startsWith('man:') ? 'manual' : ct.sms_hash?.startsWith('voice:') ? 'voice' : 'sms'),
                             sync_status: 'completed',
                             is_deleted: ct.is_deleted ? 1 : 0

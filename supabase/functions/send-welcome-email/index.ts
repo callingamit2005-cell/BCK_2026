@@ -6,6 +6,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.39.0";
  * 🔐 ENV CONFIG
  */
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const APP_SECRET_KEY = Deno.env.get("APP_SECRET_KEY");
 const RESEND_FROM =
   Deno.env.get("RESEND_FROM_EMAIL") ||
   "BachatKaro <help@bachatkaro.co.in>";
@@ -26,7 +27,7 @@ const FB_URL =
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-api-key",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -45,6 +46,18 @@ const errorLog = (msg: string, err?: any) =>
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  // Signature verification
+  const apiKey = req.headers.get("x-api-key") || req.headers.get("x-webhook-signature");
+  if (APP_SECRET_KEY && apiKey !== APP_SECRET_KEY) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized: Invalid API Key" }),
+      {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 
   if (!RESEND_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {

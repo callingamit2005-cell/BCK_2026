@@ -27,6 +27,8 @@ coverage/
 .env.test.local
 .env.production.local
 
+!.env.example
+
 # =========================
 # 📦 SUPABASE / BACKEND
 # =========================
@@ -90,7 +92,7 @@ tmp/
 # =========================
 # 📦 PACKAGE MANAGERS
 # =========================
-package-lock.json
+#package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lockb
@@ -99,3 +101,19 @@ bun.lockb
 # 📦 MISC
 # =========================
 *.local
+
+
+# Forensic / Audit Files
+forensic_*
+audit_*
+runtime_trace*
+trace_check.txt
+visual_coverage_audit.cjs
+theme_compliance_audit.cjs
+generate_forensic_report.cjs
+phase2_closure_audit.js
+
+# Local test scripts
+test_collision*
+test_parser*
+negative_test.js

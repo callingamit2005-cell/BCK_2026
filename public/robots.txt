@@ -1,8 +1,67 @@
-User-agent: Googlebot
+# ==============================================================================
+
+# BACHATKARO - PRODUCTION SEO & AI CRAWLER CONFIGURATION
+
+# ==============================================================================
+
+User-agent: *
 Allow: /
 
-User-agent: Bingbot
+Disallow: /auth/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /dashboard
+Disallow: /add-expense
+Disallow: /savings
+Disallow: /group-expenses
+Disallow: /analytics
+Disallow: /setup
+Disallow: /trip-planner
+Disallow: /join
+
+# OpenAI
+
+User-agent: GPTBot
 Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic
+
+User-agent: ClaudeBot
+Allow: /
+
+# Perplexity
+
+User-agent: PerplexityBot
+Allow: /
+
+# Common Crawl
+
+User-agent: CCBot
+Allow: /
+
+# Apple
+
+User-agent: Applebot
+Allow: /
+
+# Amazon
+
+User-agent: Amazonbot
+Allow: /
+
+# ByteDance
+
+User-agent: Bytespider
+Allow: /
+
+# Social Crawlers
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +69,6 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
+# Sitemap
+
+Sitemap: https://bachatkaro.co.in/sitemap.xml

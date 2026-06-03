@@ -10,7 +10,7 @@ import { wrappedSignInWithPassword } from '@/utils/authForensics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail, Lock, LogIn, ShieldAlert } from 'lucide-react';
+import { Loader2, Mail, Lock, LogIn, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { isValidEmail } from '@/lib/validators';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -23,6 +23,7 @@ const LoginForm = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isHuman, setIsHuman] = useState(false); // 🚀 Bot Protection State
@@ -162,15 +163,26 @@ const LoginForm = () => {
               {t('auth.forgot_password_link', 'Forgot password?')}
             </Button>
           </div>
-          <Input
-            id="login-password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            className="h-14 bg-muted/20 rounded-xl border-border/50 text-foreground font-semibold focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all px-4 shadow-sm"
-          />
+          <div className="relative">
+            <Input
+              id="login-password"
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              className="h-14 bg-muted/20 rounded-xl border-border/50 text-foreground font-semibold focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all px-4 pr-12 shadow-sm"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors focus:outline-none"
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
 
         {/* 🛡️ CLOUDFLARE TURNSTILE */}

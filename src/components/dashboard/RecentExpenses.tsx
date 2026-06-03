@@ -287,6 +287,8 @@ const RecentExpenses = React.memo(({
         category: expense.category,
         payment_mode: expense.payment_mode,
         date: expense.date,
+        type: expense.type || "expense",
+        entry_source: expense.source || (expense as any).entry_source || "sms",
         canonical_key: (expense as any).canonicalKey || null,
         sms_hash: expense.smsHash || null,
         idempotency_key: (expense as any).idempotencyKey || null,

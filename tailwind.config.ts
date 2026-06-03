@@ -19,74 +19,70 @@ export default {
     },
     extend: {
       colors: {
-        border: "rgba(0, 0, 0, 0.06)",
-        input: "rgba(0, 0, 0, 0.06)",
-        ring: "#111111",
-        background: "#FAFAFA", // Premium Light Foundation
-        foreground: "#111111", // Primary Text
-        surface: "#FFFFFF", // Card Background
-        "surface-elevated": "#F5F5F5",
-        "text-secondary": "#666666",
-        "text-muted": "#999999",
-        "ai-accent": "#111111", // Monochrome AI Accent
-        success: "#111111", // Premium Monochrome Success
-        warning: "#666666", // Premium Monochrome Warning
-        expense: "#111111", // Premium Monochrome Expense
-        // Premium Fintech Semantic Palette
-        fintech: {
-          emerald: {
-            DEFAULT: "#10b981",
-            muted: "#ecfdf5",
-            dark: "#065f46",
-          },
-          amber: {
-            DEFAULT: "#f59e0b",
-            muted: "#fffbeb",
-            dark: "#92400e",
-          },
-          sapphire: {
-            DEFAULT: "#3b82f6",
-            muted: "#eff6ff",
-            dark: "#1e40af",
-          },
-          rose: {
-            DEFAULT: "#f43f5e",
-            muted: "#fff1f2",
-            dark: "#9f1239",
-          },
-          graphite: {
-            DEFAULT: "#1a1a1a",
-            muted: "#737373",
-          }
-        },
+        border: "hsl(var(--border) / <alpha-value>)",
+        input: "hsl(var(--input) / <alpha-value>)",
+        ring: "hsl(var(--ring) / <alpha-value>)",
+        background: "hsl(var(--background) / <alpha-value>)",
+        foreground: "hsl(var(--foreground) / <alpha-value>)",
+        surface: "hsl(var(--surface) / <alpha-value>)",
+        "surface-elevated": "hsl(var(--surface-elevated) / <alpha-value>)",
+        "text-secondary": "hsl(var(--text-secondary) / <alpha-value>)",
+        "text-muted": "hsl(var(--text-muted) / <alpha-value>)",
+        
+        /* --- FINANCIAL SYSTEM (PREMIUM) --- */
+        income: "hsl(var(--income) / <alpha-value>)",
+        expense: "hsl(var(--expense) / <alpha-value>)",
+        savings: "hsl(var(--savings) / <alpha-value>)",
+        investment: "hsl(var(--investment) / <alpha-value>)",
+        emi: "hsl(var(--emi) / <alpha-value>)",
+        warning: "hsl(var(--warning) / <alpha-value>)",
+
         primary: {
-          DEFAULT: "#111111",
-          foreground: "#FFFFFF",
+          DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+          foreground: "hsl(var(--primary-foreground) / <alpha-value>)",
         },
         secondary: {
-          DEFAULT: "#F5F5F5",
-          foreground: "#111111",
+          DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
+          foreground: "hsl(var(--secondary-foreground) / <alpha-value>)",
         },
         destructive: {
-          DEFAULT: "#111111",
-          foreground: "#FFFFFF",
+          DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
+          foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
         },
         muted: {
-          DEFAULT: "#F5F5F5",
-          foreground: "#666666",
+          DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+          foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
         },
         accent: {
-          DEFAULT: "rgba(0, 0, 0, 0.03)",
-          foreground: "#111111",
+          DEFAULT: "hsl(var(--accent) / <alpha-value>)",
+          foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
         },
         popover: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#111111",
+          DEFAULT: "hsl(var(--popover) / <alpha-value>)",
+          foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
         },
         card: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#111111",
+          DEFAULT: "hsl(var(--card) / <alpha-value>)",
+          foreground: "hsl(var(--card-foreground) / <alpha-value>)",
         },
+        chart: {
+          1: "hsl(var(--chart-1) / <alpha-value>)",
+          2: "hsl(var(--chart-2) / <alpha-value>)",
+          3: "hsl(var(--chart-3) / <alpha-value>)",
+          4: "hsl(var(--chart-4) / <alpha-value>)",
+          5: "hsl(var(--chart-5) / <alpha-value>)",
+        }
+      },
+      borderRadius: {
+        "premium": "1rem", /* 16px */
+        "modal": "1.5rem", /* 24px */
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+        "4xl": "2rem",
+      },
+      boxShadow: {
+        "premium": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        "institutional": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
@@ -94,12 +90,6 @@ export default {
       },
       transitionTimingFunction: {
         "butter-soft": "cubic-bezier(0.34, 1.56, 0.64, 1)",
-      },
-      willChange: {
-        auto: "auto",
-        transform: "transform",
-        opacity: "opacity",
-        "transform-opacity": "transform, opacity",
       },
       keyframes: {
         "accordion-down": {
@@ -110,26 +100,21 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "fade-in": {
+        "fade-in-up": {
           from: {
             opacity: "0",
-            transform: "translate3d(0, 8px, 0)",
+            transform: "translate3d(0, 12px, 0)",
           },
           to: {
             opacity: "1",
             transform: "translate3d(0, 0, 0)",
           },
         },
-        spin: {
-          from: { transform: "rotate(0deg)" },
-          to: { transform: "rotate(360deg)" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.4s ease-out both",
-        spin: "spin 1s linear infinite",
+        "fade-in-up": "fade-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both",
       },
     },
   },

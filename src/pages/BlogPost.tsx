@@ -126,12 +126,10 @@ const BlogPost = () => {
                   </div>
 
                   <Link 
-                    to="/#waitlist"
-                    className="w-full md:w-auto relative group overflow-hidden rounded-xl bg-foreground p-[1px] transition-transform duration-500 ease-butter-soft active:scale-[0.965] outline-none"
+                    to="/auth"
+                    className="w-full md:w-auto flex items-center justify-center bg-primary text-primary-foreground rounded-xl px-12 py-4 font-black uppercase text-xs tracking-widest shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-300"
                   >
-                    <div className="flex items-center justify-center w-full h-full bg-foreground rounded-[11px] px-12 py-4 transition-all duration-300 text-surface font-black uppercase text-xs tracking-[0.2em] group-hover:bg-foreground/90">
-                      Secure Access
-                    </div>
+                    Secure Access
                   </Link>
                </div>
             </div>

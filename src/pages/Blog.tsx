@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import { fetchBlogPosts } from "@/services/blogService";
 import { useSeoMeta } from "@/hooks/useSeoMeta";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Sparkles } from "lucide-react";
 
 const Blog = () => {
   const { data: posts = [], isLoading } = useQuery({

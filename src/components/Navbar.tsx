@@ -22,58 +22,61 @@ const Navbar = () => {
     location.pathname === "/" ? anchor : `/${anchor}`;
 
   // ==================== PREMIUM UI SYSTEM ====================
-  const navBackground = "bg-background/80 backdrop-blur-xl border-b border-border shadow-sm";
-  const linkStyle = "text-xs font-bold uppercase tracking-wider text-text-secondary hover:text-foreground transition-all duration-300";
+  const navBackground = "bg-background/90 backdrop-blur-xl border-b border-border/50 shadow-sm";
+  const linkStyle = "text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:text-foreground transition-all duration-300 relative group";
   const mobileLinkStyle = "block text-sm font-bold uppercase tracking-wider text-text-secondary hover:text-foreground py-4";
 
   return (
-    <nav className={cn("fixed top-0 left-0 right-0 z-[100] transition-all duration-500", navBackground)}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4 md:py-6">
+    <nav className={cn("sticky top-0 z-[100] transition-all duration-500", navBackground)}>
+      <div className="max-w-[1440px] mx-auto flex items-center justify-between px-6 py-4 md:py-5">
         
         {/* 🏢 Brand Logo - High Contrast Monochrome */}
-        <Link to="/" className="relative group">
-          <span className={cn("text-2xl font-bold tracking-tighter text-foreground group-hover:opacity-80 transition-opacity inline-block")}>
-            Bachat<span className="text-text-secondary">Karo</span>
+        <Link to="/" className="relative group shrink-0">
+          <span className={cn("text-2xl font-black tracking-tighter text-foreground group-hover:opacity-80 transition-opacity inline-block")}>
+            Bachat<span className="text-primary">Karo</span>
           </span>
         </Link>
 
         {/* 💻 DESKTOP MENU - Crystal Clear */}
-        <div className="hidden md:flex items-center gap-12">
-          <div className="flex items-center gap-10 mr-6">
+        <div className="hidden lg:flex items-center flex-1 justify-end gap-10">
+          <div className="flex items-center gap-8 xl:gap-12 mr-2">
             <Link to={toLandingAnchor("#features")} className={linkStyle}>
               {t('nav_features', 'Features')}
+              <div className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
             </Link>
             <Link to="/blog" className={linkStyle}>
               {t('nav_blog', 'Blog')}
+              <div className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
             </Link>
             <Link to={toLandingAnchor("#faq")} className={linkStyle}>
               {t('nav_faq', 'FAQ')}
+              <div className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
             </Link>
-            
             <Link to="/about" className={linkStyle}>
-              {t('about_title', 'About')}
+              {t('about_title', 'About Us')}
+              <div className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
             </Link>
-            
             <Link to="/contact" className={linkStyle}>
               {t('contact_title', 'Contact')}
+              <div className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
             </Link>
           </div>
           
-          <div className="flex items-center gap-5 border-l border-border pl-10">
+          <div className="flex items-center gap-4 xl:gap-6 border-l border-border/60 pl-8 xl:pl-10">
             {/* 🌐 Desktop Language Button */}
             <button 
               onClick={() => setShowLanguageModal(true)}
-              className="flex items-center gap-2.5 text-text-secondary hover:text-foreground transition-colors bg-background border border-border px-4 py-2.5 rounded-xl shadow-sm"
+              className="flex items-center gap-2 text-text-secondary hover:text-foreground transition-colors bg-muted/10 border border-border/50 px-4 py-2.5 rounded-xl shadow-inner active:scale-95"
             >
               <Globe className="w-4 h-4" />
-              <span className="uppercase text-xs font-bold tracking-wider">{language}</span>
+              <span className="uppercase text-[10px] font-black tracking-widest leading-none mt-0.5">{language}</span>
             </button>
 
             {/* 🚀 Primary CTA Button */}
             <Link 
               to="/auth" 
               className={cn(
-                "bg-foreground text-surface px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-xl hover:bg-foreground/90 active:scale-[0.98] transition-all"
+                "flex items-center justify-center bg-foreground text-background px-8 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-xl hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 min-w-[150px]"
               )}
             >
               {t('nav_get_started', 'Access App')}
@@ -83,10 +86,10 @@ const Navbar = () => {
 
         {/* 📱 MOBILE TOGGLE BUTTON */}
         <button 
-          className="md:hidden p-3 rounded-xl bg-background border border-border text-text-secondary hover:text-foreground shadow-sm transition-all" 
+          className="lg:hidden p-2.5 rounded-xl bg-muted/20 border border-border/50 text-text-secondary hover:text-foreground shadow-inner transition-all active:scale-95" 
           onClick={() => setOpen(!open)}
         >
-          {open ? <X size={22} /> : <Menu size={22} />}
+          {open ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 

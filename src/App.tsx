@@ -207,6 +207,8 @@ const AppContent = () => {
    * Latest invite overrides previous.
    */
   useEffect(() => {
+    let appUrlListener: { remove: () => void } | null = null;
+
     const saveInviteToStorage = (type: 'token' | 'groupId', value: string) => {
       const data = {
         type,
@@ -237,7 +239,7 @@ const AppContent = () => {
       }
 
       // NATIVE HANDLING: App Launch
-      App.addListener('appUrlOpen', (data) => {
+      appUrlListener = await App.addListener('appUrlOpen', (data) => {
         if (import.meta.env.DEV) console.log("🚀 [DeepLink] Incoming URL:", data.url);
         
         try {
@@ -259,6 +261,12 @@ const AppContent = () => {
     };
 
     void setupDeepLink();
+
+    return () => {
+      if (appUrlListener) {
+        appUrlListener.remove();
+      }
+    };
   }, [navigate]);
 
   /**
@@ -392,7 +400,7 @@ function App() {
           <TooltipProvider>
             <AuthProvider>
               <LanguageProvider>
-                <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
+                <ThemeProvider attribute="class" defaultTheme="dark">
                   <AppContent />
                 </ThemeProvider>
               </LanguageProvider>

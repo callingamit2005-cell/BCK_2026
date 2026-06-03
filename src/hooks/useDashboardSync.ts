@@ -83,6 +83,8 @@ export const useDashboardSync = (
     let active = true;
 
     const runFirstLoadSync = async () => {
+      let backgroundTimerId: NodeJS.Timeout | null = null;
+      
       try {
         if (Capacitor.getPlatform() === 'android') {
           if (active) void syncEngine.processQueue();
@@ -143,7 +145,7 @@ export const useDashboardSync = (
             // 🚀 [PHASE_6C_BACKGROUND_HYDRATION]
             // After fast bootstrap is visible, trigger a deeper 180-day scan in the background.
             // Using a 5s delay to ensure the UI has finished its first render cycle.
-            setTimeout(async () => {
+            backgroundTimerId = setTimeout(async () => {
               if (active) {
                 console.log("🚀 [Background] Starting full history hydration (180 days)...");
                 // 🚀 [PHASE_P1E] Enable silent batch mode for historical hydration
@@ -176,9 +178,13 @@ export const useDashboardSync = (
       } catch (err) {
         console.error("First Load Sync Error:", err);
       }
+
+      return () => {
+        if (backgroundTimerId) clearTimeout(backgroundTimerId);
+      };
     };
 
-    void runFirstLoadSync();
+    const cleanupSync = runFirstLoadSync();
 
     const today = new Date();
     const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
@@ -191,7 +197,10 @@ export const useDashboardSync = (
       });
     }
 
-    return () => { active = false; };
+    return () => { 
+      active = false; 
+      cleanupSync.then(cleanup => cleanup?.());
+    };
   }, [isReady, user?.id, user?.created_at, toast, queryClient, canReadSms, loadNativeTransactions]);
 
   // --- RETENTION CLEANUP ---

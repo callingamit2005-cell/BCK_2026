@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const AppHeader = () => {
   const { user, signOut } = useAuth();
@@ -76,6 +77,8 @@ const AppHeader = () => {
                <span className="text-[9px] font-bold text-primary uppercase tracking-widest">Secure session</span>
             </div>
             
+            <ThemeToggle />
+
             {user && (
               <Button
                 variant="ghost"

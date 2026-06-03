@@ -298,7 +298,7 @@ const SetupWizard = () => {
                     <SelectTrigger className="h-14 rounded-xl border border-border/50 bg-muted/20 text-base font-bold text-foreground focus:border-primary/50 focus:ring-primary shadow-sm px-5 transition-all">
                       <SelectValue placeholder={t('onboarding.whereAreYouFrom', 'Where are you from?')} />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-border bg-surface text-foreground max-h-[300px] overflow-y-auto shadow-institutional">
+                    <SelectContent position="popper" className="rounded-xl border-border bg-surface text-foreground shadow-institutional max-h-[240px]">
                       {COUNTRIES.map(c => (
                         <SelectItem 
                           key={c.code} 
@@ -343,7 +343,7 @@ const SetupWizard = () => {
                     <SelectTrigger className="h-14 rounded-xl border border-border/50 bg-muted/20 text-base font-bold text-foreground focus:border-primary/50 focus:ring-primary shadow-sm px-5 transition-all">
                       <SelectValue placeholder={t('onboarding.talkToUsIn', 'Talk to us in...')} />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-border bg-surface text-foreground max-h-[300px] overflow-y-auto shadow-institutional">
+                    <SelectContent position="popper" className="rounded-xl border-border bg-surface text-foreground shadow-institutional max-h-[240px]">
                       {availableLanguages.map(l => (
                         <SelectItem 
                           key={l.code} 
