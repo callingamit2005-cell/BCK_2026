@@ -216,7 +216,7 @@ export const toUnifiedTransactionEntry = (row: any): UnifiedLedgerEntry => {
     // to prevent primary key collisions during edits.
     canonicalKey: row.canonical_key || row.canonicalKey || `legacy:${row.id}`,
     updatedAt: row.updated_at || row.updatedAt || row.created_at || null,
-    isDeleted: Boolean(row.is_deleted),
+    isDeleted: Boolean(row.deleted_flag),
     _ts: safeDate(date)?.getTime() || 0,
   };
 };
@@ -251,7 +251,7 @@ export const toUnifiedNativeEntry = (row: any): UnifiedLedgerEntry => {
   const amount = Number(row.amount || 0);
   const date = row.date || (row.timestamp ? new Date(Number(row.timestamp)).toISOString() : new Date().toISOString());
   const smsHash = row.smsHash || row.sms_hash || null;
-  const isDeleted = Boolean(row.is_deleted);
+  const isDeleted = Boolean(row.deleted_flag);
 
   return {
     id: String(row.id),
@@ -422,7 +422,7 @@ export const fetchUnifiedLedger = async (userId: string, window: LedgerWindow, l
     if (db) {
       try {
         const [txRes, expRes] = await Promise.allSettled([
-          db.query(`SELECT * FROM transactions WHERE user_id = ? AND COALESCE(is_deleted, 0) = 0`, [userId]),
+          db.query(`SELECT * FROM transactions WHERE user_id = ? AND COALESCE(deleted_flag, 0) = 0`, [userId]),
           db.query(`SELECT * FROM expenses WHERE user_id = ?`, [userId])
         ]);
 
@@ -520,7 +520,7 @@ export const createLedgerTransaction = async (input: {
     type: input.type,
     entry_source: input.source,
     sync_status: 'pending',
-    is_deleted: false,
+    deleted_flag: false,
     idempotency_key: idempotencyKey, // Pre-bind identity
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
