@@ -440,7 +440,7 @@ export const fetchUnifiedLedger = async (userId: string, window: LedgerWindow, l
   if (navigator.onLine) {
     try {
       const [txResult, expResult] = await Promise.all([
-        supabase.from('transactions').select('*').eq('user_id', userId).eq('is_deleted', false).gte('date', window.start.toISOString()).order('date', { ascending: false }).limit(limit),
+        supabase.from('transactions').select('*').eq('user_id', userId).gte('date', window.start.toISOString()).order('date', { ascending: false }).limit(limit),
         supabase.from('expenses').select('*').eq('user_id', userId).order('expense_date', { ascending: false }).limit(limit),
       ]);
       
