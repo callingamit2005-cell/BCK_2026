@@ -423,7 +423,7 @@ export const fetchUnifiedLedger = async (userId: string, window: LedgerWindow, l
       try {
         const [txRes, expRes] = await Promise.allSettled([
           db.query(`SELECT * FROM transactions WHERE user_id = ? AND COALESCE(is_deleted, 0) = 0`, [userId]),
-          db.query(`SELECT * FROM expenses WHERE user_id = ? AND COALESCE(is_deleted, 0) = 0`, [userId])
+          db.query(`SELECT * FROM expenses WHERE user_id = ?`, [userId])
         ]);
 
         if (txRes.status === 'fulfilled') localSqlRows = txRes.value.values || [];
@@ -441,7 +441,7 @@ export const fetchUnifiedLedger = async (userId: string, window: LedgerWindow, l
     try {
       const [txResult, expResult] = await Promise.all([
         supabase.from('transactions').select('*').eq('user_id', userId).eq('is_deleted', false).gte('date', window.start.toISOString()).order('date', { ascending: false }).limit(limit),
-        supabase.from('expenses').select('*').eq('user_id', userId).eq('is_deleted', false).order('expense_date', { ascending: false }).limit(limit),
+        supabase.from('expenses').select('*').eq('user_id', userId).order('expense_date', { ascending: false }).limit(limit),
       ]);
       
       if (!txResult.error) cloudTxRows = txResult.data || [];
