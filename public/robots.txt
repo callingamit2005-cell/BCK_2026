@@ -71,4 +71,4 @@ Allow: /
 
 # Sitemap
 
-Sitemap: https://bachatkaro.co.in/sitemap.xml
+Sitemap: https://www.bachatkaro.co.in/sitemap.xml
