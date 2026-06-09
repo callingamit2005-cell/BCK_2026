@@ -1,659 +1,771 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
-import { forensicEngine } from "@/test/forensic/validationSuite";
+/**
+ * ====================================================================
+ * PRODUCTION LOCK
+ * ====================================================================
+ *
+ * This component receives amounts in PAISA.
+ *
+ * Storage layer:
+ *   Database     -> Paisa
+ *   SQLite       -> Paisa
+ *   Native       -> Paisa
+ *   Supabase     -> Paisa
+ *   Business     -> Paisa
+ *
+ * ONLY this component converts Paisa -> Rupees for display using
+ * convertToRupees().
+ *
+ * DO NOT move this conversion into helpers, services, sync logic,
+ * SQLite layer, or business logic.
+ *
+ * Breaking this rule will cause Android/Web amount inconsistencies.
+ *
+ * ====================================================================
+ */
+
+/**
+ * RecentExpenses Component
+ * 
+ * Displays a list of recent expenses with month-based pagination.
+ * Shows exactly 5 transactions per page for the selected month.
+ * Month picker changes the displayed month.
+ * 
+ * @component
+ */
+
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { format } from "date-fns";
-import {
-  Wallet,
-  CreditCard,
-  Banknote,
-  Pencil,
-  Loader2,
-  Trash2,
-  Sparkles,
-  ArrowUpRight,
-  ArrowDownLeft,
-  AlertTriangle,
-  RefreshCw,
+import { format, startOfMonth, endOfMonth, subMonths, addMonths, isWithinInterval } from "date-fns";
+import { 
+  Wallet, CreditCard, Banknote, Pencil, Check, X, Loader2, Mic, 
+  Trash2, ChevronLeft, ChevronRight,
+  Shield, Lock, Scan
 } from "lucide-react";
+import ExportMenu from "./ExportMenu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { cn } from "@/lib/utils";
-import { formatCurrency, convertToPaisa, convertToRupees } from "@/utils/currencyFormatter";
-import { isValidDate, safeDate } from "@/utils/dateFilters";
-import ExportMenu from "@/components/dashboard/ExportMenu";
-import {
-  clearNativeTransactions,
-  deleteNativeTransaction,
-  scanHistoricalSms,
-  upsertNativeTransaction,
-} from "../../integrations/smsBridge";
-import { saveAndSync } from "@/integrations/sqliteService";
+import { convertToRupees, convertToPaisa, formatCurrency } from "@/utils/currencyFormatter";
 
 interface Expense {
   id: string;
   amount: number;
   category: string;
-  type?: string;
   note?: string;
-  sender?: string;
   payment_mode: string;
   date: string;
-  smsHash?: string | null;
-  source?: string;
-  origin?: string;
-  direction?: "debit" | "credit";
-  idempotencyKey?: string | null;
+  sender?: string;
+  type?: string;
 }
+
+const getCategoryEmoji = (category: string) => {
+  const cat = (category || "").toLowerCase();
+  if (cat.includes('shop') || cat.includes('amazon') || cat.includes('flipkart') || cat.includes('myntra')) return '🛒';
+  if (cat.includes('travel') || cat.includes('uber') || cat.includes('ola') || cat.includes('irctc')) return '🚆';
+  if (cat.includes('fuel') || cat.includes('petrol') || cat.includes('hp') || cat.includes('iocl') || cat.includes('indian oil')) return '⛽';
+  if (cat.includes('food') || cat.includes('zomato') || cat.includes('swiggy') || cat.includes('restaurant')) return '🍽️';
+  if (cat.includes('salary') || cat.includes('income')) return '💰';
+  if (cat.includes('bill') || cat.includes('electricity') || cat.includes('broadband')) return '🧾';
+  if (cat.includes('recharge') || cat.includes('jio') || cat.includes('airtel') || cat.includes('vi')) return '📱';
+  if (cat.includes('transfer') || cat.includes('self') || cat.includes('upi')) return '🔄';
+  if (cat.includes('invest') || cat.includes('mutual') || cat.includes('stock')) return '📈';
+  if (cat.includes('medic') || cat.includes('pharm') || cat.includes('doctor') || cat.includes('health')) return '💊';
+  if (cat.includes('atm') || cat.includes('cash')) return '🏧';
+  return '💸';
+};
 
 interface RecentExpensesProps {
   expenses: Expense[];
   loading: boolean;
+  onDelete?: (id: string) => void;
+  onClearAll?: () => void;
+  onScan?: () => void;
   userId?: string;
-  canRescanSms?: boolean;
-  retentionMessage?: string;
   dateFilter?: any;
-  onDelete?: (id: string) => void | Promise<void>;
-  onClearAll?: () => void | Promise<void>;
 }
 
-const ITEMS_PER_PAGE = 7;
-
-const getPaymentIcon = (mode: string, type: string = "expense") => {
-  if (type === "income") return <ArrowDownLeft className="h-5 w-5 text-[#16A34A]" />;
-  switch (mode?.toLowerCase()) {
-    case "cash":
-      return <Banknote className="h-5 w-5 text-text-secondary" />;
-    case "card":
-      return <CreditCard className="h-5 w-5 text-text-secondary" />;
-    case "upi":
-    case "gpay":
-    case "paytm":
-    case "phonepe":
-      return <ArrowUpRight className="h-5 w-5 text-text-secondary" />;
-    default:
-      return <Wallet className="h-5 w-5 text-text-secondary" />;
-  }
-};
-
-const MemoizedRecentExpenseRow = memo(
-  ({ expense, formatCurrency, onEdit, onDelete }: any) => {
-    const { t } = useLanguage();
-    const isIncome =
-      expense.type === "income" || expense.direction === "credit";
-    const badgeLabel =
-      expense.origin === "native-transaction" || !!expense.smsHash
-        ? t("common.verified", "Verified")
-        : t("common.manual", "Manual");
-    const badgeColor =
-      expense.origin === "native-transaction" || !!expense.smsHash
-        ? "bg-foreground/5 border-border/40 text-foreground"
-        : "bg-background border-border/30 text-text-muted";
-
-    return (
-      <div className="group rounded-2xl p-4 transition-all duration-300 relative overflow-hidden bg-surface border border-border/40 hover:border-border/70 shadow-sm group/row">
-        <div className="flex items-center justify-between relative z-10 gap-3 sm:gap-5">
-          {/* Left: Icon + Meta */}
-          <div className="flex-1 min-w-0 flex items-center gap-4">
-            <div className="p-3 bg-background rounded-xl border border-border/60 shadow-inner shrink-0">
-              {getPaymentIcon(expense.payment_mode, expense.type)}
-            </div>
-            <div className="min-w-0 flex-1 overflow-hidden">
-              <div className="flex items-center gap-2 mb-1 overflow-hidden">
-                <span className="text-sm font-semibold text-foreground truncate">
-                  {expense.category}
-                </span>
-                <span className="inline-block text-xs text-text-muted font-medium bg-background px-2 py-0.5 rounded border border-border/40 whitespace-nowrap shrink-0">
-                  {isValidDate(expense.date)
-                    ? format(safeDate(expense.date)!, "dd MMM")
-                    : "—"}
-                </span>
-                <span
-                  className={cn(
-                    "px-2 py-0.5 rounded text-xs font-medium border whitespace-nowrap shrink-0",
-                    badgeColor
-                  )}
-                >
-                  {badgeLabel}
-                </span>
-              </div>
-              <div className="text-xs text-text-secondary truncate leading-tight">
-                {expense.sender || "Unknown payee"}
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Amount + Actions */}
-          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 shrink-0 ml-auto">
-            {/* Amount — color-coded: green for income, red for expense */}
-            <div
-              className={cn(
-                "text-base sm:text-lg font-bold font-mono tracking-tight leading-none tabular-nums",
-                isIncome ? "text-[#16A34A]" : "text-[#DC2626]"
-              )}
-            >
-              {isIncome ? "+" : "−"}{formatCurrency(expense.amount)}
-            </div>
-            <div className="flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Edit"
-                onClick={() => onEdit(expense)}
-                className="h-9 w-9 rounded-xl bg-background border border-border/40 text-text-muted hover:text-[#2563EB] hover:bg-[#2563EB]/5 shadow-sm transition-all duration-200 active:scale-95"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Delete"
-                onClick={() => onDelete(expense.id)}
-                className="h-9 w-9 rounded-xl bg-background border border-border/40 text-text-muted hover:text-[#DC2626] hover:bg-[#DC2626]/5 shadow-sm transition-all duration-200 active:scale-95"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  },
-  (prevProps, nextProps) =>
-    prevProps.expense.id === nextProps.expense.id &&
-    prevProps.expense.amount === nextProps.expense.amount &&
-    prevProps.expense.note === nextProps.expense.note &&
-    prevProps.expense.category === nextProps.expense.category &&
-    prevProps.expense.date === nextProps.expense.date &&
-    prevProps.expense.payment_mode === nextProps.expense.payment_mode &&
-    prevProps.expense.sender === nextProps.expense.sender &&
-    prevProps.expense.type === nextProps.expense.type
-);
-
-const RecentExpenses = React.memo(({
-  expenses,
-  loading,
+const RecentExpenses = ({ 
+  expenses, 
+  loading, 
+  onDelete, 
+  onClearAll, 
+  onScan,
   userId,
-  canRescanSms = true,
-  retentionMessage,
-  dateFilter,
-  onDelete,
-  onClearAll,
+  dateFilter 
 }: RecentExpensesProps) => {
-  if (process.env.NODE_ENV === "development") {
-    forensicEngine.trackRender("RecentExpenses");
-  }
-
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { t } = useLanguage();
-
+  const { t } = useLanguage(); // 👈 use global translation function
+  
+  // State management
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState("");
   const [editNote, setEditNote] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [isDeletingAll, setIsDeletingAll] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showMicrophoneMessage, setShowMicrophoneMessage] = useState(false);
+  
+  // ============= PAGINATION STATE =============
   const [currentPage, setCurrentPage] = useState(1);
-  const [scanProgress, setScanProgress] = useState<{
-    scanned: number;
-    total: number;
-  } | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const ITEMS_PER_PAGE = 5;
+  // ============================================
 
+  // Refs
+  const recognitionRef = useRef<any>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const handleEditInitiate = useCallback((exp: any) => {
-    setEditingId(exp.id);
-    setEditAmount(convertToRupees(exp.amount).toString());
-    setEditNote(exp.note || "");
-  }, []);
-
-  const handleDeleteInitiate = useCallback((id: string) => {
-    setConfirmDeleteId(id);
-  }, []);
-
+  // Cleanup
   useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  // ============= MONTH PICKER & FILTER LOGIC =============
+  const handlePrevMonth = () => {
+    setSelectedMonth(prev => subMonths(prev, 1));
+    setCurrentPage(1); // Reset to first page when month changes
+  };
+  
+  const handleNextMonth = () => {
+    setSelectedMonth(prev => addMonths(prev, 1));
     setCurrentPage(1);
-  }, [userId, dateFilter?.preset]);
+  };
 
-  useEffect(
-    () => () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    },
-    []
-  );
-
+  // Filter expenses for selected month
   const filteredExpenses = useMemo(() => {
+    const start = startOfMonth(selectedMonth);
+    const end = endOfMonth(selectedMonth);
     return expenses
-      .map((e) => ({ ...e, _ts: safeDate(e.date)?.getTime() || 0 }))
-      .sort((a, b) => b._ts - a._ts);
-  }, [expenses]);
+      .filter(e => {
+        const d = new Date(e.date);
+        return d >= start && d <= end;
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // newest first
+  }, [expenses, selectedMonth]);
 
+  // Pagination calculations
   const totalItems = filteredExpenses.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedExpenses = filteredExpenses.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
+  const paginatedExpenses = filteredExpenses.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  useEffect(() => {
-    if (!loading && totalItems > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
+  const getCurrentRange = () => {
+    if (totalItems === 0) return "";
+    const start = startIndex + 1;
+    const end = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+    return `${start}-${end} ${t('common.of')} ${totalItems}`;
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(prev => prev - 1);
+  };
+  // ========================================================
+
+  // ============= VOICE / EDIT / DELETE HANDLERS =============
+  const handleSmartVoiceEdit = () => {
+    setShowMicrophoneMessage(true);
+    
+    setTimeout(() => {
+      setShowMicrophoneMessage(false);
+    }, 5000);
+
+    if (isListening) {
+      toast({
+        title: t('voice.alreadyListening'),
+        description: t('voice.waitForCurrent'),
+      });
+      return;
     }
-  }, [currentPage, totalPages, loading, totalItems]);
 
-  const filterScopeLabel = useMemo(() => {
-    if (!dateFilter) return "All time";
-    const preset = dateFilter.preset || "custom";
-    return preset.replace("_", " ");
-  }, [dateFilter]);
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast({ 
+        title: t('common.notSupported'), 
+        description: t('voice.browserNotSupported'),
+        variant: "destructive" 
+      });
+      return;
+    }
 
-  const getUpdateTarget = (expense?: Expense) =>
-    expense?.origin === "cloud-expense" ? "expenses" : "transactions";
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+    }
 
-  const shouldTouchNative = (expense?: Expense) =>
-    expense?.source === "sms" ||
-    expense?.origin === "native-transaction" ||
-    Boolean(expense?.smsHash);
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    
+    recognition.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-  const isUuid = (value?: string | null) =>
-    Boolean(
-      value &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-          value
-        )
-    );
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      const amountMatch = transcript.match(/\d+/);
+      
+      if (amountMatch) {
+        const detectedAmount = amountMatch[0];
+        let note = transcript
+          .replace(detectedAmount, '')
+          .replace(/\b(rs|rupees|rupee|ka|ke|ki|for|and|with|paid)\b/gi, '')
+          .replace(/[^\w\s]/gi, '')
+          .trim();
+        
+        if (note) {
+          note = note.charAt(0).toUpperCase() + note.slice(1);
+        }
+        
+        setEditAmount(detectedAmount);
+        setEditNote(note);
+        
+        toast({ 
+          title: t('voice.smartCapture'), 
+          description: `${t('voice.detected')}: ₹${detectedAmount} for ${note || 'expense'}`,
+          className: "bg-blue-600 text-white",
+          duration: 2000,
+        });
+      } else {
+        toast({ 
+          title: t('voice.noAmountDetected'), 
+          description: t('voice.includeNumber'),
+          variant: "destructive" 
+        });
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+      
+      if (event.error === 'no-speech') {
+        toast({ 
+          title: t('voice.noSpeech'), 
+          description: t('voice.tryAgain'),
+          variant: "destructive" 
+        });
+      } else {
+        toast({ 
+          title: t('voice.voiceError'), 
+          description: event.error,
+          variant: "destructive" 
+        });
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      setShowMicrophoneMessage(false);
+    };
+
+    try {
+      recognition.start();
+    } catch (error) {
+      setIsListening(false);
+      toast({ 
+        title: t('common.error'), 
+        description: t('voice.couldNotStart'),
+        variant: "destructive" 
+      });
+    }
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      if (recognitionRef.current && isListening) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
+        setIsListening(false);
+        setShowMicrophoneMessage(false);
+        toast({ 
+          title: t('voice.timeout'), 
+          description: t('voice.noSpeechDetected'),
+          variant: "destructive" 
+        });
+      }
+    }, 10000);
+  };
 
   const handleSave = async () => {
     if (!editingId) return;
-    const expense = expenses.find((item) => item.id === editingId);
-    if (!expense) return;
+    
+    if (!editAmount || isNaN(parseFloat(editAmount)) || parseFloat(editAmount) <= 0) {
+      toast({ 
+        title: t('expense.invalidAmount'), 
+        description: t('expense.enterValidAmount'),
+        variant: "destructive" 
+      });
+      return;
+    }
 
-    const amountInPaisa = convertToPaisa(editAmount);
     setIsSaving(true);
-
+    
     try {
-      const payload = {
-        id: editingId,
-        user_id: userId,
-        amount: amountInPaisa,
-        description:
-          editNote.trim() || expense.sender || expense.category,
-        category: expense.category,
-        payment_mode: expense.payment_mode,
-        date: expense.date,
-        type: expense.type || "expense",
-        entry_source: expense.source || (expense as any).entry_source || "sms",
-        canonical_key: (expense as any).canonicalKey || null,
-        sms_hash: expense.smsHash || null,
-        idempotency_key: (expense as any).idempotencyKey || null,
-        created_at: (expense as any).created_at || expense.date,
-        updated_at: new Date().toISOString(),
-      };
-
-      await saveAndSync(getUpdateTarget(expense), payload, "UPDATE");
-
-      if (shouldTouchNative(expense) && expense?.smsHash) {
-        await upsertNativeTransaction({
-          id: expense.id,
-          smsHash: expense.smsHash,
-          amount: amountInPaisa,
-          type: expense.type ?? null,
-          sender: expense.sender ?? null,
-          timestamp: expense.date ? new Date(expense.date).getTime() : null,
-          userId,
-        });
-      }
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["ledger-transactions", userId] }),
-        queryClient.invalidateQueries({ queryKey: ["salaries", userId] }),
-        queryClient.invalidateQueries({ queryKey: ["budgets", userId] }),
-        queryClient.invalidateQueries({ queryKey: ["monthly-snapshot", userId] }),
-        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
-      ]);
+      const { error } = await supabase
+        .from('expenses')
+        .update({ 
+          amount: convertToPaisa(parseFloat(editAmount)), 
+          note: editNote || null
+        })
+        .eq('id', editingId);
+      
+      if (error) throw error;
+      
+      toast({ 
+        title: t('expense.updated'), 
+        description: t('expense.updateSuccess'),
+        className: "bg-green-600 text-white" 
+      });
+      
+      await queryClient.invalidateQueries({ queryKey: ['expenses'] });
       
       setEditingId(null);
-      toast({ title: t("dashboard.transactionUpdated", "Transaction updated") });
-    } catch (error) {
-      toast({
-        title: t("common.error", "Error"),
-        description: t("dashboard.failedToUpdate", "Failed to update transaction"),
-        variant: "destructive",
+      setEditAmount("");
+      setEditNote("");
+      
+    } catch (error: any) {
+      console.error('Update error:', error);
+      toast({ 
+        title: t('common.error'), 
+        description: error.message,
+        variant: "destructive" 
       });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDeleteConfirmed = async (id: string) => {
-    if (onDelete) {
-      await onDelete(id);
-      setConfirmDeleteId(null);
-    }
-  };
+  const handleDelete = async (id: string) => {
+    if (deletingId) return;
+    
+    const confirmDelete = window.confirm(t('expense.confirmDelete'));
+    if (!confirmDelete) return;
 
-  const handleClearAllConfirmed = async () => {
-    if (onClearAll) {
-      await onClearAll();
-      setConfirmClearAll(false);
-    }
-  };
-
-  const handleRescan = async () => {
-    setIsScanning(true);
-    setScanProgress(null);
+    setDeletingId(id);
+    
     try {
-      const scanRes = await scanHistoricalSms(60);
-      if (scanRes) {
-        setScanProgress({
-          scanned: scanRes.scanned ?? 0,
-          total: scanRes.scanned ?? 0,
-        });
-      }
-      window.dispatchEvent(new Event("newTransaction"));
-      toast({
-        title: t("emi.opSuccess", "Scan complete"),
-        description: `Processed ${scanRes.scanned} financial messages.`,
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      toast({ 
+        title: t('expense.deleted'), 
+        description: t('expense.deleteSuccess'),
+        className: "bg-red-600 text-white",
+        duration: 3000,
       });
-    } catch (err) {
-      toast({
-        title: t("common.error", "Scan failed"),
-        variant: "destructive",
+      
+      await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      
+      if (editingId === id) {
+        setEditingId(null);
+        setEditAmount("");
+        setEditNote("");
+      }
+      
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({ 
+        title: t('common.error'), 
+        description: error.message,
+        variant: "destructive" 
       });
     } finally {
-      setTimeout(() => setScanProgress(null), 3000);
-      setIsScanning(false);
+      setDeletingId(null);
     }
   };
 
+  const getPaymentIcon = (mode: string) => {
+    switch(mode?.toLowerCase()) {
+      case 'cash':
+        return <Banknote className="h-5 w-5" />;
+      case 'card':
+        return <CreditCard className="h-5 w-5" />;
+      case 'upi':
+        return <Wallet className="h-5 w-5" />;
+      default:
+        return <Wallet className="h-5 w-5" />;
+    }
+  };
+  // ==========================================================
+
+  if (loading) {
+    return (
+      <Card className="bg-card rounded-2xl shadow-md border-none overflow-hidden">
+        <CardHeader className="px-4 py-4 sm:px-6">
+          <CardTitle className="text-base font-bold text-[#333333]">{t('recentExpenses.shortTitle', 'Recent')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 px-4 sm:px-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center justify-between animate-pulse p-3 bg-muted/20 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="bg-muted p-3 rounded-full h-10 w-10"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted rounded w-24"></div>
+                  <div className="h-3 bg-muted rounded w-20"></div>
+                </div>
+              </div>
+              <div className="h-4 bg-muted rounded w-16"></div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="bg-surface border border-border/40 shadow-sm rounded-2xl overflow-hidden">
-      {/* Header */}
-      <CardHeader className="p-5 sm:p-7 pb-5 border-b border-border/40 bg-background/40">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          {/* Title */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-full bg-background border border-border/60 flex items-center justify-center shrink-0 shadow-sm">
-              <RefreshCw className={cn("h-4 w-4 text-foreground/60", loading && "animate-spin")} />
-            </div>
-            <div className="min-w-0">
-              <CardTitle className="text-lg font-bold text-foreground leading-tight">
-                {t("dashboard.recentTransactions", "Recent Transactions")}
-              </CardTitle>
-              <p className="text-xs text-text-muted mt-0.5">
-                {loading
-                  ? t("dashboard.syncing", "Syncing…")
-                  : t("dashboard.realtime", "Verified ledger")}
-              </p>
-            </div>
+    <Card className="bg-card rounded-2xl shadow-md border-none overflow-hidden">
+      <CardHeader className="px-4 py-4 sm:px-6 border-b border-border/40">
+        {/* Title + Month Picker + Export */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base font-bold text-[#333333]">
+              {t('recentExpenses.shortTitle', 'Recent')}
+              {totalItems > 0 && (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  ({totalItems} {t('common.total')})
+                </span>
+              )}
+            </CardTitle>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {/* Month picker and action hub */}
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            {/* 🚀 [RESTORED] Scan Button */}
+            {onScan && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onScan}
+                className="h-10 px-3 rounded-xl bg-surface border-border/50 text-foreground font-bold shadow-sm hover:border-primary/30 transition-all active:scale-95 gap-2"
+                title="Scan SMS for new transactions"
+              >
+                <Scan className="h-4 w-4 text-primary" />
+                <span className="hidden md:inline text-[10px] uppercase tracking-widest">Scan</span>
+              </Button>
+            )}
+
+            <div className="flex items-center bg-muted/20 rounded-lg p-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePrevMonth}
+                className="h-8 w-8 p-0 rounded-md"
+                title={t('common.prevMonth')}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm font-medium px-2 min-w-[120px] text-center">
+                {format(selectedMonth, 'MMMM yyyy')}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleNextMonth}
+                className="h-8 w-8 p-0 rounded-md"
+                title={t('common.nextMonth')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* 🚀 [RESTORED] Clear All Button */}
+            {onClearAll && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClearAll}
+                className="h-10 px-3 rounded-xl text-muted-foreground hover:text-expense hover:bg-expense/5 transition-all border border-border/40 hover:border-expense/20 gap-2"
+                title="Clear all transactions"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden md:inline text-[10px] uppercase tracking-widest">Clear All</span>
+              </Button>
+            )}
+
+            {/* Export Menu - exports current month's data */}
             <ExportMenu data={filteredExpenses} />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => void handleRescan()}
-              disabled={isScanning || !canRescanSms}
-              className="h-9 w-9 rounded-xl border-border/50 bg-background hover:bg-foreground hover:text-white transition-all duration-200 active:scale-95 shadow-sm"
-              title={t("common.update", "Rescan SMS")}
-            >
-              {isScanning ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setConfirmClearAll(true)}
-              className="h-9 w-9 rounded-xl border-border/50 bg-background hover:bg-[#DC2626] hover:text-white hover:border-[#DC2626] transition-all duration-200 active:scale-95 shadow-sm"
-              title={t("common.delete", "Clear all")}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
-
-        {/* Scan progress bar */}
-        {scanProgress && (
-          <div className="mt-3 animate-in fade-in">
-            <div className="h-1 w-full bg-background rounded-full overflow-hidden">
-              <div className="h-full bg-[#2563EB] opacity-50 animate-pulse w-full" />
-            </div>
-            <p className="text-xs text-text-muted mt-1.5 text-center">
-              {t("common.syncing", "Processing SMS history…")}
-            </p>
-          </div>
-        )}
-
-        {/* Retention notice */}
-        {retentionMessage && (
-          <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-background border border-border">
-            <AlertTriangle className="h-3 w-3 text-[#D97706] shrink-0" />
-            <span className="text-xs text-text-secondary">
-              {retentionMessage}
-            </span>
-          </div>
-        )}
       </CardHeader>
-
-      <CardContent className="p-5 sm:p-7">
-        {/* Loading state */}
-        {loading && filteredExpenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-5">
-            <div className="w-10 h-10 border-2 border-border border-t-foreground rounded-full animate-spin" />
-            <p className="text-xs text-text-muted">
-              {t("common.loading", "Loading transactions…")}
-            </p>
-          </div>
-        ) : filteredExpenses.length === 0 ? (
-          /* Empty state */
-          <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-            <div className="w-16 h-16 rounded-2xl bg-background border border-border/60 shadow-inner flex items-center justify-center mb-5">
-              <Sparkles className="h-7 w-7 text-text-muted opacity-30" />
+      
+      <CardContent className="space-y-6 p-4 sm:p-6">
+        {/* Microphone Trust Message */}
+        {showMicrophoneMessage && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-start gap-3">
+              <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
+                <Shield className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-blue-800 font-medium leading-relaxed">
+                  {t('voice.microphoneMessage')}
+                </p>
+                <div className="flex items-center gap-2 mt-2 text-xs text-blue-600">
+                  <Lock className="h-3 w-3" />
+                  <span>End-to-end encrypted</span>
+                </div>
+              </div>
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-2">
-              {t("recentExpenses.timelineEmpty", "No transactions yet")}
-            </h3>
-            <p className="text-sm text-text-muted max-w-[260px] leading-relaxed">
-              {t(
-                "recentExpenses.addFirst",
-                "Your financial activity will appear here."
-              )}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {totalItems === 0 ? (
+          <div className="text-center py-12 px-4">
+            <div className="bg-muted p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <Wallet className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="text-base text-muted-foreground font-medium mb-1">
+              {t('recentExpenses.noTransactions')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('recentExpenses.addFirst')}
             </p>
           </div>
         ) : (
-          <div className="space-y-5">
-            <div className="grid gap-3">
-              {paginatedExpenses.map((expense) => {
-                // Inline delete confirm
-                if (confirmDeleteId === expense.id) {
-                  return (
-                    <div
-                      key={expense.id}
-                      className="rounded-2xl p-5 bg-background border border-border animate-in zoom-in-95"
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <AlertTriangle className="h-4 w-4 text-[#DC2626] shrink-0" />
-                          <p className="text-sm font-medium text-foreground">
-                            {t("common.confirm", "Delete this record?")}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="h-9 px-4 rounded-xl text-text-secondary font-medium text-xs border border-border"
-                          >
-                            {t("common.cancel", "Cancel")}
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              void handleDeleteConfirmed(expense.id)
-                            }
-                            className="h-9 px-4 bg-[#DC2626] text-white hover:bg-[#DC2626]/90 font-medium rounded-xl text-xs"
-                          >
-                            {t("common.confirm", "Delete")}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                // Inline edit form
-                if (editingId === expense.id) {
-                  return (
-                    <div
-                      key={expense.id}
-                      className="rounded-2xl p-5 bg-background border border-border/40 transition-all duration-200"
-                    >
-                      <div className="space-y-3 animate-in slide-in-from-top-2">
-                        <p className="text-xs font-medium text-text-muted">
-                          Amount (₹)
-                        </p>
-                        <Input
-                          value={editAmount}
-                          onChange={(e) => setEditAmount(e.target.value)}
+          <>
+            {/* Transactions List */}
+            <div className="space-y-2">
+              {paginatedExpenses.map((expense) => (
+                <div 
+                  key={expense.id}
+                  className="bg-card border border-border/40 rounded-xl p-3 hover:shadow-md transition-shadow"
+                >
+                  {editingId === expense.id ? (
+                    /* Edit Mode */
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input 
+                          value={editNote} 
+                          onChange={(e) => setEditNote(e.target.value)} 
+                          placeholder={t('expense.note')}
+                          className="flex-1 h-11 text-sm rounded-xl"
+                          disabled={isSaving}
+                        />
+                        <Input 
+                          value={editAmount} 
+                          onChange={(e) => setEditAmount(e.target.value)} 
+                          placeholder="₹"
+                          className="w-24 h-11 text-lg font-bold rounded-xl"
+                          disabled={isSaving}
                           type="number"
-                          placeholder="0.00"
-                          className="h-12 rounded-xl border-border bg-surface font-bold text-lg text-foreground placeholder:text-text-muted focus:border-foreground"
+                          min="0"
+                          step="0.01"
                         />
-                        <Input
-                          value={editNote}
-                          onChange={(e) => setEditNote(e.target.value)}
-                          placeholder={t(
-                            "dashboard.emiNamePlaceholder",
-                            "Add a note"
-                          )}
-                          className="h-12 rounded-xl border-border bg-surface text-foreground placeholder:text-text-muted focus:border-foreground"
-                        />
-                        <div className="flex justify-end gap-2 pt-1">
-                          <Button
-                            variant="ghost"
-                            onClick={() => setEditingId(null)}
-                            className="h-10 rounded-xl text-text-secondary hover:text-foreground border border-border font-medium text-xs"
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleSmartVoiceEdit} 
+                          disabled={isSaving}
+                          className={`rounded-full h-9 px-3 text-xs ${
+                            isListening ? "animate-pulse border-red-500 text-red-500 bg-red-50" : ""
+                          }`}
+                        >
+                          <Mic className="h-3.5 w-3.5 mr-1.5" />
+                          {isListening ? t('voice.listening') : t('voice.smartVoice')}
+                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditAmount("");
+                              setEditNote("");
+                            }}
+                            className="h-9 w-9 p-0 rounded-full"
                           >
-                            {t("common.cancel", "Cancel")}
+                            <X className="h-4 w-4" />
                           </Button>
-                          <Button
-                            onClick={() => void handleSave()}
-                            disabled={isSaving}
-                            className="h-10 px-6 rounded-xl text-white bg-foreground hover:bg-foreground/90 font-medium shadow-sm text-xs"
+                          <Button 
+                            size="sm" 
+                            onClick={handleSave} 
+                            disabled={isSaving || !editAmount}
+                            className="bg-purple-600 text-white h-9 px-4 rounded-full hover:bg-purple-700"
                           >
                             {isSaving ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              t("common.save", "Save changes")
+                              <Check className="h-4 w-4" />
                             )}
                           </Button>
                         </div>
                       </div>
                     </div>
-                  );
-                }
-
-                return (
-                  <MemoizedRecentExpenseRow
-                    key={expense.id}
-                    expense={expense}
-                    formatCurrency={formatCurrency}
-                    onEdit={handleEditInitiate}
-                    onDelete={handleDeleteInitiate}
-                  />
-                );
-              })}
+                  ) : (
+                    /* View Mode */
+                    <div className="flex flex-col w-full group relative">
+                      {/* Row 1: Merchant & Amount */}
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2 overflow-hidden pr-3">
+                          <span className="text-xl leading-none flex-shrink-0">
+                            {getCategoryEmoji(expense.category)}
+                          </span>
+                          <h4 className="font-bold text-foreground text-lg truncate">
+                            {expense.sender || expense.category}
+                          </h4>
+                        </div>
+                        <span className={`font-bold text-lg whitespace-nowrap flex-shrink-0 ${expense.type === 'income' ? 'text-income' : 'text-primary'}`}>
+                          {expense.type === 'income' ? '+' : '-'}₹{typeof expense.amount === 'number' ? convertToRupees(expense.amount).toFixed(2) : expense.amount}
+                        </span>
+                      </div>
+                      
+                      {/* Row 2: Payment Mode & Date Time */}
+                      <div className="flex items-center justify-between text-sm text-muted-foreground font-medium">
+                        <span className="truncate pr-3">
+                          {expense.payment_mode}
+                        </span>
+                        <span className="whitespace-nowrap flex-shrink-0">
+                          {format(new Date(expense.date), 'dd MMM • hh:mm a')}
+                        </span>
+                      </div>
+                      
+                      {/* Action buttons (Subtle row) */}
+                      <div className="flex justify-end gap-1 mt-2 pt-2 border-t border-border/40 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => { 
+                            setEditingId(expense.id); 
+                            setEditAmount(typeof expense.amount === 'number' ? convertToRupees(expense.amount).toString() : expense.amount.toString()); 
+                            setEditNote(expense.note || ""); 
+                          }} 
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg"
+                          title={t('common.edit')}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDelete(expense.id)} 
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg"
+                          title={t('common.delete')}
+                          disabled={!!deletingId}
+                        >
+                          {deletingId === expense.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* Pagination */}
-            {totalItems > 0 && (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-5 border-t border-border">
-                <div className="text-xs text-text-muted">
-                  Page <span className="text-foreground font-medium">{currentPage}</span> of{" "}
-                  <span className="text-foreground font-medium">{totalPages}</span>
-                  <span className="ml-2">
-                    · {totalItems} {t("common.items", "items")} · {filterScopeLabel}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={currentPage <= 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="h-9 px-5 rounded-xl border border-border/40 bg-background text-text-muted font-medium text-xs transition-all duration-200 disabled:opacity-30"
-                  >
-                    {t("common.prev", "Previous")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={currentPage >= totalPages}
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    className="h-9 px-5 rounded-xl border border-border/40 bg-background text-text-muted font-medium text-xs transition-all duration-200 disabled:opacity-30"
-                  >
-                    {t("common.next", "Next")}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-
-      {/* Clear-all confirmation overlay */}
-      {confirmClearAll && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="max-w-sm w-full rounded-2xl p-8 bg-surface border border-border/40 shadow-2xl">
-            <div className="flex flex-col items-center text-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-[#DC2626]/10 border border-[#DC2626]/20 flex items-center justify-center">
-                <AlertTriangle className="h-7 w-7 text-[#DC2626]" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-foreground mb-1.5">
-                  {t("common.confirmWipe", "Delete all transactions?")}
-                </h3>
-                <p className="text-sm text-text-muted leading-relaxed">
-                  This will permanently remove all transactions from this device and the cloud. This cannot be undone.
-                </p>
-              </div>
-              <div className="flex w-full gap-3 pt-2">
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-4 pt-3 border-t border-border/40 gap-3">
                 <Button
                   variant="ghost"
-                  onClick={() => setConfirmClearAll(false)}
-                  className="flex-1 h-11 rounded-xl text-text-muted font-medium text-sm border border-border/40 hover:bg-background"
+                  size="sm"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="h-9 px-4 text-sm text-muted-foreground hover:text-purple-600 rounded-xl disabled:opacity-40 w-full sm:w-auto order-2 sm:order-1"
                 >
-                  {t("common.cancel", "Cancel")}
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  {t('common.previous')}
                 </Button>
+                
+                <div className="flex items-center gap-2 order-1 sm:order-2">
+                  {/* Page range indicator (for small screens) */}
+                  <span className="text-sm text-muted-foreground sm:hidden">
+                    {getCurrentRange()}
+                  </span>
+                  
+                  {/* Page Numbers (hidden on small, visible on sm+) */}
+                  <div className="hidden sm:flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                      if (
+                        totalPages <= 7 ||
+                        pageNum === 1 ||
+                        pageNum === totalPages ||
+                        (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                      ) {
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={pageNum === currentPage ? "default" : "ghost"}
+                            size="sm"
+                            onClick={() => handlePageClick(pageNum)}
+                            className={`h-8 w-8 p-0 text-sm rounded-lg ${
+                              pageNum === currentPage 
+                                ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                                : 'text-muted-foreground hover:text-purple-600'
+                            }`}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      } else if (
+                        (pageNum === 2 && currentPage > 3) ||
+                        (pageNum === totalPages - 1 && currentPage < totalPages - 2)
+                      ) {
+                        return <span key={pageNum} className="text-muted-foreground">...</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+                </div>
+                
                 <Button
-                  onClick={() => void handleClearAllConfirmed()}
-                  className="flex-1 h-11 rounded-xl bg-[#DC2626] text-white font-medium text-sm hover:bg-[#DC2626]/90 active:scale-95"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="h-9 px-4 text-sm text-muted-foreground hover:text-purple-600 rounded-xl disabled:opacity-40 w-full sm:w-auto order-3"
                 >
-                  {t("common.confirm", "Delete all")}
+                  {t('common.next')}
+                  <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            )}
+
+            {/* Page info (for larger screens) */}
+            {totalPages > 1 && (
+              <div className="text-center text-xs text-muted-foreground mt-2 hidden sm:block">
+                {getCurrentRange()}
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
     </Card>
   );
-});
+};
 
 export default RecentExpenses;

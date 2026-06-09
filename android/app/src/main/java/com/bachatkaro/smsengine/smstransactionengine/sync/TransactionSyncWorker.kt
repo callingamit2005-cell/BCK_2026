@@ -78,6 +78,8 @@ class TransactionSyncWorker(
                 put("type", if (txn.type.name == "CREDIT") "income" else "expense")
                 put("user_id", userId)
                 put("sms_hash", txn.smsHash)
+                put("canonical_key", txn.canonicalKey)
+                put("idempotency_key", txn.idempotencyKey)
                 put("category", txn.category)
                 put("description", txn.merchantName.ifBlank { txn.sender.ifBlank { "SMS Transaction" } })
                 
@@ -98,7 +100,7 @@ class TransactionSyncWorker(
             Log.d("SYNC_DEBUG", "Payload: $payloadString")
             Log.d("SYNC_PAYLOAD", payloadString)
 
-            val url = "${BuildConfig.SUPABASE_URL}/rest/v1/transactions?on_conflict=user_id,sms_hash"
+            val url = "${BuildConfig.SUPABASE_URL}/rest/v1/transactions?on_conflict=user_id,canonical_key"
             val request = Request.Builder()
                 .url(url)
                 .addHeader("apikey", BuildConfig.SUPABASE_KEY)

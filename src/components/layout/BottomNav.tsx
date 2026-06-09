@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Plus, Users, ShieldCheck, Activity } from "lucide-react";
+import { LayoutDashboard, Plus, Users, PiggyBank, Dices } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import SmartUniversalInput from "../SmartUniversalInput";
@@ -49,22 +49,25 @@ const BottomNav = () => {
 
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: t('nav.dashboard', "Home") },
+    { path: "/savings", icon: PiggyBank, label: t('nav.saving', "Savings") },
     { path: "#", icon: Plus, label: t('common.add', "Add"), isCenter: true },
     { path: "/group-expenses", icon: Users, label: t('nav.split', "Groups") },
+    { path: "/group-expenses?action=spin", icon: Dices, label: t('nav.spin', "Spin") },
   ];
 
   return (
     <>
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] w-full bg-surface/95 backdrop-blur-xl border-t border-border/50 flex items-center justify-around px-4 pt-2 pb-safe shadow-institutional"
-        style={{ minHeight: "calc(84px + env(safe-area-inset-bottom, 0px))" }}
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] w-full bg-card/95 backdrop-blur-xl border-t border-border flex items-center justify-around px-2 py-1 pb-safe shadow-sm"
+        style={{ minHeight: "calc(60px + env(safe-area-inset-bottom, 0px))" }}
       >
         {navItems.map((item) => {
           const active = isActive(item.path);
+          const isSpin = item.label === t('nav.spin', "Spin");
           
           if (item.isCenter) {
             return (
-              <div key="center-fab" className="relative -top-10 flex flex-col items-center gap-2">
+              <div key="center-fab" className="relative -top-8 flex flex-col items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => {
@@ -74,38 +77,44 @@ const BottomNav = () => {
                   aria-expanded={isOpen}
                   aria-label={isOpen ? "Close terminal" : "Open entry terminal"}
                   className={cn(
-                    "relative flex items-center justify-center w-[60px] h-[60px] rounded-full transition-all duration-500 active:scale-90 group overflow-hidden shadow-2xl",
+                    "relative flex items-center justify-center w-[54px] h-[54px] rounded-full transition-all duration-500 active:scale-90 group overflow-hidden shadow-lg",
                     isOpen 
-                      ? "bg-foreground text-surface rotate-45 scale-110" 
+                      ? "bg-primary text-primary-foreground rotate-45 scale-110" 
                       : "bg-background"
                   )}
                 >
-                  {/* Premium Rainbow Animated Ring */}
+                  {/* Fintech dual-tone ring — teal + blue */}
                   <div className={cn(
-                    "absolute inset-0 opacity-100 transition-opacity duration-700",
+                    "absolute inset-0 transition-opacity duration-700",
                     isOpen ? "opacity-0" : "opacity-100"
                   )}>
-                    <div className="absolute inset-0 bg-gradient-to-tr from-[#2563EB] via-[#9333EA] via-[#DB2777] to-[#F59E0B] animate-spin-slow blur-[2px] opacity-80" />
+                    <div className="absolute inset-0 rounded-full"
+                      style={{
+                        background: "conic-gradient(from 0deg, #0F766E, #2563EB, #14B8A6, #0F766E)",
+                        animation: "spin 4s linear infinite",
+                        opacity: 0.85
+                      }}
+                    />
                     <div className="absolute inset-[2.5px] bg-background rounded-full z-10" />
                   </div>
 
                   <div className="relative z-20 flex items-center justify-center">
                     {isOpen ? (
-                      <Plus className="w-7 h-7" />
+                      <Plus className="w-6 h-6" />
                     ) : (
-                      <span className="text-lg font-black tracking-tighter bg-gradient-to-tr from-[#2563EB] via-[#9333EA] to-[#DB2777] bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500">
+                      <span className="text-base font-black tracking-tighter text-primary group-hover:scale-110 transition-transform duration-300">
                         BK
                       </span>
                     )}
                   </div>
-                  
-                  {/* Subtle Radar Pulse (Institutional) */}
+
+                  {/* Soft teal radar pulse */}
                   {!isOpen && (
-                    <span className="absolute inset-0 rounded-full bg-[#2563EB]/15 animate-ping-slow opacity-30 pointer-events-none" />
+                    <span className="absolute inset-0 rounded-full bg-primary/10 animate-ping opacity-25 pointer-events-none" />
                   )}
                 </button>
                 <span className={cn(
-                  "text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-500",
+                  "text-[8px] font-black uppercase tracking-[0.2em] transition-all duration-500",
                   isOpen ? "opacity-0 translate-y-2" : "opacity-40 translate-y-0"
                 )}>
                   {isOpen ? "" : "Tap to BK"}
@@ -116,16 +125,16 @@ const BottomNav = () => {
 
           return (
             <Link
-              key={item.path}
+              key={item.label}
               to={item.path}
               onClick={(e) => { if (active) e.preventDefault(); }}
-              className="flex flex-col items-center justify-center min-w-[70px] gap-1.5 transition-all duration-300 active:scale-95"
+              className="flex flex-col items-center justify-center min-w-[60px] gap-1 transition-all duration-300 active:scale-95"
             >
               <div className={cn(
-                "p-2 rounded-xl transition-all duration-500 relative",
+                "p-1.5 rounded-xl transition-all duration-500 relative",
                 active ? "text-primary bg-primary/5" : "text-muted-foreground"
               )}>
-                <item.icon className="h-6 w-6" />
+                <item.icon className="h-5 w-5" />
                 {active && (
                    <motion.div 
                      layoutId="nav-glow"
@@ -134,7 +143,7 @@ const BottomNav = () => {
                 )}
               </div>
               <span className={cn(
-                "text-[10px] font-bold uppercase tracking-widest transition-colors duration-300",
+                "text-[9px] font-bold uppercase tracking-widest transition-colors duration-300",
                 active ? "text-primary" : "text-muted-foreground opacity-60"
               )}>
                 {item.label}

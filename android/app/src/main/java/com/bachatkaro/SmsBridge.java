@@ -355,7 +355,7 @@ public class SmsBridge extends Plugin implements SmsTransactionEngine.Listener {
                 android.content.ContentResolver cr = context.getContentResolver();
                 android.database.Cursor cursor = cr.query(
                     android.net.Uri.parse("content://sms/inbox"),
-                    new String[] { "address", "body", "date" },
+                    new String[] { "address", "body", "date", "date_sent" },
                     "date >= ? AND date <= ?",
                     new String[] { String.valueOf(startOfSixMonthsAgo), String.valueOf(currentTime) },
                     "date DESC"
@@ -373,17 +373,22 @@ public class SmsBridge extends Plugin implements SmsTransactionEngine.Listener {
                     while (cursor.moveToNext() && scanned < 5000) {
                         String address = cursor.getString(0);
                         String body = cursor.getString(1);
-                        long date = cursor.getLong(2);
+                        long dateReceived = cursor.getLong(2);
+                        
+                        int dateSentColIndex = cursor.getColumnIndex("date_sent");
+                        long dateSent = (dateSentColIndex >= 0) ? cursor.getLong(dateSentColIndex) : 0L;
+                        
+                        long transactionDate = (dateSent > 0) ? dateSent : dateReceived;
 
                         // Secondary validation: strict date boundary check
-                        if (date < startOfSixMonthsAgo || date > currentTime) {
+                        if (transactionDate < startOfSixMonthsAgo || transactionDate > currentTime) {
                             skipped++;
                             continue;
                         }
 
                         // Use historical processing to bypass live watermark
                         SmsTransactionEngine.ProcessResult result =
-                            engine.processHistorical(address, body, date);
+                            engine.processHistorical(address, body, transactionDate);
 
                         scanned++;
 
@@ -645,6 +650,8 @@ public class SmsBridge extends Plugin implements SmsTransactionEngine.Listener {
                 obj.getString("syncStatus", "completed"),
                 obj.has("updatedAt") ? obj.getLong("updatedAt") : System.currentTimeMillis(),
                 obj.getString("userId", null),
+                obj.getString("canonicalKey", null),
+                obj.getString("idempotencyKey", null),
                 obj.getInteger("confidenceScore", 100),
                 obj.getBoolean("isSplitGroup", false),
                 obj.getBoolean("isDeleted", false)

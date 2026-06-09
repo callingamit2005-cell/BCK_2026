@@ -214,7 +214,7 @@ const LanguageSelectorModal: React.FC<{
   const gradientClass = "bg-foreground";
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-[9999] p-0 sm:p-4 animate-in fade-in duration-300 backdrop-blur-sm">
+    <div className="fixed inset-0 bg-background/80 flex items-end sm:items-center justify-center z-[9999] p-0 sm:p-4 animate-in fade-in duration-300 backdrop-blur-sm">
       <div className="bg-surface rounded-t-[28px] sm:rounded-modal w-full max-w-md mx-auto shadow-institutional animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 duration-500 flex flex-col max-h-[92vh] sm:max-h-[85vh] overflow-hidden border-t sm:border border-border/40">
         
         {/* Header - Fixed */}
@@ -223,7 +223,7 @@ const LanguageSelectorModal: React.FC<{
           <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">
             {t('common.selectLanguage', 'Select Language')}
           </h2>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted mt-1.5 opacity-60">{t('common.chooseLanguage', 'Choose your preferred language')}</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1.5 opacity-60">{t('common.chooseLanguage', 'Choose your preferred language')}</p>
         </div>
 
         {/* List - Scrollable */}
@@ -234,24 +234,24 @@ const LanguageSelectorModal: React.FC<{
               onClick={() => setSelectedLang(code)}
               className={`w-full p-5 rounded-2xl border-2 transition-all flex items-center gap-5 group ${
                 selectedLang === code
-                  ? 'border-institutional-blue bg-background ring-4 ring-institutional-blue/5'
-                  : 'border-border/40 hover:border-institutional-blue/20 hover:bg-background'
+                  ? 'border-primary bg-background ring-4 ring-primary/5'
+                  : 'border-border/40 hover:border-primary/20 hover:bg-background'
               }`}
             >
               <div className="w-14 h-14 rounded-xl bg-surface-elevated shadow-inner border border-border/40 flex items-center justify-center text-3xl group-active:scale-95 transition-transform shrink-0">
                 {LANGUAGE_NAMES[code]?.flag || '🌐'}
               </div>
               <div className="flex-1 text-left min-w-0">
-                <p className={`font-black text-lg uppercase tracking-tight truncate ${selectedLang === code ? 'text-foreground' : 'text-text-secondary'}`}>
+                <p className={`font-black text-lg uppercase tracking-tight truncate ${selectedLang === code ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {LANGUAGE_NAMES[code]?.name || name}
                 </p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted truncate mt-1 opacity-60">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate mt-1 opacity-60">
                   {LANGUAGE_NAMES[code]?.nativeName || name}
                 </p>
               </div>
               {selectedLang === code && (
-                <div className="w-6 h-6 bg-institutional-blue rounded-full flex items-center justify-center shadow-lg shrink-0">
-                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg shrink-0">
+                  <svg className="w-3.5 h-3.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
@@ -289,7 +289,7 @@ const LanguageSelectorModal: React.FC<{
             </Button>
           </div>
           
-          <p className="text-[10px] text-center font-black uppercase tracking-widest text-text-muted opacity-40 italic">
+          <p className="text-[10px] text-center font-black uppercase tracking-widest text-muted-foreground opacity-40 italic">
             {t('common.languagePersistMessage', 'Identity Saved Locally')}
           </p>
         </div>

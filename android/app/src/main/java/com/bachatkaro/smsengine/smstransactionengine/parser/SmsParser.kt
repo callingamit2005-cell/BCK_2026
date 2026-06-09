@@ -124,6 +124,9 @@ object SmsParser {
             type = type
         )
 
+        val canonKey = generateCanonicalKey(amountPaise, timestamp, merchant, type)
+        val idemKey = generateIdempotencyKey(hash)
+
         val tx = Transaction(
             smsHash = hash,
             sender = sender,
@@ -140,6 +143,9 @@ object SmsParser {
             balance = balance,
             timestamp = timestamp,
             parsedAt = System.currentTimeMillis(),
+            userId = null,
+            canonicalKey = canonKey,
+            idempotencyKey = idemKey,
             confidenceScore = score,
             isSplitGroup = isWalletLoad
         )
@@ -224,5 +230,26 @@ object SmsParser {
             SmsEngineLogger.e(TAG, "SHA-256 unavailable - using UUID fallback", ex)
             java.util.UUID.randomUUID().toString()
         }
+    }
+
+    private fun generateCanonicalKey(amount: Long, timestamp: Long, payee: String, type: TransactionType): String? {
+        if (amount <= 0L || timestamp <= 0L) return null
+        
+        val ts = timestamp / 1000
+        val normPayee = payee.lowercase().replace(Regex("[^a-z0-9]"), "")
+        val typeStr = type.name.lowercase().let { 
+            if (it == "credit") "income" else "expense" 
+        }
+        
+        return "canon:$amount:$ts:$normPayee:$typeStr"
+    }
+
+    private fun generateIdempotencyKey(smsHash: String): String {
+        var hash = 0
+        for (i in smsHash.indices) {
+            hash = ((hash shl 5) - hash) + smsHash[i].code
+        }
+        val hashStr = Integer.toString(Math.abs(hash), 36)
+        return "det_hash:$hashStr"
     }
 }

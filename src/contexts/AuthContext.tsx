@@ -257,8 +257,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (import.meta.env.DEV) console.log("🔍 [AUTH_EVENT]:", event);
           forensicState.lastEvent = event;
 
-          if (event === 'INITIAL_SESSION' && !session) {
-            return;
+          if (event === 'INITIAL_SESSION') {
+            console.log("🛡️ [AUTH_EVENT_INITIAL_SESSION] Triggered.");
+            if (!session) return;
           }
           
           if (mounted) {
@@ -277,7 +278,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               }
 
               if (event === "PASSWORD_RECOVERY") {
-                console.log("🛡️ [AUTH_EVENT] Password recovery mode activated.");
+                console.log("🛡️ [AUTH_EVENT_PASSWORD_RECOVERY] Triggered. Password recovery mode activated.");
                 navigate('/forgot-password', { replace: true });
                 return;
               }
@@ -285,8 +286,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               if (session) {
                 // 🛡️ AUTH LOOP GUARD: Break if user is already same
                 if (currentUserRef.current?.id === session.user.id && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+                  if (event === "SIGNED_IN") console.log("🛡️ [AUTH_EVENT_SIGNED_IN] Triggered, but user unchanged.");
                   return;
                 }
+                
+                if (event === "SIGNED_IN") console.log("🛡️ [AUTH_EVENT_SIGNED_IN] Triggered. New session established.");
 
                 console.log(`[AUTH_EVENT] ${event} for user: ${session.user.id}`);
                 currentUserRef.current = session.user;

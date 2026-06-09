@@ -38,7 +38,7 @@ const DashboardLayout: React.FC = () => {
           </div>
           <motion.div 
             whileTap={{ scale: 0.9 }}
-            className="h-12 w-12 rounded-xl bg-surface border border-border/60 flex items-center justify-center shadow-sm cursor-pointer hover:border-primary/20 transition-colors"
+            className="h-12 w-12 rounded-xl bg-card border border-border/60 flex items-center justify-center shadow-sm cursor-pointer hover:border-primary/20 transition-colors"
           >
             <UserCircle className="h-6 w-6 text-muted-foreground" />
           </motion.div>
@@ -90,7 +90,7 @@ const DashboardLayout: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           {...cardInteraction}
-          className="fintech-card p-8 text-center border-primary/10 shadow-institutional cursor-pointer group"
+          className="fintech-card p-8 text-center border-primary/10 shadow-sm cursor-pointer group"
         >
           <div className="flex justify-center mb-6">
             <div className="px-4 py-1.5 rounded-full bg-primary/5 border border-primary/20 flex items-center gap-2 shadow-sm">
@@ -104,7 +104,7 @@ const DashboardLayout: React.FC = () => {
           <p className="text-muted-foreground text-xs font-medium mb-8 uppercase tracking-wider">Tap to audit financial engine</p>
           
           <Button 
-            className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium group-hover:opacity-95"
+            className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-sm group-hover:opacity-95"
           >
             <Sparkles className="h-4 w-4 mr-2" /> Ask Finance Mentor
           </Button>
@@ -134,7 +134,7 @@ const DashboardLayout: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 {...cardInteraction}
-                className="bg-surface p-5 rounded-2xl border border-border/40 flex items-center justify-between group cursor-pointer shadow-sm hover:border-primary/20 transition-all duration-300"
+                className="bg-card p-5 rounded-2xl border border-border/40 flex items-center justify-between group cursor-pointer shadow-sm hover:border-primary/20 transition-all duration-300"
               >
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-lg bg-muted/20 border border-border/50 flex items-center justify-center group-hover:bg-primary/5 group-hover:border-primary/20 transition-all">
@@ -150,7 +150,9 @@ const DashboardLayout: React.FC = () => {
                     - {formatCurrency(t.amount)}
                   </p>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
-                    {new Date(t.created_at).toLocaleDateString()}
+                    {new Date(t.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                    {' · '}
+                    {new Date(t.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
                   </p>
                 </div>
               </motion.div>

@@ -316,18 +316,18 @@ const SetupWizard = () => {
                   </Select>
                 </div>
                 <p className="text-center text-[10px] font-medium text-muted-foreground leading-relaxed italic">{t('onboarding.regionHelp', 'Region helps us optimize your local currency and split logic.')}</p>
-                <div className="flex gap-4 pt-2">
+                <div className="flex flex-col gap-3 pt-2">
                   <Button
                     variant="outline"
                     onClick={() => navigate('/auth', { replace: true })}
-                    className="flex-1 h-14 rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[10px] tracking-widest border border-border/50 shadow-sm active:scale-95"
+                    className="w-full h-[52px] rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[11px] tracking-widest border border-border/50 shadow-sm active:scale-[0.98]"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" /> {t('common.back', 'Back')}
                   </Button>
                   <Button
                     onClick={() => saveRegion(selectedCountry)}
                     disabled={saving || !selectedCountry}
-                    className="flex-[2] h-14 bg-primary text-primary-foreground rounded-xl font-bold shadow-premium hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 uppercase text-[10px] tracking-widest"
+                    className="w-full h-[52px] mt-2 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium active:scale-[0.98] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('common.next', 'Next Step')}
                   </Button>
@@ -361,18 +361,18 @@ const SetupWizard = () => {
                   </Select>
                 </div>
 
-                <div className="flex gap-4 pt-2">
+                <div className="flex flex-col gap-3 pt-2">
                   <Button 
                     variant="outline" 
                     onClick={() => setStep(1)} 
-                    className="flex-1 h-14 rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[10px] tracking-widest border border-border/50 shadow-sm active:scale-95"
+                    className="w-full h-[52px] rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[11px] tracking-widest border border-border/50 shadow-sm active:scale-[0.98]"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" /> {t('common.back', 'Back')}
                   </Button>
                   <Button 
                     onClick={saveLanguageStep} 
                     disabled={saving || !selectedLanguage} 
-                    className="flex-[2] h-14 bg-primary text-primary-foreground rounded-xl font-bold shadow-premium hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 uppercase text-[10px] tracking-widest"
+                    className="w-full h-[52px] mt-2 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium active:scale-[0.98] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('common.next', 'Next Step')}
                   </Button>
@@ -398,17 +398,17 @@ const SetupWizard = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-4 pt-2">
+                <div className="flex flex-col gap-3 pt-2">
                   <Button 
                     variant="outline" 
                     onClick={() => setStep(2)} 
-                    className="flex-1 h-14 rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[10px] tracking-widest border border-border/50 shadow-sm active:scale-95"
+                    className="w-full h-[52px] rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[11px] tracking-widest border border-border/50 shadow-sm active:scale-[0.98]"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" /> {t('common.back', 'Back')}
                   </Button>
                   <Button 
                     onClick={() => setStep(4)}
-                    className="flex-[2] h-14 bg-primary text-primary-foreground rounded-xl font-bold shadow-premium hover:opacity-90 transition-all active:scale-95 uppercase text-[10px] tracking-widest"
+                    className="w-full h-[52px] mt-2 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium active:scale-[0.98] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t('common.next', 'Next Step')}
                   </Button>
@@ -439,18 +439,18 @@ const SetupWizard = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-4 pt-2">
+                <div className="flex flex-col gap-3 pt-2">
                   <Button 
                     variant="outline" 
                     onClick={() => setStep(3)} 
-                    className="flex-1 h-14 rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[10px] tracking-widest border border-border/50 shadow-sm active:scale-95"
+                    className="w-full h-[52px] rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[11px] tracking-widest border border-border/50 shadow-sm active:scale-[0.98]"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" /> {t('common.back', 'Back')}
                   </Button>
                   <Button 
                     onClick={savePrivacyStep} 
                     disabled={saving} 
-                    className="flex-[2] h-14 bg-primary text-primary-foreground rounded-xl font-bold shadow-premium hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 uppercase text-[10px] tracking-widest"
+                    className="w-full h-[52px] mt-2 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium active:scale-[0.98] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('onboarding.accept_continue', 'I Accept & Continue')}
                   </Button>
@@ -509,18 +509,18 @@ const SetupWizard = () => {
                   </div>
                 )}
 
-                <div className="flex gap-4 pt-2">
+                <div className="flex flex-col gap-3 pt-2">
                   <Button 
                     variant="outline" 
                     onClick={() => setStep(4)} 
-                    className="flex-1 h-14 rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[10px] tracking-widest border border-border/50 shadow-sm active:scale-95"
+                    className="w-full h-[52px] rounded-xl font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all uppercase text-[11px] tracking-widest border border-border/50 shadow-sm active:scale-[0.98]"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" /> {t('common.back', 'Back')}
                   </Button>
                   <Button 
                     onClick={handlePermissionRequest} 
                     disabled={saving} 
-                    className="flex-[2] h-14 bg-primary text-primary-foreground rounded-xl font-bold shadow-premium hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 uppercase text-[10px] tracking-widest"
+                    className="w-full h-[52px] mt-2 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium active:scale-[0.98] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

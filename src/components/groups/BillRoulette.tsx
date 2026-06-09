@@ -200,6 +200,14 @@ const BillRoulette = ({ members = [] }: BillRouletteProps) => {
   // ── All effects IDENTICAL to original ──
   useEffect(() => { setOpen(false); }, [location.pathname]);
 
+  // 🚀 TRIGGER: Open on query param (e.g. from BottomNav)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('action') === 'spin') {
+      setOpen(true);
+    }
+  }, [location.search]);
+
   useEffect(() => {
     if (members && members.length > 0) {
       const memberNames = members.map(m => m.name.trim()).filter(n => n.length > 0);

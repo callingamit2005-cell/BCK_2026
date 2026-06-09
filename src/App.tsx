@@ -27,6 +27,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const LoginForm = lazy(() => import("@/components/auth/LoginForm"));
 const RegisterForm = lazy(() => import("@/components/auth/RegisterForm"));
 const ForgotPassword = lazy(() => import("@/components/auth/ForgotPassword"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const SetupWizard = lazy(() => import("./pages/SetupWizard"));
 
 // --- PAGE COMPONENTS (LAZY LOADED) ---
@@ -253,6 +254,19 @@ const AppContent = () => {
           if ((path === 'join' || path === 'deeplink/join') && token) {
             saveInviteToStorage('token', token);
             navigate(`/join?token=${token}`, { replace: true });
+          } else if (path === 'reset-password' || path === 'forgot-password') {
+            /**
+             * 🛡️ [RECOVERY_SYNC] PASSWORD RESET FLOW
+             * Supabase Auth relies on window.location.hash to detect the recovery token.
+             * We manually sync the hash from the deep link URL to the WebView's location.
+             */
+            if (url.hash) {
+              console.log("🛡️ [DeepLink] Syncing recovery hash to location:", url.hash);
+              window.location.hash = url.hash;
+              // Ensure history state is updated so Supabase observes the change
+              window.history.replaceState(window.history.state, "", window.location.href);
+            }
+            navigate('/forgot-password', { replace: true });
           }
         } catch (e) {
           console.error("Deep Link Parse Error:", e);
@@ -359,6 +373,7 @@ const AppContent = () => {
           <Route path="/login" element={<PublicRoute>{withSuspense(<LoginForm />)}</PublicRoute>} />
           <Route path="/register" element={<PublicRoute>{withSuspense(<RegisterForm />)}</PublicRoute>} />
           <Route path="/forgot-password" element={withSuspense(<ForgotPassword />)} />
+          <Route path="/auth/callback" element={withSuspense(<AuthCallback />)} />
 
           {/* Forced Setup Wizard */}
           <Route 

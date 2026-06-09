@@ -702,6 +702,7 @@ const Dashboard = () => {
               loading={loadingExpenses || isLoadingNativeTransactions} 
               onDelete={handleDeleteTransaction} 
               onClearAll={handleClearAll}
+              onScan={loadNativeTransactions}
               userId={user?.id}
               dateFilter={dateFilter}
             />

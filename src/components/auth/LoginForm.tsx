@@ -212,7 +212,7 @@ const LoginForm = () => {
         <Button
           type="submit"
           disabled={loading || !isHuman}
-          className="w-full h-14 mt-2 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium active:scale-[0.98] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-[52px] mt-2 bg-primary text-primary-foreground rounded-xl font-bold uppercase text-[11px] tracking-widest shadow-premium active:scale-[0.98] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading
             ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Authenticating…</>

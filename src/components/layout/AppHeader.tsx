@@ -26,7 +26,7 @@ const AppHeader = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-[100] w-full bg-surface/80 backdrop-blur-xl border-b border-border/50 pt-[var(--safe-area-top)] transition-all duration-500">
+    <header className="sticky top-0 z-[100] w-full h-16 md:h-20 min-h-16 bg-card/80 backdrop-blur border-b border-border pt-[var(--safe-area-top)] transition-all duration-500">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex justify-between items-center h-16 md:h-20">
           
@@ -38,7 +38,7 @@ const AppHeader = () => {
             <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-500">
               <Wallet className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             </div>
-            <div className="hidden sm:block">
+            <div className="flex flex-col">
               <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground leading-none">
                 Bachat<span className="text-primary">Karo</span>
               </h1>
@@ -57,7 +57,7 @@ const AppHeader = () => {
                 className={cn(
                   'flex items-center gap-2.5 px-6 py-2.5 rounded-xl transition-all duration-300 relative group overflow-hidden',
                   isActive(item.path)
-                    ? 'bg-surface text-primary shadow-sm border border-primary/10'
+                    ? 'bg-card text-primary shadow-sm border border-primary/10'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >

@@ -21,6 +21,8 @@ data class Transaction(
     val syncStatus: String = "pending",
     val updatedAt: Long = System.currentTimeMillis(),
     val userId: String? = null,
+    val canonicalKey: String? = null,
+    val idempotencyKey: String? = null,
     val confidenceScore: Int = 100,
     val isSplitGroup: Boolean = false,
     val isDeleted: Boolean = false

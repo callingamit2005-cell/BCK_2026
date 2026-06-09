@@ -57,7 +57,7 @@ const ForgotPassword = () => {
       const isNative = Capacitor.getPlatform() !== 'web';
       const resetUrl = isNative 
         ? 'bachatkaro://reset-password' 
-        : `${appEnv.appUrl}/forgot-password`;
+        : `${appEnv.appUrl}/auth/callback`;
         
       console.log("🚀 [AUTH_RESET_INIT] Requesting reset link for platform:", Capacitor.getPlatform(), "Redirect:", resetUrl);
       

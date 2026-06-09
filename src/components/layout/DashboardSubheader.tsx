@@ -1,40 +1,24 @@
-/**
- * DashboardSubheader.tsx - BachatKaro Premium Monochrome Edition
- * UI: Compact Segmented Control (Luxury Fintech Minimalism)
- * Logic: 100% Intact (Tab Switching Logic Preserved)
- * UX: Reduces vertical bloat, eliminates duplicate navigation hierarchy
- */
-
 import { Calendar, Calculator, TrendingUp, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DashboardSubheaderProps {
   activeTab: 'daily' | 'planning' | 'future' | 'dreams';
   onTabChange: (tab: 'daily' | 'planning' | 'future' | 'dreams') => void;
 }
 
-export default function DashboardSubheader({ activeTab, onTabChange }: DashboardSubheaderProps) {
-  const { t } = useLanguage();
+const DashboardSubheader = ({ activeTab, onTabChange }: DashboardSubheaderProps) => {
   const tabs = [
-    { id: 'daily', icon: Calendar, label: t('tabs.daily', 'Daily') },
-    { id: 'planning', icon: Calculator, label: t('tabs.planning', 'Planning') },
-    { id: 'future', icon: TrendingUp, label: t('tabs.future', 'Future') },
-    { id: 'dreams', icon: Target, label: t('tabs.dreams', 'Dreams') },
+    { id: 'daily', icon: Calendar, label: 'Daily' },
+    { id: 'planning', icon: Calculator, label: 'Planning' },
+    { id: 'future', icon: TrendingUp, label: 'Future' },
+    { id: 'dreams', icon: Target, label: 'Dreams' },
   ] as const;
 
   return (
-    <div className="w-full flex justify-center py-4 sm:py-6 px-4 relative overflow-hidden">
-      {/* Edge Gradient Masks for scrolling overflow - Narrower for better visibility */}
-      <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent z-20 pointer-events-none md:hidden" />
-      <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background to-transparent z-20 pointer-events-none md:hidden" />
-
-      {/* Compact Segmented Control Container */}
-      <div 
-        className="flex items-center p-1 bg-card border border-border/40 rounded-3xl overflow-x-auto hide-scrollbar max-w-full shadow-sm relative z-30 mx-auto"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
-        <div className="flex items-center min-w-max px-0.5">
+    <div className="w-full bg-background/90 backdrop-blur-sm border-b border-border sticky top-16 z-40">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6">
+        {/* Instagram Style: Justify center on mobile, Start on desktop */}
+        <div className="flex items-center justify-between sm:justify-start gap-1 sm:gap-4 overflow-x-auto scrollbar-hide py-2 sm:py-3">
           {tabs.map(({ id, icon: Icon, label }) => {
             const isActive = activeTab === id;
             return (
@@ -42,19 +26,23 @@ export default function DashboardSubheader({ activeTab, onTabChange }: Dashboard
                 key={id}
                 onClick={() => onTabChange(id)}
                 className={cn(
-                  'flex items-center gap-2 sm:gap-3 px-4 sm:px-8 py-2 rounded-2xl transition-all duration-700 ease-in-out touch-manipulation whitespace-nowrap shrink-0',
+                  // Mobile: Stacked Icon + Text | Desktop: Row Icon + Text
+                  'flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-2xl transition-all duration-300 flex-1 sm:flex-initial min-w-[70px]',
+                  'active:scale-90 touch-manipulation',
                   isActive
-                    ? 'bg-primary text-primary-foreground shadow-md scale-105 z-10'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-background/80 active:scale-[0.98] opacity-80'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <Icon className={cn(
-                  "h-4 w-4 transition-all duration-700",
-                  isActive ? "scale-110 opacity-100" : "opacity-70"
-                )} />
+                <div className={cn(
+                  "p-1.5 rounded-xl transition-all",
+                  isActive ? "bg-primary text-primary-foreground scale-110 shadow-sm" : "bg-muted"
+                )}>
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                </div>
                 <span className={cn(
-                  "text-xs uppercase tracking-wider",
-                  isActive ? "font-black" : "font-bold"
+                  "text-[10px] sm:text-sm font-bold tracking-tight uppercase sm:capitalize",
+                  isActive ? "opacity-100" : "opacity-70"
                 )}>
                   {label}
                 </span>
@@ -65,4 +53,6 @@ export default function DashboardSubheader({ activeTab, onTabChange }: Dashboard
       </div>
     </div>
   );
-}
+};
+
+export default DashboardSubheader;

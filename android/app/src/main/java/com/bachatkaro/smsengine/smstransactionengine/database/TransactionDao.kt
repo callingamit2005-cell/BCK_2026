@@ -589,6 +589,8 @@ class TransactionDao(context: Context) {
         put(TransactionDbHelper.COL_UPDATED_AT,  updatedAt)
         put(TransactionDbHelper.COL_USER_ID,     userId)
         put(TransactionDbHelper.COL_IS_DELETED,  if (isDeleted) 1 else 0)
+        put(TransactionDbHelper.COL_CANONICAL_KEY, canonicalKey)
+        put(TransactionDbHelper.COL_IDEMPOTENCY_KEY, idempotencyKey)
     }
 
     /** Safe enum lookup — never throws on unknown strings. */
@@ -620,6 +622,8 @@ class TransactionDao(context: Context) {
         syncStatus   = getString(getColumnIndexOrThrow(TransactionDbHelper.COL_SYNC_STATUS)) ?: "pending",
         updatedAt    = getLong(getColumnIndexOrThrow(TransactionDbHelper.COL_UPDATED_AT)),
         userId       = getString(getColumnIndexOrThrow(TransactionDbHelper.COL_USER_ID)),
+        canonicalKey = getColumnIndex(TransactionDbHelper.COL_CANONICAL_KEY).takeIf { it >= 0 }?.let { getString(it) },
+        idempotencyKey = getColumnIndex(TransactionDbHelper.COL_IDEMPOTENCY_KEY).takeIf { it >= 0 }?.let { getString(it) },
         isDeleted    = getInt(getColumnIndexOrThrow(TransactionDbHelper.COL_IS_DELETED)) == 1
     )
 
