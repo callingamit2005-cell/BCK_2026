@@ -41,7 +41,7 @@ import { isCurrentMonth, isLastMonth, isValidDate, safeDate } from '@/utils/date
 
 // Utils
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatCurrency, convertToRupees } from '@/utils/currencyFormatter';
+import { formatCurrency, convertToRupees, convertToPaisa } from '@/utils/currencyFormatter';
 import { useI18nNamespaces } from "@/hooks/useI18nNamespaces";
 import { cn } from "@/lib/utils";
 import {
@@ -422,10 +422,10 @@ const Dashboard = () => {
       id: editingLoanId || crypto.randomUUID(),
       user_id: user.id,
       name: finalLoanName,
-      amount: Number(finalLoanAmount),
+      amount: convertToPaisa(Number(finalLoanAmount)),
       emi_day: Number(emiDate),
       loan_details: {
-        principal: Number(finalLoanAmount),
+        principal: convertToPaisa(Number(finalLoanAmount)),
         interestRateAnnual: Number(interestRate),
         tenureMonths: Number(tenureMonths),
         startDate: startDate,

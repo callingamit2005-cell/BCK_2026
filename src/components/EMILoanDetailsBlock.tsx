@@ -239,7 +239,7 @@ const LoanDetailsContent: React.FC<LoanDetailsContentProps> = ({
       annualRate: Number(loanDetails?.annualInterestRate) || 0,
       tenureMonths: Number(loanDetails?.totalMonths) || 0,
       monthsPaid: Number(monthsPaid || 0),
-      prepayment: Number(prepaymentAmount || 0),
+      prepayment: Math.round(Number(prepaymentAmount || 0) * 100),
     });
   }, [loanDetails, monthsPaid, prepaymentAmount]);
 
