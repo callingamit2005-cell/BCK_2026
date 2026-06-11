@@ -10,7 +10,7 @@ class TransactionDbHelper(context: Context) :
 
     companion object {
         const val DATABASE_NAME = "sms_transactions.db"
-        const val DATABASE_VERSION = 8
+        const val DATABASE_VERSION = 9
 
         const val TABLE_TRANSACTIONS = "transactions"
 
@@ -37,6 +37,7 @@ class TransactionDbHelper(context: Context) :
         const val COL_IS_DELETED = "is_deleted"
         const val COL_IDEMPOTENCY_KEY = "idempotency_key"
         const val COL_CANONICAL_KEY = "canonical_key"
+        const val COL_IS_POSSIBLE_DUPLICATE = "is_possible_duplicate"
 
         private const val SQL_CREATE = """
             CREATE TABLE IF NOT EXISTS $TABLE_TRANSACTIONS (
@@ -62,7 +63,8 @@ class TransactionDbHelper(context: Context) :
                 $COL_USER_ID TEXT,
                 $COL_IS_DELETED INTEGER NOT NULL DEFAULT 0,
                 $COL_IDEMPOTENCY_KEY TEXT UNIQUE,
-                $COL_CANONICAL_KEY TEXT UNIQUE
+                $COL_CANONICAL_KEY TEXT UNIQUE,
+                $COL_IS_POSSIBLE_DUPLICATE INTEGER NOT NULL DEFAULT 0
             )
         """
 
@@ -163,6 +165,12 @@ class TransactionDbHelper(context: Context) :
             }
             try {
                 db.execSQL("ALTER TABLE $TABLE_TRANSACTIONS ADD COLUMN $COL_CANONICAL_KEY TEXT")
+            } catch (_: Exception) {
+            }
+        }
+        if (oldVersion < 9) {
+            try {
+                db.execSQL("ALTER TABLE $TABLE_TRANSACTIONS ADD COLUMN $COL_IS_POSSIBLE_DUPLICATE INTEGER NOT NULL DEFAULT 0")
             } catch (_: Exception) {
             }
         }

@@ -42,6 +42,8 @@
     --border: 214 32% 91%;            /* #E2E8F0 */
     --input: 214 32% 91%;
     --ring: 174 83% 26%;              /* Focus ring — teal */
+    --surface: 0 0% 100%;             /* #FFFFFF */
+    --surface-elevated: 210 40% 98%;  /* #F8FAFC */
 
     /* Shape */
     --radius: 0.75rem;                /* 12px — professional, not gaming */
@@ -93,6 +95,8 @@
     --border: 217 33% 27%;            /* #334155 */
     --input: 220 26% 14%;
     --ring: 173 80% 40%;
+    --surface: 217 33% 17%;           /* #111827 */
+    --surface-elevated: 220 26% 14%;  /* #1E293B */
 
     /* Financial colors — slightly brighter for dark bg readability */
     --color-income:     #22C55E;

@@ -32,6 +32,7 @@ import { formatCurrency } from '@/utils/currencyFormatter';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { isValidDate } from '@/utils/dateFilters';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { StatusState } from '@/components/ui/StatusState';
 
 interface CategoryChartProps {
   expenses: any[];
@@ -110,22 +111,23 @@ const CategoryChart = React.memo(({ expenses, loading, budget = 0 }: CategoryCha
   
   if (loading) {
     return (
-      <Card className="fintech-card h-[400px] flex flex-col items-center justify-center gap-4 bg-muted/20">
-        <div className="h-10 w-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Auditing Sectors</p>
-      </Card>
+      <StatusState 
+        type="loading" 
+        title={t('dashboard.auditingSectors', 'Auditing Sectors')}
+        variant="card"
+        className="h-[400px]"
+      />
     );
   }
 
   if (categoryData.length === 0) {
     return (
-      <Card className="fintech-card p-12 text-center">
-        <div className="h-16 w-16 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-6 border border-border/50">
-          <Activity className="h-8 w-8 text-muted-foreground/40" />
-        </div>
-        <h3 className="text-lg font-bold text-foreground tracking-tight mb-2">Market Intel Silent</h3>
-        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Feed the system to unlock insights</p>
-      </Card>
+      <StatusState 
+        type="empty" 
+        title={t('dashboard.marketIntelSilent', 'Market Intel Silent')}
+        message={t('dashboard.feedSystem', 'Feed the system to unlock sector-level intelligence.')}
+        variant="card"
+      />
     );
   }
 
@@ -217,26 +219,26 @@ const CategoryChart = React.memo(({ expenses, loading, budget = 0 }: CategoryCha
             </div>
           </div>
 
-          <div className="h-44 w-full">
+          <div className="h-52 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyTrendData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="hsl(var(--muted)/0.3)" />
+              <BarChart data={monthlyTrendData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: '700' }} 
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: '800' }} 
                   dy={12}
                 />
                 <YAxis hide />
                 <Tooltip
-                  cursor={{ fill: 'hsl(var(--muted) / 0.1)' }}
+                  cursor={{ fill: 'hsl(var(--primary) / 0.05)' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       return (
-                        <div className="bg-surface/95 backdrop-blur-md border border-border shadow-premium p-4 rounded-xl">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{payload[0].payload.name}</p>
-                          <p className="text-base font-bold text-foreground font-mono tabular-nums tracking-tighter">{formatCurrency(payload[0].value as number)}</p>
+                        <div className="bg-surface/95 backdrop-blur-xl border border-primary/20 shadow-premium p-4 rounded-2xl animate-in zoom-in-95 duration-200">
+                          <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.2em] mb-1.5">{payload[0].payload.name}</p>
+                          <p className="text-lg font-bold text-foreground font-mono tabular-nums tracking-tighter">{formatCurrency(payload[0].value as number)}</p>
                         </div>
                       );
                     }
@@ -245,17 +247,17 @@ const CategoryChart = React.memo(({ expenses, loading, budget = 0 }: CategoryCha
                 />
                 <Bar 
                   dataKey="value" 
-                  radius={[4, 4, 0, 0]} 
-                  barSize={24}
-                  isAnimationActive={false}
+                  radius={[6, 6, 0, 0]} 
+                  barSize={32}
+                  animationDuration={1000}
                 >
                   {monthlyTrendData.map((entry, index) => {
                     const isLast = index === monthlyTrendData.length - 1;
                     return (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={isLast ? 'hsl(var(--primary))' : 'hsl(var(--muted) / 0.4)'} 
-                        className="transition-all duration-300 hover:opacity-80"
+                        fill={isLast ? 'hsl(var(--primary))' : 'hsl(var(--primary) / 0.15)'} 
+                        className="transition-all duration-500 hover:fill-primary/40 cursor-pointer"
                       />
                     );
                   })}

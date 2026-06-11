@@ -25,7 +25,8 @@ data class Transaction(
     val idempotencyKey: String? = null,
     val confidenceScore: Int = 100,
     val isSplitGroup: Boolean = false,
-    val isDeleted: Boolean = false
+    val isDeleted: Boolean = false,
+    val isPossibleDuplicate: Boolean = false
 ) {
     fun formattedAmount(): String {
         val s = amount.toString().padStart(3, '0')

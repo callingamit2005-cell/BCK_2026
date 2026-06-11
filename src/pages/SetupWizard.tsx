@@ -66,8 +66,8 @@ const SetupWizard = () => {
   const { setLanguage, t } = useLanguage();
 
   const [step, setStep] = useState(0); 
-  const [selectedCountry, setSelectedCountry] = useState<string>('');
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [selectedCountry, setSelectedCountry] = useState<string>('IN');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
   const [saving, setSaving] = useState(false);
   const [permissionsStatus, setPermissionsStatus] = useState({
     sms: 'pending',

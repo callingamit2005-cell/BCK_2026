@@ -17,6 +17,8 @@ class LocalTransactionRepository(context: Context) : TransactionRepository {
 
     override fun isDuplicate(hash: String): Boolean = dao.isDuplicate(hash)
 
+    override fun isReferenceDuplicate(reference: String): Boolean = dao.isReferenceDuplicate(reference)
+
     override fun getByType(type: TransactionType, userId: String?): List<Transaction> = dao.getByType(type, userId)
 
     override fun getByDateRange(from: Long, to: Long, userId: String?): List<Transaction> = dao.getByDateRange(from, to, userId)

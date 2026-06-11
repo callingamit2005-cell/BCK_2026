@@ -622,8 +622,17 @@ public class SmsBridge extends Plugin implements SmsTransactionEngine.Listener {
         obj.put("timestamp", t.getTimestamp());
         obj.put("merchantName", t.getMerchantName());
         obj.put("reference", t.getReference());
+        obj.put("paymentHandle", t.getPaymentHandle());
         obj.put("syncStatus", t.getSyncStatus());
         obj.put("updatedAt", t.getUpdatedAt());
+        
+        // 🛡️ [IDENTITY_PARITY]
+        // Transmit authoritative keys from the native engine to prevent duplicate 
+        // creation caused by divergent key generation logic in the JS layer.
+        obj.put("canonicalKey", t.getCanonicalKey());
+        obj.put("idempotencyKey", t.getIdempotencyKey());
+        obj.put("isPossibleDuplicate", t.isPossibleDuplicate());
+        
         return obj;
     }
 
@@ -654,7 +663,8 @@ public class SmsBridge extends Plugin implements SmsTransactionEngine.Listener {
                 obj.getString("idempotencyKey", null),
                 obj.getInteger("confidenceScore", 100),
                 obj.getBoolean("isSplitGroup", false),
-                obj.getBoolean("isDeleted", false)
+                obj.getBoolean("isDeleted", false),
+                obj.getBoolean("isPossibleDuplicate", false)
             );
         } catch (Exception e) {
             return null;

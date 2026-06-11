@@ -3,11 +3,17 @@
 // 🛡️ SECURITY: Enhanced Read-Only mode for non-admins with visual cues.
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { MessageCircle, CheckCircle2, Zap, ArrowRightLeft, Lock, Smartphone, AlertCircle, RefreshCw, Loader2, Search, ChevronDown, ChevronUp, X, Users } from 'lucide-react';
+import { MessageCircle, CheckCircle2, Zap, ArrowRightLeft, Lock, Smartphone, AlertCircle, RefreshCw, Loader2, Search, ChevronDown, ChevronUp, X, Users, Copy, Share2 } from 'lucide-react';
 import { formatCurrency } from '@/utils/currencyFormatter';
 import { SmartPaySheet, PaymentTarget } from '@/components/dashboard/SmartPaySheet';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { paymentOrchestrator } from '@/services/paymentOrchestrator';
+import { getDB } from '@/integrations/sqlite';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 
 interface Member {
   id: string;
@@ -67,9 +73,97 @@ const SettlementSummary: React.FC<SettlementSummaryProps> = React.memo(({
   currentUserId
 }) => {
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const [payTarget, setPayTarget] = useState<PaymentTarget | null>(null);
   const [isPaySheetOpen, setIsPaySheetOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // 🛡️ [UTILITY_HANDLERS] - RBI Compliance Fallbacks
+  const handleCopyUPI = (upiId?: string) => {
+    if (!upiId) return;
+    navigator.clipboard.writeText(upiId);
+    console.log("[UPI_COPY_SUCCESS]", upiId);
+  };
+
+  const handleShareRequest = async (amount: number, fromName: string, toName: string, upiId?: string) => {
+    const amountStr = formatCurrency(amount);
+    const text = `Hi ${fromName}, please settle ${amountStr} for our group expenses on BachatKaro. ${upiId ? `UPI: ${upiId}` : ""}`;
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({ title: "Settlement Request", text, dialogTitle: "Share Request" });
+      } else if (navigator.share) {
+        await navigator.share({ title: "Settlement Request", text });
+      } else {
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+      }
+    } catch (err) {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    }
+  };
+
+  // Single Source of Truth for Member Names
+  const memberMap = useMemo(() => {
+    return members.reduce((acc: Record<string, string>, m) => {
+      acc[String(m.id)] = m.full_name || "Member";
+      return acc;
+    }, {});
+  }, [members]);
+
+  // Resolve current user's member ID for intent creation
+  const currentMemberId = useMemo(() => {
+    return members.find(m => m.user_id === currentUserId)?.id;
+  }, [members, currentUserId]);
+
+  // 🛡️ [BILATERAL_VERIFICATION_QUERY]
+  const { data: incomingIntents = [], refetch: refetchIntents } = useQuery({
+    queryKey: ['settlement-intents', groupId],
+    enabled: !!groupId && !!currentUserId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settlement_intents')
+        .select('*')
+        .eq('group_id', groupId)
+        .eq('status', 'pending_verification');
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const myIncomingIntents = useMemo(() => {
+    return incomingIntents.filter(i => i.receiver_id === currentMemberId);
+  }, [incomingIntents, currentMemberId]);
+
+  const handleConfirmReceipt = async (intent: any) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    try {
+      const fromName = memberMap[intent.sender_id] || "Member";
+      const toName = memberMap[intent.receiver_id] || "Me";
+      
+      // 1. Commit to terminal state
+      await paymentOrchestrator.updateStatus(intent.id, 'VERIFIED');
+      
+      // 2. Trigger ledger update (Handled by onSettle which is append-only)
+      await onSettle(fromName, toName, intent.amount, intent.idempotency_key);
+      
+      await refetchIntents();
+    } catch (e) {
+      console.error("Verification failed:", e);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDisputeReceipt = async (intent: any) => {
+    if (!window.confirm("Mark this settlement as disputed? This will notify the payer and admin.")) return;
+    setIsProcessing(true);
+    try {
+      await paymentOrchestrator.updateStatus(intent.id, 'DISPUTED');
+      await refetchIntents();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   // 🛡️ [SCALABILITY STATE]
   const [isExpanded, setIsExpanded] = useState(false);
@@ -85,19 +179,6 @@ const SettlementSummary: React.FC<SettlementSummaryProps> = React.memo(({
       console.log("[SETTLEMENT_STATE_UPDATE]", { isExpanded, isLedgerExpanded });
     }
   }, [isExpanded, isLedgerExpanded]);
-
-  // Single Source of Truth for Member Names
-  const memberMap = useMemo(() => {
-    return members.reduce((acc: Record<string, string>, m) => {
-      acc[String(m.id)] = m.full_name || "Member";
-      return acc;
-    }, {});
-  }, [members]);
-
-  // Resolve current user's member ID for intent creation
-  const currentMemberId = useMemo(() => {
-    return members.find(m => m.user_id === currentUserId)?.id;
-  }, [members, currentUserId]);
 
   const allSettlements = useMemo(() => {
     const result = (debts || []).map(d => ({
@@ -188,6 +269,48 @@ const SettlementSummary: React.FC<SettlementSummaryProps> = React.memo(({
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* 🛡️ [BILATERAL_VERIFICATION_SECTION] */}
+      {myIncomingIntents.length > 0 && (
+        <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
+           <div className="flex items-center gap-2 px-1">
+              <Zap className="h-4 w-4 text-primary animate-pulse" />
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Action Required: Verify Incoming Funds</p>
+           </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {myIncomingIntents.map((intent) => (
+                <div key={intent.id} className="p-5 bg-primary/5 border border-primary/20 rounded-2xl flex flex-col gap-4 shadow-sm">
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Incoming Handshake</p>
+                      <p className="text-sm font-black truncate uppercase text-foreground">From: {memberMap[intent.sender_id] || "Member"}</p>
+                    </div>
+                    <p className="text-lg font-black font-mono tracking-tighter text-primary">{formatCurrency(intent.amount)}</p>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => handleConfirmReceipt(intent)}
+                      disabled={isProcessing}
+                      className="flex-1 h-10 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest rounded-xl shadow-md active:scale-95 transition-all"
+                    >
+                      {isProcessing ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <CheckCircle2 className="h-3 w-3 mr-2" />}
+                      Confirm Receipt
+                    </Button>
+                    <Button 
+                      variant="ghost"
+                      onClick={() => handleDisputeReceipt(intent)}
+                      disabled={isProcessing}
+                      className="h-10 px-4 border border-border/40 text-muted-foreground hover:text-destructive hover:bg-destructive/5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+           </div>
+        </div>
+      )}
+
       <div className={cn("w-full", premiumCard)}>
         <SmartPaySheet 
           isOpen={isPaySheetOpen}
@@ -319,7 +442,7 @@ const SettlementSummary: React.FC<SettlementSummaryProps> = React.memo(({
                       </div>
                     </div>
 
-                    <div className="flex gap-2 sm:gap-3 w-full md:w-auto md:flex-shrink-0">
+                    <div className="flex flex-wrap md:flex-nowrap gap-2 sm:gap-3 w-full md:w-auto md:flex-shrink-0">
                       {settlement.amount > 0 && isDebtor && (
                         <button
                           onClick={() => {
@@ -348,9 +471,31 @@ const SettlementSummary: React.FC<SettlementSummaryProps> = React.memo(({
                             ) : (
                               <Smartphone size={16} className="sm:w-[18px] sm:h-[18px]" />
                             )}
-                            <span>{isProcessing && payTarget?.id === settlement.to ? "Waiting..." : t("settlement.pay_now", "Settle")}</span>
+                            <span>{isProcessing && payTarget?.id === settlement.to ? "Waiting..." : (!settlement.upi_id ? "Set UPI ID" : t("settlement.pay_now", "Settle"))}</span>
                           </div>
                         </button>
+                      )}
+
+                      {/* 🛡️ [UTILITY_ACTIONS] - Copy & Share Fallbacks */}
+                      {settlement.amount > 0 && (
+                        <div className="flex gap-2">
+                           {settlement.upi_id && isDebtor && (
+                             <button
+                               onClick={() => handleCopyUPI(settlement.upi_id)}
+                               className="h-11 w-11 sm:h-14 sm:w-14 flex items-center justify-center border border-border/40 rounded-xl sm:rounded-2xl bg-background text-muted-foreground hover:text-primary transition-all active:scale-95 shadow-sm shrink-0"
+                               title="Copy UPI ID"
+                             >
+                               <Copy size={16} className="sm:w-5 sm:h-5" />
+                             </button>
+                           )}
+                           <button
+                             onClick={() => handleShareRequest(settlement.amount, isDebtor ? toName : fromName, isDebtor ? fromName : toName, settlement.upi_id)}
+                             className="h-11 w-11 sm:h-14 sm:w-14 flex items-center justify-center border border-border/40 rounded-xl sm:rounded-2xl bg-background text-muted-foreground hover:text-primary transition-all active:scale-95 shadow-sm shrink-0"
+                             title="Share Payment Request"
+                           >
+                             <Share2 size={16} className="sm:w-5 sm:h-5" />
+                           </button>
+                        </div>
                       )}
                       
                       {settlement.amount > 0 && !isDebtor && (

@@ -246,6 +246,46 @@ class TransactionDao(context: Context) {
         }
     }
 
+    /** Returns true if a transaction with the same reference number already exists. */
+    @Synchronized
+    fun isReferenceDuplicate(reference: String): Boolean {
+        if (reference.isBlank()) return false
+        return try {
+            val db = readableDbOrNull() ?: return false
+            val cursor = db.query(
+                TransactionDbHelper.TABLE_TRANSACTIONS,
+                arrayOf(TransactionDbHelper.COL_ID),
+                "${TransactionDbHelper.COL_REFERENCE} = ?",
+                arrayOf(reference),
+                null, null, null, "1"
+            )
+            cursor.use { it.moveToFirst() }
+        } catch (ex: Exception) {
+            SmsEngineLogger.e(TAG, "isReferenceDuplicate failed: ${ex.message}", ex)
+            false
+        }
+    }
+
+    /** Returns true if a transaction with the same canonical key already exists (ignoring is_deleted). */
+    @Synchronized
+    fun isCanonicalDuplicate(canonicalKey: String?): Boolean {
+        if (canonicalKey.isNullOrBlank()) return false
+        return try {
+            val db = readableDbOrNull() ?: return false
+            val cursor = db.query(
+                TransactionDbHelper.TABLE_TRANSACTIONS,
+                arrayOf(TransactionDbHelper.COL_ID),
+                "${TransactionDbHelper.COL_CANONICAL_KEY} = ?",
+                arrayOf(canonicalKey),
+                null, null, null, "1"
+            )
+            cursor.use { it.moveToFirst() }
+        } catch (ex: Exception) {
+            SmsEngineLogger.e(TAG, "isCanonicalDuplicate failed: ${ex.message}", ex)
+            false
+        }
+    }
+
     /** Fetch a single transaction by _id. Returns null if not found or on error. */
     @Synchronized
     fun getById(id: Long): Transaction? {
@@ -397,7 +437,7 @@ class TransactionDao(context: Context) {
                 selection,
                 selectionArgs,
                 null, null,
-                "${TransactionDbHelper.COL_TIMESTAMP} ASC",
+                "CASE WHEN ${TransactionDbHelper.COL_SYNC_STATUS} = 'pending_delete' THEN 0 ELSE 1 END ASC, ${TransactionDbHelper.COL_TIMESTAMP} ASC",
                 limit.toString()
             ).use { it.toTransactionList() }
         } catch (ex: Exception) {
@@ -546,7 +586,10 @@ class TransactionDao(context: Context) {
     private fun sumByType(type: TransactionType, userId: String? = null): Long {
         return try {
             val db = readableDbOrNull() ?: return 0L
-            var selection = "${TransactionDbHelper.COL_TYPE} = ?"
+            // 🛡️ [SSF-60 Financial Integrity]
+            // We EXCLUDE isPossibleDuplicate from sums to prevent ledger inflation
+            // unless the user confirms them.
+            var selection = "${TransactionDbHelper.COL_TYPE} = ? AND ${TransactionDbHelper.COL_IS_DELETED} = 0 AND ${TransactionDbHelper.COL_IS_POSSIBLE_DUPLICATE} = 0"
             var selectionArgs = arrayOf(type.name)
             if (userId != null) {
                 selection += " AND (${TransactionDbHelper.COL_USER_ID} = ? OR ${TransactionDbHelper.COL_USER_ID} IS NULL)"
@@ -591,6 +634,7 @@ class TransactionDao(context: Context) {
         put(TransactionDbHelper.COL_IS_DELETED,  if (isDeleted) 1 else 0)
         put(TransactionDbHelper.COL_CANONICAL_KEY, canonicalKey)
         put(TransactionDbHelper.COL_IDEMPOTENCY_KEY, idempotencyKey)
+        put(TransactionDbHelper.COL_IS_POSSIBLE_DUPLICATE, if (isPossibleDuplicate) 1 else 0)
     }
 
     /** Safe enum lookup — never throws on unknown strings. */
@@ -624,7 +668,8 @@ class TransactionDao(context: Context) {
         userId       = getString(getColumnIndexOrThrow(TransactionDbHelper.COL_USER_ID)),
         canonicalKey = getColumnIndex(TransactionDbHelper.COL_CANONICAL_KEY).takeIf { it >= 0 }?.let { getString(it) },
         idempotencyKey = getColumnIndex(TransactionDbHelper.COL_IDEMPOTENCY_KEY).takeIf { it >= 0 }?.let { getString(it) },
-        isDeleted    = getInt(getColumnIndexOrThrow(TransactionDbHelper.COL_IS_DELETED)) == 1
+        isDeleted    = getInt(getColumnIndexOrThrow(TransactionDbHelper.COL_IS_DELETED)) == 1,
+        isPossibleDuplicate = getColumnIndex(TransactionDbHelper.COL_IS_POSSIBLE_DUPLICATE).takeIf { it >= 0 }?.let { getInt(it) == 1 } ?: false
     )
 
     private fun Cursor.toTransactionList(): List<Transaction> {

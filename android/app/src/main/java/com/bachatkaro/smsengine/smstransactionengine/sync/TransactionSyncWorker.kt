@@ -78,8 +78,11 @@ class TransactionSyncWorker(
                 put("type", if (txn.type.name == "CREDIT") "income" else "expense")
                 put("user_id", userId)
                 put("sms_hash", txn.smsHash)
+                // 🛡️ [SSF-60 IDENTITY SYNC]
                 put("canonical_key", txn.canonicalKey)
                 put("idempotency_key", txn.idempotencyKey)
+                put("is_possible_duplicate", txn.isPossibleDuplicate)
+                
                 put("category", txn.category)
                 put("description", txn.merchantName.ifBlank { txn.sender.ifBlank { "SMS Transaction" } })
                 
@@ -91,6 +94,7 @@ class TransactionSyncWorker(
                 
                 // 🛡️ [TOMBSTONE SYNC]
                 // If marked for deletion locally, push as a tombstone instead of physical delete.
+                // We MUST use txn.isDeleted or the pending_delete status to ensure is_deleted: true is pushed.
                 put("is_deleted", txn.syncStatus == "pending_delete" || txn.isDeleted)
             }
             

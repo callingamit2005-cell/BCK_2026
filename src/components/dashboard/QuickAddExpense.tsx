@@ -338,22 +338,24 @@ const QuickAddExpense = ({ onSuccess }: QuickAddExpenseProps) => {
               : "bg-muted/50 text-muted-foreground border border-border hover:bg-primary/5 hover:text-primary"
           )}
           title={isListening ? t('quickAdd.stopListening') : t('quickAdd.voiceInput')}
+          aria-label={isListening ? t('quickAdd.stopListening') : t('quickAdd.voiceInput')}
+          aria-pressed={isListening}
         >
-          {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+          {isListening ? <MicOff className="h-5 w-5" aria-hidden="true" /> : <Mic className="h-5 w-5" aria-hidden="true" />}
         </Button>
       </div>
 
       {/* VOICE TRANSCRIPT LOG */}
       {isListening && voiceTranscript && (
-        <div className="p-4 bg-muted/30 rounded-xl border border-primary/20 text-sm text-foreground italic shadow-inner animate-in fade-in slide-in-from-top-2">
+        <div className="p-4 bg-muted/30 rounded-xl border border-primary/20 text-sm text-foreground italic shadow-inner animate-in fade-in slide-in-from-top-2" role="log" aria-live="polite">
           <span className="font-bold uppercase tracking-wider text-[10px] text-primary mr-2">Live Analysis:</span> {voiceTranscript}
         </div>
       )}
 
       {/* FORM FIELDS */}
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="quick-amount" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
+      <div className="space-y-8">
+        <div className="space-y-3">
+          <Label htmlFor="quick-amount" className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.2em] ml-1.5">
             {t('quickAdd.amount')}
           </Label>
           <div className="relative group">
@@ -363,54 +365,55 @@ const QuickAddExpense = ({ onSuccess }: QuickAddExpenseProps) => {
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="h-14 rounded-xl bg-muted/20 border-border/50 text-xl font-bold text-foreground font-mono tabular-nums focus:ring-primary focus:border-primary/50 transition-all pl-10 pr-6"
+              className="h-16 rounded-2xl bg-muted/20 border-border/50 text-2xl font-bold text-foreground font-mono tabular-nums focus:ring-primary focus:border-primary/50 transition-all pl-12 pr-6"
+              aria-label="Transaction Amount"
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-muted-foreground group-focus-within:text-primary">₹</span>
+            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-bold text-muted-foreground group-focus-within:text-primary transition-colors" aria-hidden="true">₹</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="quick-category" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label htmlFor="quick-category" className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.2em] ml-1.5">
               {t('quickAdd.category')}
             </Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger
                 id="quick-category"
-                className="h-12 rounded-xl bg-muted/20 border-border/50 text-sm font-semibold text-foreground focus:ring-primary focus:border-primary/50"
+                className="h-14 rounded-2xl bg-muted/20 border-border/50 text-sm font-bold text-foreground focus:ring-primary focus:border-primary/50 transition-all"
               >
                 <SelectValue placeholder={t('quickAdd.selectCategory')} />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-border bg-surface shadow-institutional">
+              <SelectContent className="rounded-2xl border-border bg-surface shadow-institutional">
                 {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat} className="h-10 rounded-lg text-sm font-medium">{cat}</SelectItem>
+                  <SelectItem key={cat} value={cat} className="h-11 rounded-xl text-sm font-bold">{cat}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="quick-payment" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
+          <div className="space-y-3">
+            <Label htmlFor="quick-payment" className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.2em] ml-1.5">
               {t('quickAdd.paymentMode')}
             </Label>
-            <Select value={paymentMode} onValueChange={setPaymentMode}>
+            <Select value={paymentMode} onValueChange={setNote}>
               <SelectTrigger
                 id="quick-payment"
-                className="h-12 rounded-xl bg-muted/20 border-border/50 text-sm font-semibold text-foreground focus:ring-primary focus:border-primary/50"
+                className="h-14 rounded-2xl bg-muted/20 border-border/50 text-sm font-bold text-foreground focus:ring-primary focus:border-primary/50 transition-all"
               >
                 <SelectValue placeholder={t('quickAdd.selectPayment')} />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-border bg-surface shadow-institutional">
+              <SelectContent className="rounded-2xl border-border bg-surface shadow-institutional">
                 {PAYMENT_MODES.map((mode) => (
-                  <SelectItem key={mode} value={mode} className="h-10 rounded-lg text-sm font-medium">{mode}</SelectItem>
+                  <SelectItem key={mode} value={mode} className="h-11 rounded-xl text-sm font-bold">{mode}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="quick-note" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
+        <div className="space-y-3">
+          <Label htmlFor="quick-note" className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.2em] ml-1.5">
             {t('quickAdd.note')} (Optional)
           </Label>
           <Input
@@ -418,19 +421,19 @@ const QuickAddExpense = ({ onSuccess }: QuickAddExpenseProps) => {
             placeholder={t('quickAdd.notePlaceholder')}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="h-12 rounded-xl bg-muted/20 border-border/50 text-sm font-medium text-foreground focus:ring-primary focus:border-primary/50"
+            className="h-14 rounded-2xl bg-muted/20 border-border/50 text-sm font-bold text-foreground focus:ring-primary focus:border-primary/50 transition-all"
           />
         </div>
 
         <Button
           onClick={handleManualSave}
           disabled={saving}
-          className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-bold uppercase text-[11px] tracking-widest shadow-premium hover:opacity-90 active:scale-95 transition-all duration-300 disabled:opacity-50"
+          className="w-full h-16 rounded-2xl bg-primary text-primary-foreground font-bold uppercase text-[12px] tracking-widest shadow-premium hover:opacity-90 active:scale-[0.98] transition-all duration-300 disabled:opacity-50"
         >
           {saving ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Loader2 className="h-5 w-4 mr-2 animate-spin" />
           ) : (
-            <PlusCircle className="h-4 w-4 mr-2" />
+            <PlusCircle className="h-5 w-5 mr-2" />
           )}
           {saving ? t('quickAdd.saving') : t('quickAdd.save')}
         </Button>

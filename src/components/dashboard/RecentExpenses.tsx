@@ -33,13 +33,14 @@
  * @component
  */
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths, isWithinInterval } from "date-fns";
 import { 
   Wallet, CreditCard, Banknote, Pencil, Check, X, Loader2, Mic, 
   Trash2, ChevronLeft, ChevronRight,
-  Shield, Lock, Scan
+  Shield, Lock, Scan,
+  Store, UtensilsCrossed, Landmark, Smartphone, Mail, ArrowRightLeft, User, Car, Fuel, Activity, FileText, TrendingUp, Pill
 } from "lucide-react";
 import ExportMenu from "./ExportMenu";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { convertToRupees, convertToPaisa, formatCurrency } from "@/utils/currencyFormatter";
+import { StatusState } from "@/components/ui/StatusState";
 
 interface Expense {
   id: string;
@@ -61,20 +63,24 @@ interface Expense {
   type?: string;
 }
 
-const getCategoryEmoji = (category: string) => {
+const getCategoryIcon = (category: string, className: string = "h-5 w-5") => {
   const cat = (category || "").toLowerCase();
-  if (cat.includes('shop') || cat.includes('amazon') || cat.includes('flipkart') || cat.includes('myntra')) return '🛒';
-  if (cat.includes('travel') || cat.includes('uber') || cat.includes('ola') || cat.includes('irctc')) return '🚆';
-  if (cat.includes('fuel') || cat.includes('petrol') || cat.includes('hp') || cat.includes('iocl') || cat.includes('indian oil')) return '⛽';
-  if (cat.includes('food') || cat.includes('zomato') || cat.includes('swiggy') || cat.includes('restaurant')) return '🍽️';
-  if (cat.includes('salary') || cat.includes('income')) return '💰';
-  if (cat.includes('bill') || cat.includes('electricity') || cat.includes('broadband')) return '🧾';
-  if (cat.includes('recharge') || cat.includes('jio') || cat.includes('airtel') || cat.includes('vi')) return '📱';
-  if (cat.includes('transfer') || cat.includes('self') || cat.includes('upi')) return '🔄';
-  if (cat.includes('invest') || cat.includes('mutual') || cat.includes('stock')) return '📈';
-  if (cat.includes('medic') || cat.includes('pharm') || cat.includes('doctor') || cat.includes('health')) return '💊';
-  if (cat.includes('atm') || cat.includes('cash')) return '🏧';
-  return '💸';
+  if (cat.includes('shop') || cat.includes('amazon') || cat.includes('flipkart') || cat.includes('myntra') || cat.includes('merchant')) return <Store className={className} />;
+  if (cat.includes('travel') || cat.includes('uber') || cat.includes('ola') || cat.includes('irctc')) return <Car className={className} />;
+  if (cat.includes('fuel') || cat.includes('petrol') || cat.includes('hp') || cat.includes('iocl') || cat.includes('indian oil')) return <Fuel className={className} />;
+  if (cat.includes('food') || cat.includes('zomato') || cat.includes('swiggy') || cat.includes('restaurant')) return <UtensilsCrossed className={className} />;
+  if (cat.includes('salary') || cat.includes('income')) return <Banknote className={className} />;
+  if (cat.includes('bill') || cat.includes('electricity') || cat.includes('broadband')) return <FileText className={className} />;
+  if (cat.includes('recharge') || cat.includes('jio') || cat.includes('airtel') || cat.includes('vi') || cat.includes('mobile')) return <Smartphone className={className} />;
+  if (cat.includes('transfer') || cat.includes('self') || cat.includes('upi')) return <ArrowRightLeft className={className} />;
+  if (cat.includes('invest') || cat.includes('mutual') || cat.includes('stock')) return <TrendingUp className={className} />;
+  if (cat.includes('medic') || cat.includes('pharm') || cat.includes('doctor') || cat.includes('health')) return <Pill className={className} />;
+  if (cat.includes('atm') || cat.includes('cash')) return <Banknote className={className} />;
+  if (cat.includes('bank')) return <Landmark className={className} />;
+  if (cat.includes('card')) return <CreditCard className={className} />;
+  if (cat.includes('mail') || cat.includes('email') || cat.includes('gmail')) return <Mail className={className} />;
+  if (cat.includes('user') || cat.includes('person')) return <User className={className} />;
+  return <Activity className={className} />;
 };
 
 interface RecentExpensesProps {
@@ -87,6 +93,159 @@ interface RecentExpensesProps {
   dateFilter?: any;
 }
 
+// 🛡️ [PERFORMANCE_STABILIZATION] Memoized Transaction Row Component
+const TransactionRow = React.memo(({ 
+  expense, 
+  isEditing, 
+  isDeleting,
+  isSaving,
+  isListening,
+  editAmount,
+  editNote,
+  onEdit,
+  onDelete,
+  onSave,
+  onCancel,
+  onVoiceEdit,
+  setEditAmount,
+  setEditNote,
+  t 
+}: {
+  expense: Expense;
+  isEditing: boolean;
+  isDeleting: boolean;
+  isSaving: boolean;
+  isListening: boolean;
+  editAmount: string;
+  editNote: string;
+  onEdit: (exp: Expense) => void;
+  onDelete: (id: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onVoiceEdit: () => void;
+  setEditAmount: (val: string) => void;
+  setEditNote: (val: string) => void;
+  t: any;
+}) => {
+  return (
+    <div className="bg-card border border-border/40 rounded-xl p-3 hover:shadow-md transition-shadow">
+      {isEditing ? (
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Input 
+              value={editNote} 
+              onChange={(e) => setEditNote(e.target.value)} 
+              placeholder={t('expense.note')}
+              className="flex-1 h-11 text-sm rounded-xl"
+              disabled={isSaving}
+            />
+            <Input 
+              value={editAmount} 
+              onChange={(e) => setEditAmount(e.target.value)} 
+              placeholder="₹"
+              className="w-24 h-11 text-lg font-bold rounded-xl"
+              disabled={isSaving}
+              type="number"
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onVoiceEdit} 
+              disabled={isSaving}
+              className={`rounded-full h-9 px-3 text-xs ${
+                isListening ? "animate-pulse border-red-500 text-red-500 bg-red-50" : ""
+              }`}
+            >
+              <Mic className="h-3.5 w-3.5 mr-1.5" />
+              {isListening ? t('voice.listening') : t('voice.smartVoice')}
+            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onCancel}
+                className="h-9 w-9 p-0 rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={onSave} 
+                disabled={isSaving || !editAmount}
+                className="bg-purple-600 text-white h-9 px-4 rounded-full hover:bg-purple-700"
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col w-full group relative">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-3 overflow-hidden pr-3">
+              <div className="h-10 w-10 rounded-xl bg-muted/20 border border-border/40 flex items-center justify-center text-xl shrink-0 group-hover:bg-primary/5 group-hover:border-primary/20 transition-all text-muted-foreground group-hover:text-primary">
+                {getCategoryIcon(expense.category)}
+              </div>
+              <div className="min-w-0">
+                <h4 className="font-extrabold text-foreground text-sm sm:text-base tracking-tight uppercase truncate">
+                  {expense.sender || expense.category}
+                </h4>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">
+                  {expense.payment_mode || 'Institutional Transfer'}
+                </p>
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <p className={`font-mono text-base sm:text-lg font-bold tabular-nums tracking-tighter ${expense.type === 'income' ? 'text-income' : 'text-primary'}`}>
+                {expense.type === 'income' ? '+' : '-'} {formatCurrency(expense.amount)}
+              </p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
+                {format(new Date(expense.date), 'dd MMM • hh:mm a')}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-border/10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+            <Button 
+              variant="ghost" 
+              size="default" 
+              onClick={() => onEdit(expense)} 
+              className="h-11 px-4 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl border border-transparent hover:border-primary/20 transition-all gap-2"
+            >
+              <Pencil className="h-4 w-4" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">{t('common.edit', 'Edit')}</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="default" 
+              onClick={() => onDelete(expense.id)} 
+              className="h-11 px-4 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-200 transition-all gap-2"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              <span className="text-[10px] font-bold uppercase tracking-widest">{t('common.delete', 'Delete')}</span>
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+TransactionRow.displayName = 'TransactionRow';
+
 const RecentExpenses = ({ 
   expenses, 
   loading, 
@@ -98,7 +257,7 @@ const RecentExpenses = ({
 }: RecentExpensesProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { t } = useLanguage(); // 👈 use global translation function
+  const { t } = useLanguage();
   
   // State management
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -113,6 +272,31 @@ const RecentExpenses = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const ITEMS_PER_PAGE = 5;
+
+  // Memoized Callbacks for Row Optimization
+  const handleEditClick = useCallback((expense: Expense) => {
+    setEditingId(expense.id);
+    setEditAmount(typeof expense.amount === 'number' ? convertToRupees(expense.amount).toString() : expense.amount.toString());
+    setEditNote(expense.note || "");
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditAmount("");
+    setEditNote("");
+  }, []);
+
+  const handleSaveWrapper = useCallback(() => {
+    handleSave();
+  }, [editingId, editAmount, editNote]);
+
+  const handleDeleteWrapper = useCallback((id: string) => {
+    handleDelete(id);
+  }, []);
+
+  const handleVoiceEditWrapper = useCallback(() => {
+    handleSmartVoiceEdit();
+  }, []);
   // ============================================
 
   // Refs
@@ -134,15 +318,15 @@ const RecentExpenses = ({
   }, []);
 
   // ============= MONTH PICKER & FILTER LOGIC =============
-  const handlePrevMonth = () => {
+  const handlePrevMonth = useCallback(() => {
     setSelectedMonth(prev => subMonths(prev, 1));
     setCurrentPage(1); // Reset to first page when month changes
-  };
+  }, []);
   
-  const handleNextMonth = () => {
+  const handleNextMonth = useCallback(() => {
     setSelectedMonth(prev => addMonths(prev, 1));
     setCurrentPage(1);
-  };
+  }, []);
 
   // Filter expenses for selected month
   const filteredExpenses = useMemo(() => {
@@ -157,29 +341,32 @@ const RecentExpenses = ({
   }, [expenses, selectedMonth]);
 
   // Pagination calculations
-  const totalItems = filteredExpenses.length;
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedExpenses = filteredExpenses.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const totalItems = useMemo(() => filteredExpenses.length, [filteredExpenses]);
+  const totalPages = useMemo(() => Math.ceil(totalItems / ITEMS_PER_PAGE), [totalItems]);
+  const startIndex = useMemo(() => (currentPage - 1) * ITEMS_PER_PAGE, [currentPage]);
+  
+  const paginatedExpenses = useMemo(() => 
+    filteredExpenses.slice(startIndex, startIndex + ITEMS_PER_PAGE),
+  [filteredExpenses, startIndex]);
 
-  const getCurrentRange = () => {
+  const getCurrentRange = useCallback(() => {
     if (totalItems === 0) return "";
     const start = startIndex + 1;
     const end = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
     return `${start}-${end} ${t('common.of')} ${totalItems}`;
-  };
+  }, [startIndex, totalItems, t]);
 
-  const handlePageClick = (page: number) => {
+  const handlePageClick = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
 
-  const handleNextPage = () => {
+  const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
-  };
+  }, [currentPage, totalPages]);
 
-  const handlePreviousPage = () => {
+  const handlePreviousPage = useCallback(() => {
     if (currentPage > 1) setCurrentPage(prev => prev - 1);
-  };
+  }, [currentPage]);
   // ========================================================
 
   // ============= VOICE / EDIT / DELETE HANDLERS =============
@@ -540,175 +727,61 @@ const RecentExpenses = ({
 
         {/* Empty State */}
         {totalItems === 0 ? (
-          <div className="text-center py-12 px-4">
-            <div className="bg-muted p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <Wallet className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <p className="text-base text-muted-foreground font-medium mb-1">
-              {t('recentExpenses.noTransactions')}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('recentExpenses.addFirst')}
-            </p>
-          </div>
+          <StatusState 
+            type="empty" 
+            title={t('recentExpenses.noTransactions', 'No Transactions')}
+            message={t('recentExpenses.addFirst', 'Record your first transaction to get started.')}
+            variant="inline"
+            className="py-12"
+          />
         ) : (
           <>
             {/* Transactions List */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {paginatedExpenses.map((expense) => (
-                <div 
+                <TransactionRow
                   key={expense.id}
-                  className="bg-card border border-border/40 rounded-xl p-3 hover:shadow-md transition-shadow"
-                >
-                  {editingId === expense.id ? (
-                    /* Edit Mode */
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <Input 
-                          value={editNote} 
-                          onChange={(e) => setEditNote(e.target.value)} 
-                          placeholder={t('expense.note')}
-                          className="flex-1 h-11 text-sm rounded-xl"
-                          disabled={isSaving}
-                        />
-                        <Input 
-                          value={editAmount} 
-                          onChange={(e) => setEditAmount(e.target.value)} 
-                          placeholder="₹"
-                          className="w-24 h-11 text-lg font-bold rounded-xl"
-                          disabled={isSaving}
-                          type="number"
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={handleSmartVoiceEdit} 
-                          disabled={isSaving}
-                          className={`rounded-full h-9 px-3 text-xs ${
-                            isListening ? "animate-pulse border-red-500 text-red-500 bg-red-50" : ""
-                          }`}
-                        >
-                          <Mic className="h-3.5 w-3.5 mr-1.5" />
-                          {isListening ? t('voice.listening') : t('voice.smartVoice')}
-                        </Button>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => {
-                              setEditingId(null);
-                              setEditAmount("");
-                              setEditNote("");
-                            }}
-                            className="h-9 w-9 p-0 rounded-full"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            onClick={handleSave} 
-                            disabled={isSaving || !editAmount}
-                            className="bg-purple-600 text-white h-9 px-4 rounded-full hover:bg-purple-700"
-                          >
-                            {isSaving ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Check className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    /* View Mode */
-                    <div className="flex flex-col w-full group relative">
-                      {/* Row 1: Merchant & Amount */}
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2 overflow-hidden pr-3">
-                          <span className="text-xl leading-none flex-shrink-0">
-                            {getCategoryEmoji(expense.category)}
-                          </span>
-                          <h4 className="font-bold text-foreground text-lg truncate">
-                            {expense.sender || expense.category}
-                          </h4>
-                        </div>
-                        <span className={`font-bold text-lg whitespace-nowrap flex-shrink-0 ${expense.type === 'income' ? 'text-income' : 'text-primary'}`}>
-                          {expense.type === 'income' ? '+' : '-'}₹{typeof expense.amount === 'number' ? convertToRupees(expense.amount).toFixed(2) : expense.amount}
-                        </span>
-                      </div>
-                      
-                      {/* Row 2: Payment Mode & Date Time */}
-                      <div className="flex items-center justify-between text-sm text-muted-foreground font-medium">
-                        <span className="truncate pr-3">
-                          {expense.payment_mode}
-                        </span>
-                        <span className="whitespace-nowrap flex-shrink-0">
-                          {format(new Date(expense.date), 'dd MMM • hh:mm a')}
-                        </span>
-                      </div>
-                      
-                      {/* Action buttons (Subtle row) */}
-                      <div className="flex justify-end gap-1 mt-2 pt-2 border-t border-border/40 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => { 
-                            setEditingId(expense.id); 
-                            setEditAmount(typeof expense.amount === 'number' ? convertToRupees(expense.amount).toString() : expense.amount.toString()); 
-                            setEditNote(expense.note || ""); 
-                          }} 
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg"
-                          title={t('common.edit')}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleDelete(expense.id)} 
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-lg"
-                          title={t('common.delete')}
-                          disabled={!!deletingId}
-                        >
-                          {deletingId === expense.id ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-3.5 w-3.5" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  expense={expense}
+                  isEditing={editingId === expense.id}
+                  isDeleting={deletingId === expense.id}
+                  isSaving={isSaving}
+                  isListening={isListening}
+                  editAmount={editAmount}
+                  editNote={editNote}
+                  onEdit={handleEditClick}
+                  onDelete={handleDeleteWrapper}
+                  onSave={handleSaveWrapper}
+                  onCancel={handleCancelEdit}
+                  onVoiceEdit={handleVoiceEditWrapper}
+                  setEditAmount={setEditAmount}
+                  setEditNote={setEditNote}
+                  t={t}
+                />
               ))}
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination Controls - Mobile Optimized */}
             {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between mt-4 pt-3 border-t border-border/40 gap-3">
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 border-t border-border/40 gap-4">
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="outline"
+                  size="default"
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1}
-                  className="h-9 px-4 text-sm text-muted-foreground hover:text-purple-600 rounded-xl disabled:opacity-40 w-full sm:w-auto order-2 sm:order-1"
+                  className="h-12 px-6 text-sm font-medium text-muted-foreground hover:text-purple-600 rounded-2xl disabled:opacity-30 w-full sm:w-auto order-2 sm:order-1 border-border/60"
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  <ChevronLeft className="h-5 w-5 mr-2" />
                   {t('common.previous')}
                 </Button>
                 
-                <div className="flex items-center gap-2 order-1 sm:order-2">
+                <div className="flex items-center gap-3 order-1 sm:order-2">
                   {/* Page range indicator (for small screens) */}
-                  <span className="text-sm text-muted-foreground sm:hidden">
-                    {getCurrentRange()}
+                  <span className="text-sm font-semibold text-purple-600 sm:hidden bg-purple-50 px-4 py-1.5 rounded-full border border-purple-100">
+                    {t('common.page')} {currentPage} / {totalPages}
                   </span>
                   
-                  {/* Page Numbers (hidden on small, visible on sm+) */}
-                  <div className="hidden sm:flex items-center gap-1">
+                  {/* Page Numbers (hidden on mobile, visible on sm+) */}
+                  <div className="hidden sm:flex items-center gap-2">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
                       if (
                         totalPages <= 7 ||
@@ -722,10 +795,10 @@ const RecentExpenses = ({
                             variant={pageNum === currentPage ? "default" : "ghost"}
                             size="sm"
                             onClick={() => handlePageClick(pageNum)}
-                            className={`h-8 w-8 p-0 text-sm rounded-lg ${
+                            className={`h-10 w-10 p-0 text-sm font-medium rounded-xl transition-all ${
                               pageNum === currentPage 
-                                ? 'bg-purple-600 text-white hover:bg-purple-700' 
-                                : 'text-muted-foreground hover:text-purple-600'
+                                ? 'bg-purple-600 text-white shadow-md shadow-purple-200 hover:bg-purple-700' 
+                                : 'text-muted-foreground hover:text-purple-600 hover:bg-purple-50'
                             }`}
                           >
                             {pageNum}
@@ -735,7 +808,7 @@ const RecentExpenses = ({
                         (pageNum === 2 && currentPage > 3) ||
                         (pageNum === totalPages - 1 && currentPage < totalPages - 2)
                       ) {
-                        return <span key={pageNum} className="text-muted-foreground">...</span>;
+                        return <span key={pageNum} className="text-muted-foreground font-bold px-1">...</span>;
                       }
                       return null;
                     })}
@@ -743,14 +816,14 @@ const RecentExpenses = ({
                 </div>
                 
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="outline"
+                  size="default"
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}
-                  className="h-9 px-4 text-sm text-muted-foreground hover:text-purple-600 rounded-xl disabled:opacity-40 w-full sm:w-auto order-3"
+                  className="h-12 px-6 text-sm font-medium text-muted-foreground hover:text-purple-600 rounded-2xl disabled:opacity-30 w-full sm:w-auto order-3 border-border/60"
                 >
                   {t('common.next')}
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <ChevronRight className="h-5 w-5 ml-2" />
                 </Button>
               </div>
             )}

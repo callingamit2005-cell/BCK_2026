@@ -61,20 +61,18 @@ export const FintechSummaryStrip: React.FC<FintechSummaryStripProps> = ({
               )}
             />
 
-            <div className="relative z-10 flex flex-col gap-1.5">
               {/* Label row */}
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-text-muted">
+                <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] leading-none">
                   {item.label}
                 </span>
                 <item.icon className={cn('h-3.5 w-3.5 opacity-50', item.iconClass)} />
               </div>
 
               {/* Amount */}
-              <span className={cn('text-lg sm:text-xl font-bold font-mono tabular-nums', item.amountClass)}>
+              <span className={cn('text-xl sm:text-2xl font-bold font-mono tabular-nums tracking-tighter', item.amountClass)}>
                 {formatCurrency(item.value)}
               </span>
-            </div>
 
             {/* Decorative background icon */}
             <div className="absolute -bottom-1 -right-1 opacity-[0.04] group-hover:opacity-[0.07] transition-opacity duration-300 pointer-events-none">

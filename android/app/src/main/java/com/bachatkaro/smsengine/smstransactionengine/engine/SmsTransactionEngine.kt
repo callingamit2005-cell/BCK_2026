@@ -272,10 +272,43 @@ class SmsTransactionEngine private constructor(context: Context) {
         }
 
         val t3 = System.nanoTime()
-        // Task 2: SQLite duplicate protection (MANDATORY CHECK)
-        if (repository.isDuplicate(tx.smsHash)) {
-            SmsEngineLogger.d("DUPLICATE_DETECTED", "hash=${tx.smsHash.take(12)}... - SKIPPING")
+        
+        // 🛡️ [ENTERPRISE IDENTITY HIERARCHY]
+        // Priority 1 (ATI): Authoritative Reference Match
+        if (tx.reference.isNotBlank() && repository.isReferenceDuplicate(tx.reference)) {
+            SmsEngineLogger.i("DUPLICATE_DETECTED", "ref=${tx.reference} - ATI Match - SKIPPING")
             return ProcessResult.Duplicate(tx.smsHash).also { notify(it) }
+        }
+
+        // Priority 2 (HASH): Exact Body Match
+        if (repository.isDuplicate(tx.smsHash)) {
+            SmsEngineLogger.d("DUPLICATE_DETECTED", "hash=${tx.smsHash.take(12)} - HASH Match - SKIPPING")
+            return ProcessResult.Duplicate(tx.smsHash).also { notify(it) }
+        }
+
+        // Priority 3 (CANONICAL): Structural Match (Minute-Level)
+        if (tx.canonicalKey != null && dao.isCanonicalDuplicate(tx.canonicalKey)) {
+            SmsEngineLogger.i("DUPLICATE_DETECTED", "canon=${tx.canonicalKey} - CANON Match - SKIPPING")
+            return ProcessResult.Duplicate(tx.smsHash).also { notify(it) }
+        }
+
+        // 🛡️ [SSF-60 Fallback]
+        // If none of the authoritative layers matched, perform a 60s window search.
+        // If a transaction with same Amount/Sender/Type exists within ±60s, mark as POSSIBLE_DUPLICATE.
+        val windowStart = tx.timestamp - 60_000
+        val windowEnd = tx.timestamp + 60_000
+        val sessionUserId = session?.userId
+        
+        // DAO method check for any close match (including tombstoned ones)
+        val hasCloseMatch = dao.getByDateRange(windowStart, windowEnd, sessionUserId).any { existing ->
+            existing.amount == tx.amount && 
+            existing.type == tx.type && 
+            existing.sender.equals(tx.sender, ignoreCase = true)
+        }
+
+        if (hasCloseMatch) {
+            SmsEngineLogger.w("POSSIBLE_DUPLICATE", "Close match found for ${tx.amount} within 60s. Marking for review.")
+            tx = tx.copy(isPossibleDuplicate = true)
         }
 
         val t4 = System.nanoTime()

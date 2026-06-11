@@ -140,9 +140,10 @@ export const generateCanonicalKey = (entry: {
   const normAmount = Math.round(Number(entry.amount || 0));
   const dateObj = safeDate(entry.date);
   // 🛡️ [TIMESTAMP_PARITY_V2] 
-  // Use Math.round to match Postgres ::bigint behavior for extract(epoch from date).
-  // This prevents 1-second drift collisions between JS and SQL layers.
-  const ts = dateObj ? Math.round(dateObj.getTime() / 1000) : 0;
+  // Android uses: timestamp / 1000 (Integer division -> Truncation)
+  // JS must use: Math.floor (Truncation) instead of Math.round to match native engine.
+  // This prevents 1-second drift collisions between JS and Android layers.
+  const ts = dateObj ? Math.floor(dateObj.getTime() / 1000) : 0;
   
   // 🛡️ [PARITY_NORMALIZATION] Match SQL logic exactly.
   // This removes EVERYTHING except alphanumeric characters for maximum collision safety.

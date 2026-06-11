@@ -1,9 +1,14 @@
 import React from "react";
+import { StatusState } from "./StatusState";
 
 const FullScreenLoader = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-    <div className="w-12 h-12 rounded-full border-4 border-purple-100 border-t-[#7C3AED] animate-spin"></div>
-    <p className="text-sm font-medium text-text-muted animate-pulse">Loading BachatKaro...</p>
+  <div className="min-h-screen w-full flex items-center justify-center bg-background">
+    <StatusState 
+      type="loading" 
+      variant="fullscreen"
+      title="Initializing BachatKaro"
+      message="Securing your financial data terminal..."
+    />
   </div>
 );
 

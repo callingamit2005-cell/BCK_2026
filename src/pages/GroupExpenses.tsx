@@ -65,7 +65,8 @@ import {
 } from "@/components/ui/dialog";
 import {
   Trash2, ArrowRight, Clock, Users, Map, Mic, MicOff,
-  LayoutGrid, ReceiptIndianRupee, AlertTriangle, Loader2, WifiOff, Sparkles, Pencil, CheckCircle2
+  LayoutGrid, ReceiptIndianRupee, AlertTriangle, Loader2, WifiOff, Sparkles, Pencil, CheckCircle2,
+  ArrowRightLeft, Store, Car, Fuel, UtensilsCrossed, Banknote, FileText, Smartphone, TrendingUp, Pill, Landmark, CreditCard, Mail, User, Activity, Clock3, AlertCircle, ShieldCheck
 } from "lucide-react";
 
 /* ✅ UTILS & LOGIC */
@@ -104,15 +105,100 @@ const createLocalUuid = () => {
 const isNetworkUnavailable = (isOffline: boolean) =>
   typeof navigator !== "undefined" && (!navigator.onLine || isOffline);
 
+// 🛡️ [RUNTIME_STABILIZATION] Category Icon Mapper
+const getCategoryIcon = (category: string, className: string = "h-4 w-4 sm:h-5 sm:w-5") => {
+  const cat = (category || "").toLowerCase();
+  
+  // 🛡️ [RUNTIME_ICON_MAPPING] - Expanded Coverage for Activity Ledger
+  if (cat.includes('food') || cat.includes('restaurant') || cat.includes('cafe') || cat.includes('dining') || cat.includes('zomato') || cat.includes('swiggy')) return <UtensilsCrossed className={className} />;
+  if (cat.includes('merchant') || cat.includes('shop') || cat.includes('shopping') || cat.includes('store') || cat.includes('purchase') || cat.includes('amazon') || cat.includes('flipkart') || cat.includes('myntra')) return <Store className={className} />;
+  if (cat.includes('travel') || cat.includes('trip') || cat.includes('taxi') || cat.includes('uber') || cat.includes('ola') || cat.includes('cab') || cat.includes('train') || cat.includes('irctc') || cat.includes('flight')) return <Car className={className} />;
+  if (cat.includes('fuel') || cat.includes('petrol') || cat.includes('diesel') || cat.includes('gas') || cat.includes('hp') || cat.includes('iocl') || cat.includes('indian oil')) return <Fuel className={className} />;
+  if (cat.includes('bank') || cat.includes('atm') || cat.includes('branch') || cat.includes('landmark')) return <Landmark className={className} />;
+  if (cat.includes('card') || cat.includes('credit') || cat.includes('debit')) return <CreditCard className={className} />;
+  if (cat.includes('upi') || cat.includes('transfer') || cat.includes('payment') || cat.includes('self')) return <ArrowRightLeft className={className} />;
+  if (cat.includes('salary') || cat.includes('income') || cat.includes('cash')) return <Banknote className={className} />;
+  if (cat.includes('medic') || cat.includes('medicine') || cat.includes('hospital') || cat.includes('pharm') || cat.includes('doctor') || cat.includes('health') || cat.includes('pill')) return <Pill className={className} />;
+  if (cat.includes('bill') || cat.includes('electricity') || cat.includes('water') || cat.includes('gas bill') || cat.includes('recharge') || cat.includes('broadband') || cat.includes('jio') || cat.includes('airtel') || cat.includes('vi') || cat.includes('mobile')) return <FileText className={className} />;
+  if (cat.includes('mail') || cat.includes('email') || cat.includes('gmail')) return <Mail className={className} />;
+  if (cat.includes('user') || cat.includes('person') || cat.includes('friend')) return <User className={className} />;
+  if (cat.includes('invest') || cat.includes('mutual') || cat.includes('stock')) return <TrendingUp className={className} />;
+  
+  // Return ReceiptIndianRupee with primary color for unknown categories
+  return <ReceiptIndianRupee className={className.replace("text-muted-foreground", "text-primary")} />;
+};
+
 // 🛡️ [RUNTIME_STABILIZATION] Memoized Row for Ledger Performance
-const MemoizedExpenseRow = React.memo(({ exp, isAdmin, currentUserId, members, t, formatCurrency, onEdit, onDelete }: any) => {
-  if (import.meta.env.DEV) {
-    console.log(`[GROUP_LEDGER] ID: ${exp.id}, Amount: ${exp.amount}`);
-  }
+const MemoizedExpenseRow = React.memo(({ exp, isAdmin, currentUserId, members, t, formatCurrency, onEdit, onDelete, intent }: any) => {
+  const isSettlement = exp.source === 'settlement';
+
+  // 🛡️ [ICON_STYLING_STABILIZATION] - Detect unknown categories for primary styling
+  const isFallbackIcon = useMemo(() => {
+    if (isSettlement) return false;
+    const cat = (exp.category || "").toLowerCase();
+    const knownKeywords = [
+      'food', 'restaurant', 'cafe', 'dining', 'zomato', 'swiggy',
+      'merchant', 'shop', 'shopping', 'store', 'purchase', 'amazon', 'flipkart', 'myntra',
+      'travel', 'trip', 'taxi', 'uber', 'ola', 'cab', 'train', 'irctc', 'flight',
+      'fuel', 'petrol', 'diesel', 'gas', 'hp', 'iocl', 'indian oil',
+      'bank', 'atm', 'branch', 'landmark',
+      'card', 'credit', 'debit',
+      'upi', 'transfer', 'payment', 'self',
+      'salary', 'income', 'cash',
+      'medic', 'medicine', 'hospital', 'pharm', 'doctor', 'health', 'pill',
+      'bill', 'electricity', 'water', 'gas bill', 'recharge', 'broadband', 'jio', 'airtel', 'vi', 'mobile',
+      'mail', 'email', 'gmail',
+      'user', 'person', 'friend',
+      'invest', 'mutual', 'stock'
+    ];
+    return !knownKeywords.some(k => cat.includes(k));
+  }, [exp.category, isSettlement]);
+
   const payerName = members.find((m: any) => m.id === exp.paid_by_member_id)?.name || exp.paid_by;
   const formattedDate = new Date(exp.created_at).toLocaleDateString("en-IN", {
     day: "numeric", month: "short"
   });
+
+  // 🛡️ [VERIFICATION_BADGE_LOGIC]
+  const badge = useMemo(() => {
+    if (!isSettlement) return null;
+    if (!intent) return (
+      <span className="text-[9px] font-black uppercase text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/20 flex items-center gap-1">
+        <CheckCircle2 className="h-2.5 w-2.5" /> Verified
+      </span>
+    );
+
+    if (intent.metadata?.is_override) {
+        return (
+          <span className="text-[9px] font-black uppercase text-blue-500 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
+            <ShieldCheck className="h-2.5 w-2.5" /> Override
+          </span>
+        );
+    }
+
+    switch (intent.status) {
+        case 'success':
+            return (
+              <span className="text-[9px] font-black uppercase text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/20 flex items-center gap-1">
+                <CheckCircle2 className="h-2.5 w-2.5" /> Verified
+              </span>
+            );
+        case 'pending_verification':
+            return (
+              <span className="text-[9px] font-black uppercase text-yellow-500 bg-yellow-500/5 px-2 py-0.5 rounded border border-yellow-500/20 flex items-center gap-1">
+                <Clock3 className="h-2.5 w-2.5" /> Pending
+              </span>
+            );
+        case 'failed':
+            return (
+              <span className="text-[9px] font-black uppercase text-destructive bg-destructive/5 px-2 py-0.5 rounded border border-destructive/20 flex items-center gap-1">
+                <AlertCircle className="h-2.5 w-2.5" /> Disputed
+              </span>
+            );
+        default:
+            return null;
+    }
+  }, [intent, isSettlement]);
 
   return (
     <div
@@ -131,16 +217,20 @@ const MemoizedExpenseRow = React.memo(({ exp, isAdmin, currentUserId, members, t
           "flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl",
           "bg-muted border border-border/50",
           "flex items-center justify-center",
-          "group-hover/row:bg-accent transition-colors duration-200"
+          "group-hover/row:bg-accent transition-colors duration-200",
+          (isSettlement || isFallbackIcon) ? "text-primary bg-primary/5 border-primary/20" : ""
         )}>
-          <ReceiptIndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+          {isSettlement ? <ArrowRightLeft className="h-4 w-4 sm:h-5 sm:w-5" /> : getCategoryIcon(exp.category, "h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground")}
         </div>
 
         <div className="flex-1 min-w-0">
           {/* Bill title — sentence case, not all-caps */}
-          <p className="text-sm font-semibold text-card-foreground truncate leading-tight">
-            {exp.title}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-card-foreground truncate leading-tight">
+              {exp.title}
+            </p>
+            {badge}
+          </div>
           <p className="text-xs text-muted-foreground mt-0.5 truncate">
             <span className="font-medium text-foreground/70">{payerName}</span>
             <span className="mx-1.5 opacity-40">·</span>
@@ -374,7 +464,7 @@ const GroupExpenses = () => {
   const realtimeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!selectedGroupId) return;
+    if (!selectedGroupId || !navigator.onLine) return;
     const channel = supabase
       .channel(`group-expenses-listener:${selectedGroupId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_expenses', filter: `group_id=eq.${selectedGroupId}` },
@@ -464,6 +554,27 @@ const GroupExpenses = () => {
     enabled: isAuthReady && !!user?.id && !!selectedGroupId,
     queryFn: async () => fetchLocalOrCloud("group_expenses", selectedGroupId, "", "created_at DESC", "group_id"),
   });
+
+  // 🛡️ [VERIFICATION_BADGE_QUERY]
+  const { data: allIntents = [] } = useQuery({
+    queryKey: ['settlement-intents', selectedGroupId],
+    enabled: !!selectedGroupId && isAuthReady,
+    queryFn: async () => {
+        const { data, error } = await supabase
+            .from('settlement_intents')
+            .select('*')
+            .eq('group_id', selectedGroupId);
+        if (error) throw error;
+        return data || [];
+    }
+  });
+
+  const intentMap = useMemo(() => {
+    return allIntents.reduce((acc: Record<string, any>, intent) => {
+        acc[intent.idempotency_key] = intent;
+        return acc;
+    }, {});
+  }, [allIntents]);
 
   const { data: splits = [], refetch: refetchSplits, isLoading: isLoadingSplits } = useQuery({
     queryKey: ["expense-splits", selectedGroupId],
@@ -604,6 +715,17 @@ const GroupExpenses = () => {
       return;
     }
 
+    // 🛡️ [ADMIN_OVERRIDE_LOGIC]
+    let overrideReason = "";
+    if (isAdmin && !idempotencyKey) {
+        const reason = window.prompt("Mandatory: Please provide a reason for force settlement (e.g. Cash Paid, Error Correction):");
+        if (!reason || reason.trim().length < 4) {
+            toast({ title: "Reason Required", description: "A valid reason (min 4 chars) is mandatory for force settlements.", variant: "destructive" });
+            return;
+        }
+        overrideReason = reason.trim();
+    }
+
     const fromMember = members.find(m => m.name === fromName);
     const toMember = members.find(m => m.name === toName);
 
@@ -625,7 +747,8 @@ const GroupExpenses = () => {
         p_paid_by_member_id: fromMember.id,
         p_split_type: 'unequal',
         p_splits: [{ member_id: toMember.id, user_id: toMember.user_id || null, share_amount: amountPaisa }],
-        p_idempotency_key: idempotencyKey || null
+        p_idempotency_key: idempotencyKey || null,
+        p_notes: overrideReason || undefined
       };
 
       const isAndroid = Capacitor.getPlatform() === 'android';
@@ -633,12 +756,32 @@ const GroupExpenses = () => {
       const finalIdempotencyKey = idempotencyKey || `idemp_${expenseId}`;
       const finalRpcPayload = { ...rpcPayload, p_id: expenseId, p_idempotency_key: finalIdempotencyKey };
 
+      // 🛡️ [ADMIN_OVERRIDE_METADATA]
+      if (overrideReason) {
+          const { error: intentError } = await supabase.from('settlement_intents').insert({
+              id: self.crypto.randomUUID(),
+              group_id: selectedGroupId,
+              sender_id: fromMember.id,
+              receiver_id: toMember.id,
+              amount: amountPaisa,
+              status: 'success', // Terminal state for Admin Override
+              idempotency_key: finalIdempotencyKey,
+              metadata: { 
+                  is_override: true, 
+                  override_reason: overrideReason, 
+                  admin_id: user.id,
+                  overridden_at: new Date().toISOString()
+              }
+          });
+          if (intentError) console.error("[ORCHESTRATOR_OVERRIDE_LOG_FAIL]", intentError);
+      }
+
       if (isAndroid) {
         const db = getDB();
         if (db) {
           console.log("📱 [SETTLEMENT_SQLITE_OPTIMISTIC] Injecting settlement into local ledger");
-          await db.run(`INSERT INTO group_expenses (id, group_id, title, category, amount, paid_by, paid_by_member_id, user_id, split_type, idempotency_key, sync_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [expenseId, selectedGroupId, rpcPayload.p_title, "Others", amountPaisa, fromMember.id, fromMember.id, user.id, 'unequal', finalIdempotencyKey, 'pending']
+          await db.run(`INSERT INTO group_expenses (id, group_id, title, category, amount, paid_by, paid_by_member_id, user_id, split_type, idempotency_key, sync_status, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [expenseId, selectedGroupId, rpcPayload.p_title, "Others", amountPaisa, fromMember.id, fromMember.id, user.id, 'unequal', finalIdempotencyKey, 'pending', overrideReason || ""]
           );
           for (const s of rpcPayload.p_splits) {
             const splitId = `spl_${Math.random().toString(36).substring(2, 9)}`;
@@ -653,6 +796,7 @@ const GroupExpenses = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["group-expenses", selectedGroupId] }),
         queryClient.invalidateQueries({ queryKey: ["expense-splits", selectedGroupId] }),
+        queryClient.invalidateQueries({ queryKey: ['settlement-intents', selectedGroupId] }),
         refetchExpenses(), refetchSplits()
       ]);
       toast({ title: t("settlement_success", "Settlement securely logged.") });
@@ -1890,6 +2034,7 @@ const GroupExpenses = () => {
                               formatCurrency={formatCurrency}
                               onEdit={(e: any) => { setEditDialogExp(e); setEditTempTitle(e.title); }}
                               onDelete={handleDeleteExpense}
+                              intent={intentMap[exp.idempotency_key]}
                             />
                           ))
                         ) : (

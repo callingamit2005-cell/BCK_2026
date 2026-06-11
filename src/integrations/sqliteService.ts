@@ -66,6 +66,35 @@ export const seedLocalCacheRow = async (
     const rowCols = Object.keys(seedRow).filter((col) => validCols.includes(col) && seedRow[col] !== undefined);
     if (rowCols.length === 0) return false;
 
+    // 🛡️ [PHASE_2_DEDUPLICATION_HARDENING]
+    // For transactions, we must check reference, canonical_key, and sms_hash 
+    // before attempting an insert to prevent duplicates from different cloud/local IDs.
+    if (tableName === 'transactions') {
+      const ref = seedRow.reference;
+      const canon = seedRow.canonical_key;
+      const hash = seedRow.sms_hash;
+      
+      let existingId = null;
+      if (ref) {
+        const res = await db.query(`SELECT id FROM transactions WHERE reference = ? LIMIT 1`, [ref]);
+        if (res.values?.length) existingId = res.values[0].id;
+      }
+      if (!existingId && canon) {
+        const res = await db.query(`SELECT id FROM transactions WHERE canonical_key = ? LIMIT 1`, [canon]);
+        if (res.values?.length) existingId = res.values[0].id;
+      }
+      if (!existingId && hash) {
+        const res = await db.query(`SELECT id FROM transactions WHERE sms_hash = ? LIMIT 1`, [hash]);
+        if (res.values?.length) existingId = res.values[0].id;
+      }
+
+      if (existingId && existingId !== seedRow.id) {
+        console.log(`[DEDUP_SYNC] Found existing record ${existingId} for cloud row ${seedRow.id}. Merging...`);
+        // Map cloud ID to existing local record to maintain stability
+        seedRow.id = existingId;
+      }
+    }
+
     const colsString = rowCols.join(', ');
     const placeholders = rowCols.map(() => '?').join(', ');
     const values = rowCols.map((col) => seedRow[col]);
@@ -98,94 +127,101 @@ export const seedLocalCacheRow = async (
 
 export const fetchLocalOrCloud = async (tableName: string, filterValue: string | null, extraCondition = '', orderBy = 'created_at DESC', filterColumn: string | null = 'user_id', includeDeleted = false, forceCloud = false) => {
   const isAndroid = Capacitor.getPlatform() === 'android';
-  
+
+  // 🛡️ BACKGROUND CLOUD SYNC (Non-Blocking)
+  const runBackgroundCloudSync = async () => {
+    try {
+      console.log(`🌐 [CLOUD_FETCH_BG] Table: ${tableName}`);
+      let cloudQuery = supabase.from(tableName).select('*');
+      
+      if (filterColumn && filterValue) {
+        cloudQuery = cloudQuery.eq(filterColumn, filterValue);
+      }
+
+      if (extraCondition.includes('month_year')) {
+        const match = extraCondition.match(/month_year = '([^']+)'/);
+        if (match && match[1]) {
+          cloudQuery = cloudQuery.eq('month_year', match[1]);
+        }
+      }
+
+      const fetchPromise = cloudQuery
+        .order(orderBy.split(' ')[0], { ascending: !orderBy.includes('DESC') })
+        .limit(500);
+
+      // 🛡️ Strict Timeout (5s) for Cloud
+      const timeoutPromise = new Promise<{ data: any, error: any }>((_, reject) => 
+        setTimeout(() => reject(new Error('Cloud Fetch Timeout')), 5000)
+      );
+
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
+      if (error) {
+        console.warn(`⚠️ [CLOUD_FETCH_BG_FAIL] Table: ${tableName}`, error);
+        return data || [];
+      }
+
+      const cloudRows = data || [];
+      console.log(`✅ [CLOUD_FETCH_BG_SUCCESS] Table: ${tableName}, Count: ${cloudRows.length}`);
+
+      if (isAndroid && cloudRows.length > 0) {
+        const db = await ensureDbReady();
+        if (db) {
+          let updated = false;
+          for (const row of cloudRows) {
+            const success = await seedLocalCacheRow(tableName, row);
+            if (success) updated = true;
+          }
+          if (updated) {
+            console.log(`🔄 [SILENT_UI_REFRESH] Dispatching sync update for ${tableName}`);
+            dispatchSyncUpdate();
+          }
+        }
+      }
+      return cloudRows;
+    } catch (err) {
+      console.warn(`⚠️ [CLOUD_FETCH_BG_WARN] Table: ${tableName} (Offline/Timeout)`, err);
+      return [];
+    }
+  };
+
   if (isAndroid) {
+    let localRows: any[] = [];
     const db = await ensureDbReady();
     if (db) {
-      console.log(`🔍 [SQLITE_QUERY_START] Table: ${tableName}, Filter: ${filterColumn || 'NONE'}=${filterValue || 'NONE'}, ForceCloud: ${forceCloud}`);
+      console.log(`🔍 [SQLITE_QUERY_START] Table: ${tableName}, Filter: ${filterColumn || 'NONE'}=${filterValue || 'NONE'}`);
       
       const deletedCondition = includeDeleted ? '' : 'AND is_deleted = 0';
       let query = `SELECT * FROM ${tableName} WHERE 1=1 ${deletedCondition} ${extraCondition} ORDER BY ${orderBy} LIMIT 500`;
       let params: any[] = [];
       
-      // 🛡️ [SEED_DETECTION_HARDENING] Count ALL rows (including tombstones) 
-      // to correctly identify if a table has been hydrated for this context.
-      let countQuery = `SELECT COUNT(*) as count FROM ${tableName}`;
-      let countParams: any[] = [];
-
       if (filterColumn && filterValue) {
         query = `SELECT * FROM ${tableName} WHERE ${filterColumn} = ? ${deletedCondition} ${extraCondition} ORDER BY ${orderBy} LIMIT 500`;
         params = [filterValue];
-        countQuery = `SELECT COUNT(*) as count FROM ${tableName} WHERE ${filterColumn} = ?`;
-        countParams = [filterValue];
       }
 
-      
       try {
         const res = await db.query(query, params);
-        const localRows = res.values || [];
-        
+        localRows = res.values || [];
         console.log(`📊 [SQLITE_QUERY_RESULT] Table: ${tableName}, Count: ${localRows.length}`);
-
-        // 🛡️ [HYDRATION_FIX] Prevent cloud fallback if any rows (active or deleted) exist locally.
-        // 🚀 BUG_FIX: If forceCloud is true, we skip the hydration guard and fetch from Supabase to discover new members.
-        const countRes = await db.query(countQuery, countParams);
-        const totalCount = countRes.values?.[0]?.count || 0;
-
-        if (!forceCloud && (localRows.length > 0 || totalCount > 0)) {
-          console.log(`💡 [SQLITE_HYDRATED] Returning local cache (Total historical rows: ${totalCount})`);
-          return localRows;
-        }
-        console.log(`💡 [SQLITE_FETCH_REQUIRED] ${forceCloud ? 'Force Refresh' : 'Local Empty'} - Fetching from cloud for ${tableName}`);
       } catch (err) {
         console.error(`❌ [SQLITE_QUERY_FAIL] Table: ${tableName}`, err);
       }
     }
-  }
 
-  // Cloud Fallback
-  console.log(`🌐 [CLOUD_FETCH_START] Table: ${tableName}, Filter: ${filterColumn || 'NONE'}=${filterValue || 'NONE'}`);
-  let cloudQuery = supabase.from(tableName).select('*');
-  
-  if (filterColumn && filterValue) {
-    cloudQuery = cloudQuery.eq(filterColumn, filterValue);
-  }
-
-  if (extraCondition.includes('month_year')) {
-    const match = extraCondition.match(/month_year = '([^']+)'/);
-    if (match && match[1]) {
-      cloudQuery = cloudQuery.eq('month_year', match[1]);
+    // 🛡️ BACKGROUND FETCH TRIGGER
+    if (navigator.onLine) {
+      // Fire and forget (does not block UI return)
+      runBackgroundCloudSync();
     }
+
+    // 🛡️ IMMEDIATE LOCAL RESOLUTION
+    console.log(`💡 [SQLITE_RESOLVED] Returning local cache immediately for ${tableName}`);
+    return localRows;
   }
 
-  const { data, error } = await cloudQuery
-    .order(orderBy.split(' ')[0], { ascending: !orderBy.includes('DESC') })
-    .limit(500);
-
-  if (error) {
-    console.error(`❌ [CLOUD_FETCH_FAIL] Table: ${tableName}`, error);
-    throw error;
-  }
-
-  const cloudRows = data || [];
-  console.log(`✅ [CLOUD_FETCH_SUCCESS] Table: ${tableName}, Count: ${cloudRows.length}`);
-
-  // Background Seed SQLite
-  if (isAndroid && cloudRows.length > 0) {
-    const db = await ensureDbReady();
-    if (db) {
-      console.log(`🌱 [SQLite_SEED] Seeding ${cloudRows.length} records into ${tableName}`);
-      
-      try {
-        for (const row of cloudRows) {
-          await seedLocalCacheRow(tableName, row);
-        }
-      } catch (infoErr) {
-          console.error(`❌ [SCHEMA_INFO_FAIL] Table: ${tableName}`, infoErr);
-      }
-    }
-  }
-  return cloudRows;
+  // Web Fallback: Wait for cloud (since Web has no SQLite cache)
+  return await runBackgroundCloudSync();
 };
 
 /**

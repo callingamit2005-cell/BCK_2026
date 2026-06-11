@@ -345,8 +345,8 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
   // START PROTECTED FINTECH PAYMENT REGION (Locked)
   const launchUPITransport = async (app: PaymentAppConfig, target: PaymentTarget, intentId: string) => {
     const normalizedRupees = (target.amount / 100).toFixed(2);
-    const upiId = normalizeUPI(target.upiId!);
-    const sanitizedPn = target.name.replace(/[^\w\s]/gi, '').substring(0, 20).trim() || 'Recipient';
+    const upiId = target.upiId ? normalizeUPI(target.upiId) : "";
+    const sanitizedPn = target.name.replace(/[^\w\s]/gi, "").substring(0, 20).trim() || "Recipient";
     const noteRaw = "Settlement Payment";
     const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(sanitizedPn)}&am=${normalizedRupees}&cu=INR&tr=${intentId}&tn=${encodeURIComponent(noteRaw)}`;
     try {
@@ -387,7 +387,7 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
   const handleFinalVerification = async (success: boolean) => {
     if (!selectedTarget) return;
     if (activeIntent) {
-        const finalStatus = success ? 'COMPLETED' : 'PENDING';
+        const finalStatus = success ? 'AWAITING_RECEIVER' : 'PENDING';
         await paymentOrchestrator.updateStatus(activeIntent.id, finalStatus);
     }
     onPaymentReturn(success, selectedTarget, activeIntent?.idempotency_key);
@@ -547,9 +547,9 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
         </div>
         
         <div className="space-y-3">
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Payment Dispatched?</h2>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Handshake Initiated?</h2>
           <p className="text-muted-foreground text-sm font-medium leading-relaxed max-w-[280px] mx-auto">
-            Please confirm the transfer of <br/>
+            Marking as paid will update your local ledger. The receiver must confirm receipt for final verification. <br/>
             <span className="text-foreground text-3xl block mt-2 font-bold font-mono tracking-tighter tabular-nums">{formatCurrency(selectedTarget?.amount || 0)}</span>
           </p>
         </div>
@@ -559,7 +559,7 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
             onClick={() => handleFinalVerification(true)}
             className="h-16 bg-primary text-primary-foreground rounded-2xl font-bold uppercase text-[12px] tracking-widest shadow-institutional active:scale-95 transition-transform hover:opacity-95"
           >
-            Mark as Paid Successfully
+            I have Paid Successfully
           </Button>
           
           <div className="grid grid-cols-2 gap-4">

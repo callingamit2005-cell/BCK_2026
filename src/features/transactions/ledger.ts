@@ -216,7 +216,7 @@ export const toUnifiedTransactionEntry = (row: any): UnifiedLedgerEntry => {
     // to prevent primary key collisions during edits.
     canonicalKey: row.canonical_key || row.canonicalKey || `legacy:${row.id}`,
     updatedAt: row.updated_at || row.updatedAt || row.created_at || null,
-    isDeleted: Boolean(row.deleted_flag),
+    isDeleted: Boolean(row.is_deleted),
     _ts: safeDate(date)?.getTime() || 0,
   };
 };
@@ -251,7 +251,7 @@ export const toUnifiedNativeEntry = (row: any): UnifiedLedgerEntry => {
   const amount = Number(row.amount || 0);
   const date = row.date || (row.timestamp ? new Date(Number(row.timestamp)).toISOString() : new Date().toISOString());
   const smsHash = row.smsHash || row.sms_hash || null;
-  const isDeleted = Boolean(row.deleted_flag);
+  const isDeleted = Boolean(row.is_deleted);
 
   return {
     id: String(row.id),
@@ -324,12 +324,15 @@ export const mergeUnifiedLedgerEntries = (
     // They are unique "intent-based" entries and must survive independently.
     const isManualAction = entry.source === 'manual' || entry.source === 'voice' || entry.source === 'paste' || String(entry.id).startsWith('manual');
 
+    const jsGeneratedKey = (!entry.canonicalKey && !isManualAction) ? generateCanonicalKey(entry) : null;
+
     const keys = [
       `id:${entry.id}`,
+      (entry as any).reference ? `ref:${(entry as any).reference}` : null,
       entry.smsHash ? `hash:${entry.smsHash}` : null,
       entry.idempotencyKey ? `idem:${entry.idempotencyKey}` : null,
       entry.canonicalKey ? (entry.canonicalKey.startsWith('canon:') ? entry.canonicalKey : `canon:${entry.canonicalKey}`) : null,
-      isManualAction ? null : generateCanonicalKey(entry)
+      jsGeneratedKey
     ].filter(Boolean) as string[];
 
     let targetGroupIndex = -1;
@@ -422,7 +425,7 @@ export const fetchUnifiedLedger = async (userId: string, window: LedgerWindow, l
     if (db) {
       try {
         const [txRes, expRes] = await Promise.allSettled([
-          db.query(`SELECT * FROM transactions WHERE user_id = ? AND COALESCE(deleted_flag, 0) = 0`, [userId]),
+          db.query(`SELECT * FROM transactions WHERE user_id = ? AND COALESCE(is_deleted, 0) = 0`, [userId]),
           db.query(`SELECT * FROM expenses WHERE user_id = ?`, [userId])
         ]);
 
@@ -439,15 +442,28 @@ export const fetchUnifiedLedger = async (userId: string, window: LedgerWindow, l
   
   if (navigator.onLine) {
     try {
-      const [txResult, expResult] = await Promise.all([
+      // 🛡️ [OFFLINE_BOOT_HARDENING] 
+      // Cloud fetch must NEVER block the UI if the connection is slow.
+      // We implement a 3-second hard timeout for the Supabase request.
+      const cloudFetch = Promise.all([
         supabase.from('transactions').select('*').eq('user_id', userId).gte('date', window.start.toISOString()).order('date', { ascending: false }).limit(limit),
         supabase.from('expenses').select('*').eq('user_id', userId).order('expense_date', { ascending: false }).limit(limit),
       ]);
+
+      const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('Cloud Fetch Timeout')), 3000)
+      );
+
+      const results = await Promise.race([cloudFetch, timeoutPromise]) as any;
       
-      if (!txResult.error) cloudTxRows = txResult.data || [];
-      if (!expResult.error) cloudExpRows = expResult.data || [];
+      if (results) {
+        const [txResult, expResult] = results;
+        if (!txResult.error) cloudTxRows = txResult.data || [];
+        if (!expResult.error) cloudExpRows = expResult.data || [];
+      }
     } catch (err) {
-      console.warn("⚠️ [Ledger] Cloud fetch failed, falling back to local only", err);
+      console.warn("⚠️ [Ledger] Cloud fetch deferred or failed (Offline/Timeout):", err);
+      // Success is still possible using local data already retrieved.
     }
   }
 
@@ -520,7 +536,7 @@ export const createLedgerTransaction = async (input: {
     type: input.type,
     entry_source: input.source,
     sync_status: 'pending',
-    deleted_flag: false,
+    is_deleted: 0,
     idempotency_key: idempotencyKey, // Pre-bind identity
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()

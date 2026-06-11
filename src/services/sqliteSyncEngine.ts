@@ -160,12 +160,13 @@ export const syncEngine = {
       `);
 
       // 1. FETCH BATCH (Max 50 records, Exponential Backoff Check)
+      // 🛡️ [PRIORITY_QUEUE] Prioritize DELETE operations to harden tombstones first.
       const query = `
         SELECT * FROM sync_queue 
         WHERE status IN ('pending', 'failed') 
         AND retry_count < 5 
         AND datetime(next_retry_at) <= datetime('now')
-        ORDER BY created_at ASC LIMIT 50
+        ORDER BY CASE WHEN operation = 'DELETE' THEN 0 ELSE 1 END ASC, created_at ASC LIMIT 50
       `;
       const result = await db.query(query);
       const rows = result.values || [];

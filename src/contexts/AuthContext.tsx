@@ -81,6 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (profile) {
         setUserProfile(profile);
+        localStorage.setItem(`bk_profile_${userId}`, JSON.stringify(profile));
       } else {
         // Explicitly handle profile_missing state
         setUserProfile(null);
@@ -92,6 +93,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else if (prefData && prefData.length > 0) {
         const pref = prefData[0];
         setPreferences({ language: pref.language, country: pref.country });
+        localStorage.setItem(`bk_prefs_${userId}`, JSON.stringify({ language: pref.language, country: pref.country }));
         if (pref.language) {
           localStorage.setItem('preferred-language', pref.language);
           localStorage.setItem('language-onboarding-complete', 'true');
@@ -223,6 +225,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSession(sessionData);
           setUser(sessionData.user);
           
+          // 🛡️ [OFFLINE_BOOT_CACHE] 
+          // Hydrate profile and preferences from localStorage IMMEDIATELY.
+          // This allows ProtectedRoute to pass even before the cloud fetch completes.
+          const cachedProfile = localStorage.getItem(`bk_profile_${sessionData.user.id}`);
+          const cachedPrefs = localStorage.getItem(`bk_prefs_${sessionData.user.id}`);
+          
+          if (cachedProfile) {
+            try { setUserProfile(JSON.parse(cachedProfile)); } catch (e) { console.warn("Failed to parse cached profile", e); }
+          }
+          if (cachedPrefs) {
+            try { setPreferences(JSON.parse(cachedPrefs)); } catch (e) { console.warn("Failed to parse cached prefs", e); }
+          }
+
           // 🚀 [IMMEDIATE_SESSION_SYNC] 
           // Sync to native bridge IMMEDIATELY before setting isAuthReady.
           // This ensures the Orphan Guard is unlocked before the first SMS scan or receiver event.
@@ -266,11 +281,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             try {
               if (event === "SIGNED_OUT") {
                 console.log("[AUTH_EVENT] User signed out");
+                const oldUserId = currentUserRef.current?.id;
                 currentUserRef.current = null;
                 forensicState.userId = 'anonymous';
                 setSession(null); setUser(null); setUserProfile(null); setPreferences(null);
                 lastFetchedUserId.current = null; isFetchingPreferences.current = false; lastFetchTime.current = 0;
                 
+                if (oldUserId) {
+                  localStorage.removeItem(`bk_profile_${oldUserId}`);
+                  localStorage.removeItem(`bk_prefs_${oldUserId}`);
+                }
+
                 if (Capacitor.getPlatform() === 'android') {
                   await SmsBridge.clearSyncSession();
                 }

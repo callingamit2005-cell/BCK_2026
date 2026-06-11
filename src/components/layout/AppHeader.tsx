@@ -34,9 +34,10 @@ const AppHeader = () => {
           <Link
             to="/dashboard"
             className="flex items-center gap-3.5 group active:scale-95 transition-all"
+            aria-label="BachatKaro Home"
           >
             <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-500">
-              <Wallet className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <Wallet className="h-5 w-5 md:h-6 md:w-6 text-primary" aria-hidden="true" />
             </div>
             <div className="flex flex-col">
               <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground leading-none">
@@ -49,11 +50,12 @@ const AppHeader = () => {
           </Link>
 
           {/* DESKTOP NAVIGATION */}
-          <nav className="hidden md:flex items-center gap-2 bg-muted/20 p-1.5 rounded-2xl border border-border/40 shadow-inner">
+          <nav className="hidden md:flex items-center gap-2 bg-muted/20 p-1.5 rounded-2xl border border-border/40 shadow-inner" aria-label="Main Navigation">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
+                aria-label={item.label}
                 className={cn(
                   'flex items-center gap-2.5 px-6 py-2.5 rounded-xl transition-all duration-300 relative group overflow-hidden',
                   isActive(item.path)
@@ -61,7 +63,7 @@ const AppHeader = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <item.icon className={cn("h-4 w-4 transition-colors", isActive(item.path) ? "text-primary" : "text-muted-foreground group-hover:text-primary")} />
+                <item.icon className={cn("h-4 w-4 transition-colors", isActive(item.path) ? "text-primary" : "text-muted-foreground group-hover:text-primary")} aria-hidden="true" />
                 <span className="text-[11px] font-bold uppercase tracking-widest">{item.label}</span>
                 {isActive(item.path) && (
                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
@@ -72,8 +74,8 @@ const AppHeader = () => {
 
           {/* ACTION HUB */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 mr-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 shadow-sm">
-               <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <div className="hidden sm:flex items-center gap-2 mr-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 shadow-sm" role="status">
+               <ShieldCheck className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                <span className="text-[9px] font-bold text-primary uppercase tracking-widest">Secure session</span>
             </div>
             
@@ -86,8 +88,9 @@ const AppHeader = () => {
                 onClick={signOut}
                 className="h-11 w-11 text-muted-foreground hover:text-expense hover:bg-expense/5 rounded-xl transition-all border border-border/40 hover:border-expense/20 shadow-sm group"
                 title="Symmetric Sign Out"
+                aria-label="Sign Out"
               >
-                <LogOut className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                <LogOut className="h-5 w-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </Button>
             )}
           </div>

@@ -12,8 +12,9 @@ import { Capacitor } from '@capacitor/core';
 export type SettlementStatus = 
   | 'PENDING' 
   | 'PROCESSING' 
-  | 'AWAITING_CONFIRMATION' 
-  | 'COMPLETED' 
+  | 'AWAITING_RECEIVER' 
+  | 'VERIFIED' 
+  | 'DISPUTED'
   | 'FAILED' 
   | 'EXPIRED'
   | 'created' | 'redirected' | 'pending_verification' | 'success' | 'failed'; // 🛡️ Legacy compatibility
@@ -38,8 +39,9 @@ export interface SettlementIntent {
 const DB_STATUS_MAP: Record<string, string> = {
     'PENDING': 'created',
     'PROCESSING': 'redirected',
-    'AWAITING_CONFIRMATION': 'pending_verification',
-    'COMPLETED': 'success',
+    'AWAITING_RECEIVER': 'pending_verification',
+    'VERIFIED': 'success',
+    'DISPUTED': 'failed',
     'FAILED': 'failed',
     'EXPIRED': 'failed'
 };
@@ -198,8 +200,9 @@ class PaymentOrchestrator {
       console.log(`[ORCHESTRATOR_UPDATE_SUCCESS] [${intentId}]`);
       
       // 🕵️ [PHASE_3_FORENSICS]
-      if (status === 'COMPLETED') console.log("[SETTLEMENT_CONFIRMED]", intentId);
-      if (status === 'FAILED') console.log("[SETTLEMENT_CANCELLED]", intentId);
+      if (status === 'VERIFIED') console.log("[SETTLEMENT_VERIFIED]", intentId);
+      if (status === 'DISPUTED') console.log("[SETTLEMENT_DISPUTED]", intentId);
+      if (status === 'AWAITING_RECEIVER') console.log("[SETTLEMENT_AWAITING_RECEIVER]", intentId);
       if (status === 'PROCESSING') console.log("[UPI_APP_LAUNCHED]", intentId);
 
       if (dbStatus === 'success' || dbStatus === 'failed') {

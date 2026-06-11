@@ -224,6 +224,7 @@ const Dashboard = () => {
   const lastMonthTotal = useMemo(() => lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0), [lastMonthExpenses]);
 
   const monthlyEMI = useMemo(() => {
+    if (!emiList || emiList.length === 0) return 0;
     return emiList.reduce((sum, emi) => {
       const principal = Number(emi.loanDetails?.principal || 0);
       const rate = Number(emi.loanDetails?.annualInterestRate || 0) / 12 / 100;
@@ -239,14 +240,17 @@ const Dashboard = () => {
     }, 0);
   }, [emiList]);
 
-  const monthlyExtraIncome = useMemo(() => allUnifiedTransactions
-    .filter((t) => {
-      if (!t?.date || !isValidDate(t.date)) return false;
-      const d = safeDate(t.date);
-      if (!d) return false;
-      return t.type === 'income' && t.source !== 'salary' && format(d, 'yyyy-MM') === currentMonthYear;
-    })
-    .reduce((sum, e) => sum + Number(e?.amount || 0), 0), [allUnifiedTransactions, currentMonthYear]);
+  const monthlyExtraIncome = useMemo(() => {
+    if (!allUnifiedTransactions || allUnifiedTransactions.length === 0) return 0;
+    return allUnifiedTransactions
+      .filter((t) => {
+        if (!t?.date || !isValidDate(t.date)) return false;
+        const d = safeDate(t.date);
+        if (!d) return false;
+        return t.type === 'income' && t.source !== 'salary' && format(d, 'yyyy-MM') === currentMonthYear;
+      })
+      .reduce((sum, e) => sum + Number(e?.amount || 0), 0);
+  }, [allUnifiedTransactions, currentMonthYear]);
 
   const totalInflow = useMemo(() => salaryVal + monthlyExtraIncome, [salaryVal, monthlyExtraIncome]);
   const totalOutflow = useMemo(() => monthlyExpenseSum + monthlyEMI, [monthlyExpenseSum, monthlyEMI]);
@@ -264,13 +268,15 @@ const Dashboard = () => {
   }, [subscriptionList]);
 
   // 🛡️ [ANALYTICS_STABILIZATION] Filter-Responsive Totals
-  const filteredSpent = useMemo(() => 
-    filteredViewData.filter(t => t.type !== 'income' && t.direction !== 'credit').reduce((sum, e) => sum + Number(e?.amount || 0), 0), 
-  [filteredViewData]);
+  const filteredSpent = useMemo(() => {
+    if (!filteredViewData) return 0;
+    return filteredViewData.filter(t => t.type !== 'income' && t.direction !== 'credit').reduce((sum, e) => sum + Number(e?.amount || 0), 0);
+  }, [filteredViewData]);
   
-  const filteredIncome = useMemo(() => 
-    filteredViewData.filter(t => t.type === 'income').reduce((sum, e) => sum + Number(e?.amount || 0), 0), 
-  [filteredViewData]);
+  const filteredIncome = useMemo(() => {
+    if (!filteredViewData) return 0;
+    return filteredViewData.filter(t => t.type === 'income').reduce((sum, e) => sum + Number(e?.amount || 0), 0);
+  }, [filteredViewData]);
 
   // 🛡️ [AI_STABILIZATION] Financial Fingerprint & In-flight Lock
   // Ensures AI only refreshes when material financial state changes, not on every render.
@@ -617,59 +623,65 @@ const Dashboard = () => {
         </div>
       )}
 
-      <main className="flex flex-col gap-6 sm:gap-10 w-full max-w-xl lg:max-w-6xl xl:max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-32 sm:pb-24 safe-bottom relative z-10">
+      <main className="flex flex-col gap-8 sm:gap-12 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 pb-32 sm:pb-24 safe-bottom relative z-10">
         
         {/* Contextual Dashboard Mode Switcher */}
-        <div className="sticky top-0 z-[50] bg-background/95 backdrop-blur-sm -mx-4 px-4 py-1">
+        <div className="sticky top-0 z-[50] bg-background/95 backdrop-blur-md -mx-4 px-4 py-2 border-b border-border/10 shadow-sm sm:shadow-none">
           <DashboardSubheader activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
 
         {/* 🚀 [PHASE_3] FINTECH SUMMARY STRIP */}
-        <FintechSummaryStrip totalCredit={filteredIncome} totalDebit={filteredSpent} />
+        <div className="animate-in fade-in slide-in-from-top-2 duration-500">
+          <FintechSummaryStrip totalCredit={filteredIncome} totalDebit={filteredSpent} />
+        </div>
 
         {activeTab === 'daily' && (
-          <>
-            <div className="sticky top-0 sm:top-4 z-[40] -mx-6 px-6 bg-background/95 border-b border-border py-3 flex gap-3 overflow-x-auto hide-scrollbar">
+          <div className="flex flex-col gap-8 sm:gap-10">
+            <div className="sticky top-[72px] sm:top-[88px] z-[40] -mx-4 px-4 bg-background/95 backdrop-blur-sm border-b border-border/40 py-4 flex gap-3 overflow-x-auto hide-scrollbar shadow-sm sm:shadow-none">
               <DateFilter value={dateFilter} onChange={setDateFilter} filteredData={filteredViewData || []} />
             </div>
 
-            <Suspense fallback={<div className="h-32 w-full bg-muted animate-pulse rounded-xl" />}>
+            <Suspense fallback={<div className="h-20 w-full bg-muted/20 animate-pulse rounded-2xl border border-border/40" />}>
               <div className={applePhysics}><SmartUniversalInput /></div>
             </Suspense>
             
-            <Suspense fallback={<div className="h-44 w-full bg-muted animate-pulse rounded-xl" />}>
+            <Suspense fallback={<div className="h-44 w-full bg-muted/20 animate-pulse rounded-2xl border border-border/40" />}>
               <BudgetPulse spent={filteredSpent} budget={budgetVal} />
             </Suspense>
 
-            <Suspense fallback={<div className="h-28 w-full bg-muted animate-pulse rounded-xl" />}>
+            <Suspense fallback={<div className="h-28 w-full bg-muted/20 animate-pulse rounded-2xl border border-border/40" />}>
               <MonthlyComparison currentMonthTotal={filteredSpent} lastMonthTotal={lastMonthTotal} />
             </Suspense>
 
-            <div className="bg-card p-4 sm:p-8 relative rounded-xl shadow-sm w-full">
-              <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-background border border-border/60 rounded-full shadow-sm">
-                <span className="w-1.5 h-1.5 bg-foreground rounded-full animate-pulse" />
-                <span className="text-xs font-semibold text-muted-foreground">{t('common.aiActive', 'AI')}</span>
+            <div className="bg-card p-6 sm:p-10 relative rounded-2xl border border-border/40 shadow-sm w-full group overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors" />
+              <div className="absolute top-6 right-6 flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-full shadow-sm transition-all hover:bg-primary/10 cursor-pointer">
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary">{t('common.aiActive', 'Intelligence Active')}</span>
               </div>
               <div className="flex flex-col items-center justify-center text-center w-full">
-                <h3 className="text-muted-foreground text-xs font-semibold mb-4 sm:mb-6">{t('dashboard.aiEngine', 'AI Financial Advisor')}</h3>
-                <div className="min-h-[80px] flex items-center justify-center mb-4 sm:mb-6 w-full">
-                  <Suspense fallback={<div className="h-20 w-full bg-background animate-pulse rounded-xl" />}>
+                <h3 className="text-muted-foreground text-[10px] font-extrabold uppercase tracking-[0.2em] mb-8">{t('dashboard.aiEngine', 'Global Intelligence Terminal')}</h3>
+                <div className="min-h-[100px] flex items-center justify-center mb-8 w-full">
+                  <Suspense fallback={<div className="h-24 w-full bg-muted/10 animate-pulse rounded-2xl" />}>
                     <SmartFinancialMentor
                       advice={activeAdvice ? { action: activeAdvice.action, reason: activeAdvice.reason, steps: activeAdvice.steps, confidence: activeAdvice.confidence } : null}
                     />
                   </Suspense>
                 </div>
-                <p className="text-fintech-graphite-muted opacity-40 text-xs font-black uppercase tracking-wider flex items-center gap-2 mt-2 sm:mt-4">
-                  <BrainCircuit className="h-3 w-3" /> {t('common.hardwareAccelerated', 'Powered by AI analysis')}
-                </p>
+                <div className="flex items-center gap-2.5 opacity-40 group-hover:opacity-60 transition-opacity">
+                  <BrainCircuit className="h-4 w-4 text-primary" /> 
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-foreground">
+                    {t('common.hardwareAccelerated', 'Hardware Accelerated Analysis')}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <Suspense fallback={<div className="h-[400px] w-full bg-muted animate-pulse rounded-xl" />}>
+            <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/40" />}>
               <CategoryChart expenses={filteredViewData} loading={loadingExpenses} budget={budgetVal} />
             </Suspense>
 
-            <Suspense fallback={<div className="h-[500px] w-full bg-muted animate-pulse rounded-xl" />}>
+            <Suspense fallback={<div className="h-[500px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/40" />}>
               <MarketIntelligence 
                 transactions={filteredViewData} 
                 currentMonthExpenses={filteredViewData} 
@@ -706,7 +718,7 @@ const Dashboard = () => {
               userId={user?.id}
               dateFilter={dateFilter}
             />
-          </>
+          </div>
         )}
 
         {activeTab === 'planning' && (

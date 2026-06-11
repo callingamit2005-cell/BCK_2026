@@ -7,6 +7,7 @@ interface TransactionRepository {
     fun insert(transaction: Transaction): Long
     fun getAll(limit: Int = 0, userId: String? = null): List<Transaction>
     fun isDuplicate(hash: String): Boolean
+    fun isReferenceDuplicate(reference: String): Boolean
     fun getByType(type: TransactionType, userId: String? = null): List<Transaction>
     fun getByDateRange(from: Long, to: Long, userId: String? = null): List<Transaction>
     fun count(userId: String? = null): Long

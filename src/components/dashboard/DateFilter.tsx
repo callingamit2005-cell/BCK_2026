@@ -84,13 +84,13 @@ const DateFilter = ({ value, onChange, filteredData = [] }: DateFilterProps) => 
           </div>
 
           {/* Preset Selector */}
-          <div className="flex flex-wrap gap-2 p-1 bg-muted/20 border border-border/40 rounded-xl">
+          <div className="flex flex-wrap gap-2.5 p-1.5 bg-muted/20 border border-border/40 rounded-xl">
             {presets.map((p) => (
               <button
                 key={p.key}
                 onClick={() => onChange({ preset: p.key, customFrom: value.customFrom, customTo: value.customTo })}
                 className={cn(
-                  "h-9 px-4 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300 active:scale-95",
+                  "h-10 px-5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300 active:scale-95",
                   value.preset === p.key
                     ? "bg-primary text-primary-foreground shadow-premium"
                     : "text-muted-foreground hover:text-foreground hover:bg-surface"

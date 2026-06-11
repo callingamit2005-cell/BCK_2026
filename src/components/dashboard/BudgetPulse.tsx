@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, TrendingDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/currencyFormatter";
+import { StatusState } from "@/components/ui/StatusState";
 
 /**
  * BudgetPulse — Budget health indicator card
@@ -59,6 +60,18 @@ const BudgetPulse = React.memo(({ spent, budget, className }: BudgetPulseProps) 
   }, [percentage, budget, t]);
 
   const Icon = status.icon;
+
+  if (budget === 0) {
+    return (
+      <StatusState 
+        type="empty"
+        title={status.label}
+        message={status.sub}
+        variant="card"
+        icon={<TrendingDown className="h-10 w-10 text-muted-foreground/40" />}
+      />
+    );
+  }
 
   return (
     <div className={cn("w-full max-w-xl mx-auto", className)}>

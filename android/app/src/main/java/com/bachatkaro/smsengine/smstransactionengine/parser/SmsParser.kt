@@ -16,12 +16,14 @@ object SmsParser {
     )
 
     private val REF_PATTERNS = listOf(
-        Regex("""(?i)(?:upi\s*ref(?:erence)?(?:\s*no\.?)?|ref(?:erence)?\s*no\.?|ref\s*id|txn\s*(?:id|no\.?|ref)|transaction\s*id|trxn\s*id|imps\s*ref|neft\s*ref|rrn)[:\s#-]+([A-Za-z0-9\-]{4,40})"""),
+        Regex("""(?i)(?:utr|rrn|upi\s*ref(?:erence)?(?:\s*no\.?)?|ref(?:erence)?\s*no\.?|ref\s*id|txn\s*(?:id|no\.?|ref)|transaction\s*id|trxn\s*id|imps\s*ref|neft\s*ref|payment\s*id|trace\s*id|auth\s*(?:code|id)|order\s*id)[:\s#-]+([A-Za-z0-9\-]{4,40})"""),
         Regex("""(?i)(?:cheque|chq)\s*(?:no\.?|number)[:\s]+([A-Za-z0-9]{4,20})"""),
-        Regex("""(?i)\border\s*(?:id|no\.?)[:\s]+([A-Za-z0-9\-]{4,25})""")
+        Regex("""(?i)\border\s*(?:id|no\.?)[:\s]+([A-Za-z0-9\-]{4,25})"""),
+        Regex("""\b(\d{12})\b""")  // 12-digit standalone number = UPI RRN
     )
 
     private val UPI_HANDLE_REGEX = Regex("""(?i)\b([a-z0-9][a-z0-9.\-_]{1,63}@[a-z]{2,63})\b""")
+    private val CARD_REGEX = Regex("""(?i)(?:card|acct)\s+(?:ending\s+in|ending\s+with|ending|x+)(\d{4})""")
 
     private val MERCHANT_PATTERNS = listOf(
         Regex("""(?i)\bat\s+([A-Z0-9][A-Za-z0-9 .&'\-/]{2,40}?)(?:\s+on\b|\.|,|\s*$)"""),
@@ -158,7 +160,19 @@ object SmsParser {
     }
 
     private fun extractPaymentHandle(body: String): String {
-        return UPI_HANDLE_REGEX.find(body)?.groupValues?.getOrNull(1)?.trim().orEmpty()
+        // Priority 1: UPI Handle
+        val upi = UPI_HANDLE_REGEX.find(body)?.groupValues?.getOrNull(1)?.trim()
+        if (!upi.isNullOrEmpty()) {
+            return upi
+        }
+
+        // Priority 2: Card Number
+        val card = CARD_REGEX.find(body)?.groupValues?.getOrNull(1)?.trim()
+        if (!card.isNullOrEmpty()) {
+            return "card:xxxx$card"
+        }
+
+        return ""
     }
 
     private fun extractMerchant(body: String, paymentHandle: String): String {
@@ -235,13 +249,33 @@ object SmsParser {
     private fun generateCanonicalKey(amount: Long, timestamp: Long, payee: String, type: TransactionType): String? {
         if (amount <= 0L || timestamp <= 0L) return null
         
-        val ts = timestamp / 1000
+        // 🛡️ [SSF-60] Minute-Level Precision
+        val ts = (timestamp / 60000) * 60
         val normPayee = payee.lowercase().replace(Regex("[^a-z0-9]"), "")
         val typeStr = type.name.lowercase().let { 
             if (it == "credit") "income" else "expense" 
         }
         
         return "canon:$amount:$ts:$normPayee:$typeStr"
+    }
+
+    /** 
+     * 🛡️ [SSF-60] Structural Digest 
+     * Generates a stable hash of the SMS body masking variable temporal/numeric tokens.
+     */
+    fun structuralDigest(body: String): String {
+        // Mask dates (DD-MM-YY, DD/MM, etc.) and times (HH:MM:SS)
+        val dateRegex = Regex("""\d{1,2}[-/]\d{1,2}([-/]\d{2,4})?""")
+        val timeRegex = Regex("""\d{1,2}:\d{1,2}(:\d{1,2})?""")
+        val balanceRegex = Regex("""(?i)(bal|balance|avl|limit)[:\s#]*\d[\d,]*(\.\d{1,2})?""")
+        
+        return body.lowercase()
+            .replace(dateRegex, "XX-XX-XXXX")
+            .replace(timeRegex, "XX:XX:XX")
+            .replace(balanceRegex, "bal:XXXX")
+            .replace(Regex("""\s+"""), " ")
+            .trim()
+            .let { sha256(it) }
     }
 
     private fun generateIdempotencyKey(smsHash: String): String {

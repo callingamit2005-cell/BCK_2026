@@ -194,33 +194,19 @@ export const useDashboardData = (
     const handleNewSms = async (data: any) => {
       if (isMounted && data?.transaction) {
         try {
-          const { saveLocalTransaction } = await import('@/integrations/sqlite');
-          const tx = data.transaction;
+          // 🛡️ [PRODUCTION_LOCK] SMS PERSISTENCE OWNER: NATIVE ENGINE ONLY
+          // JS Layer must NOT insert or update SMS transactions received via bridge.
+          // Native repository handles storage and background sync independently.
+          // JS Layer is READ-ONLY for SMS: refresh UI only.
           
+          const tx = data.transaction;
           if (isValidSmsTransaction(tx)) {
-            const unified = toUnifiedNativeEntry(tx);
-            
-            // 🚀 [STORM_FIX] Use silent: true to suppress event flood from saveLocalTransaction.
-            // Dispatch a manual DOM event which is caught and debounced by handleRefresh.
-            await saveLocalTransaction({
-              id: unified.id,
-              user_id: user.id,
-              amount: unified.amount,
-              type: unified.type,
-              category: unified.category,
-              payment_mode: unified.paymentMode,
-              description: unified.payee,
-              date: unified.date,
-              sms_hash: unified.smsHash,
-              entry_source: 'sms',
-              sync_status: 'completed'
-            }, true); // SILENT
-
+            // Trigger debounced dashboard refresh
             window.dispatchEvent(new Event('newLocalTransaction'));
           }
         } catch (err) {
-          console.error('Realtime SMS ingestion failed:', err);
-          // Fallback to full scan if single ingestion fails
+          console.error('Realtime SMS refresh trigger failed:', err);
+          // Fallback to full refresh if trigger fails
           await loadNativeTransactions();
         }
       }

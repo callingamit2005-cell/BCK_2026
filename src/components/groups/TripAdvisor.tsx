@@ -401,25 +401,43 @@ const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => 
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] w-[95vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 overflow-hidden bg-background rounded-modal border border-border/40 shadow-institutional z-50 max-h-[92vh] flex flex-col outline-none transform-gpu">
+      <DialogContent 
+        className="fixed left-[50%] translate-x-[-50%] w-[95vw] max-w-[720px] p-0 overflow-hidden bg-background rounded-modal border border-border/40 shadow-institutional z-[110] flex flex-col outline-none transform-gpu"
+        style={{
+          top: 'calc(env(safe-area-inset-top, 0px) + 84px)',
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
+          maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 184px)',
+        }}
+      >
         
         <DialogTitle className="sr-only">Trip Planner</DialogTitle>
         <DialogDescription className="sr-only">Plan your trip based on an exact budget calculation.</DialogDescription>
 
         <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-foreground/10 rounded-full z-20 md:hidden" />
 
-        <div className="flex-1 overflow-y-auto no-scrollbar pb-8 md:pb-12">
+        {/* ── HERO SECTION: Vibrant Neon Typography (Fixed) ── */}
+        <div className="relative pt-10 pb-4 px-6 text-center overflow-hidden shrink-0 bg-surface/50 backdrop-blur-md border-b border-border/40">
+          <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+            <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,#0F766E_0%,transparent_70%)] animate-pulse" />
+          </div>
           
-          <div className="relative pt-12 pb-6 md:pt-16 md:pb-8 bg-surface">
+          <div className="relative z-10 space-y-2">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter leading-none bg-gradient-to-r from-[#F97316] via-[#EC4899] via-[#8B5CF6] to-[#06B6D4] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(236,72,153,0.3)] animate-in fade-in zoom-in-95 duration-700 uppercase">
+              {targetDestination || groupName}
+            </h2>
+            <p className="text-[12px] font-black uppercase tracking-[0.25em] text-foreground/70 leading-relaxed drop-shadow-sm">
+              Trip Intelligence Platform 🚀
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar pb-8 md:pb-12">
+          
+          <div className="relative py-8 bg-surface">
              <div className="text-center mb-10 md:mb-12 px-4">
-                {/* [UI] Removed "EXECUTIVE BLUEPRINT" military label */}
-                <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Trip Plan</p>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter text-foreground truncate px-4">
-                  {targetDestination || groupName}
-                </h2>
 
                 {/* 🌟 PHASE 5: PERSONALITY & JOURNEY HEADER */}
-                <div className="mt-6 flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4">
                    <div className={cn(
                      "px-4 py-1.5 rounded-full border text-xs font-medium animate-in fade-in slide-in-from-bottom-2 shadow-sm",
                      travelPersonality.bg, travelPersonality.border, travelPersonality.color
@@ -577,7 +595,7 @@ const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => 
                  </div>
 
                  {/* [UI] Generate button — human copy, no "Deploy Blueprint 🚀" */}
-                 <Button onClick={handleGenerate} disabled={isGenerating} className="w-full h-16 md:h-20 bg-foreground text-surface font-semibold rounded-xl md:rounded-premium shadow-institutional transition-all active:scale-[0.97] text-sm md:text-base mt-2 hover:bg-foreground/90">
+                 <Button onClick={handleGenerate} disabled={isGenerating} className="w-full h-16 md:h-20 bg-primary text-primary-foreground font-black uppercase tracking-[0.2em] rounded-xl md:rounded-premium shadow-institutional transition-all active:scale-[0.97] text-xs md:text-sm mt-2 hover:opacity-95">
                    {isGenerating ? <Loader2 className="h-6 w-6 animate-spin mr-3" /> : <Sparkles className="h-5 w-5 mr-3" />}
                    {isGenerating ? "Planning your trip…" : "Create My Trip Plan"}
                  </Button>
@@ -793,29 +811,6 @@ const TripAdvisor = ({ open, onOpenChange, groupId, group: propGroup }: any) => 
                 <p className="text-xs font-medium text-muted-foreground mb-3 opacity-60">Disclaimer</p>
                 <p className="text-xs text-muted-foreground leading-relaxed max-w-sm mx-auto opacity-70">BachatKaro trip planning is advisory. Verify all pricing and logistics independently before making bookings.</p>
             </div>
-          </div>
-        </div>
-
-        {/* Footer bar — [UI] "Active Terminal Connection" → "Connected" | "Handshake Pending" → "Connecting…" */}
-        <div className="p-5 md:p-8 bg-background border-t border-border/40 shrink-0 z-30 shadow-institutional">
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* [UI] "Google Maps Intel" → "Open in Maps" */}
-            <Button onClick={() => openAffiliateLink(`https://www.google.com/maps/search/${encodeURIComponent(targetDestination || 'Trip')}+hotels`)} variant="outline" className="flex-1 bg-surface border-border/40 text-muted-foreground hover:text-foreground h-14 rounded-xl font-medium text-sm shadow-premium transition-all active:scale-95 group/btn">
-              <Globe className="w-5 h-5 mr-2.5 text-institutional-blue opacity-50 group-hover/btn:opacity-100 transition-all" /> Open in Maps
-            </Button>
-            {/* [UI] "External Terminal" → "Open in Browser" */}
-            <Button onClick={() => window.open(activeUrl, '_blank')} className="flex-1 bg-foreground text-surface h-14 rounded-xl font-medium text-sm shadow-institutional hover:bg-foreground/90 transition-all active:scale-95">
-              <ExternalLink className="w-5 h-5 mr-2.5" /> Open in Browser
-            </Button>
-          </div>
-          
-          <div className="mt-5 p-4 rounded-xl bg-surface border border-border/40 flex items-center justify-between shadow-inner">
-            <div className="flex items-center gap-3">
-               <div className="w-2 h-2 rounded-full bg-institutional-blue animate-pulse" />
-               {/* [UI] "Active Terminal Connection" → "Connected" */}
-               <p className="text-xs font-medium text-muted-foreground">{activeUrl ? 'Connected' : 'Connecting…'}</p>
-            </div>
-            <p className="text-xs text-muted-foreground truncate max-w-[180px] opacity-50">{activeUrl || ''}</p>
           </div>
         </div>
       </DialogContent>

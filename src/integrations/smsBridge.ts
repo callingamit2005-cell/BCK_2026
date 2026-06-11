@@ -3,6 +3,8 @@ import { registerPlugin, Capacitor } from '@capacitor/core';
 export interface NativeSmsTransaction {
   id: string | number;
   smsHash?: string | null;
+  canonicalKey?: string | null;
+  idempotencyKey?: string | null;
   amount: number | string;
   type?: string | null;
   sender?: string | null;

@@ -417,39 +417,34 @@ const BillRoulette = ({ members = [] }: BillRouletteProps) => {
           [UI] bg-background CSS var instead of hardcoded dark hex.
                Teal border instead of hot-pink. */}
       <DialogContent
-        className="mobile-scroll w-[95vw] sm:max-w-md rounded-modal border p-0 overflow-hidden outline-none bg-background fixed left-[50%] translate-x-[-50%] translate-y-0"
+        className="w-[95vw] sm:max-w-md rounded-modal border p-0 overflow-hidden outline-none bg-background fixed left-[50%] translate-x-[-50%] translate-y-0 z-[110]"
         style={{
-          top: 'calc(env(safe-area-inset-top, 0px) + 70px)',
-          maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 140px)',
+          top: 'calc(env(safe-area-inset-top, 0px) + 84px)',
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
+          maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 184px)',
           borderColor: 'rgba(15,118,110,0.25)',
           boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
         }}
       >
-        {/* ── TOP BAR: funny title + close ── */}
-        <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
-          <div className="flex items-center gap-2">
-            <Dices className="h-4 w-4" style={{ color: '#0F766E' }} />
-            <div>
-              <p className="text-xs font-bold text-foreground leading-none">किस्मत का फ़ैसला 🎲</p>
-              <p className="text-[9px] text-muted-foreground mt-0.5 leading-none">पैसा भरेगा वो जिसे भाग्य ने चुना 😈</p>
-            </div>
+        {/* ── HERO SECTION: Vibrant Neon Typography ── */}
+        <div className="relative pt-10 pb-4 px-6 text-center overflow-hidden shrink-0">
+          <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+            <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,#0F766E_0%,transparent_70%)] animate-pulse" />
           </div>
-          <DialogClose
-            className="p-1.5 rounded-full transition-all active:scale-95 shrink-0"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              color: 'rgba(255,255,255,0.5)',
-            }}
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
+          
+          <div className="relative z-10 space-y-2">
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none bg-gradient-to-r from-[#F97316] via-[#EC4899] via-[#8B5CF6] to-[#06B6D4] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(236,72,153,0.3)] animate-in fade-in zoom-in-95 duration-700">
+              किस्मत का फ़ैसला 🎲
+            </h2>
+            <p className="text-[12px] font-black uppercase tracking-[0.25em] text-foreground/70 leading-relaxed drop-shadow-sm">
+              पैसा भरेगा वो जिसे भाग्य ने चुना 😈
+            </p>
+          </div>
         </div>
 
         {/* ── SCROLL CONTAINER ── */}
         <div
-          className="overflow-y-auto p-4 max-h-full custom-scrollbar"
+          className="overflow-y-auto p-4 flex-1 custom-scrollbar"
           style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom, 16px))' }}
         >
           <DialogHeader className="sr-only">
