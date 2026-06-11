@@ -12,10 +12,15 @@ import { Capacitor } from '@capacitor/core';
 export type SettlementStatus = 
   | 'PENDING' 
   | 'PROCESSING' 
-  | 'AWAITING_RECEIVER' 
+  | 'RETURNED'
+  | 'PENDING_VERIFICATION'
+  | 'USER_CONFIRMED'
+  | 'SMS_VERIFIED'
+  | 'ADMIN_VERIFIED'
   | 'VERIFIED' 
   | 'DISPUTED'
   | 'FAILED' 
+  | 'CANCELLED'
   | 'EXPIRED'
   | 'created' | 'redirected' | 'pending_verification' | 'success' | 'failed'; // 🛡️ Legacy compatibility
 
@@ -39,10 +44,15 @@ export interface SettlementIntent {
 const DB_STATUS_MAP: Record<string, string> = {
     'PENDING': 'created',
     'PROCESSING': 'redirected',
-    'AWAITING_RECEIVER': 'pending_verification',
+    'RETURNED': 'pending_verification',
+    'PENDING_VERIFICATION': 'pending_verification',
+    'USER_CONFIRMED': 'pending_verification', // RULE 4: Maps to pending, no ledger commit
+    'SMS_VERIFIED': 'success', // RULE 5: Transitions to VERIFIED (success)
+    'ADMIN_VERIFIED': 'success',
     'VERIFIED': 'success',
     'DISPUTED': 'failed',
     'FAILED': 'failed',
+    'CANCELLED': 'failed',
     'EXPIRED': 'failed'
 };
 
@@ -54,6 +64,115 @@ class PaymentOrchestrator {
 
   constructor() {
     // 🛡️ [PHASE_1_STABILITY] Constructor must remain side-effect free.
+  }
+
+  /**
+   * 🛡️ [SMS_MATCH_ENGINE] - Deterministic Verification
+   * Matches intent against native bank SMS credits.
+   */
+  public async verifyIntentViaSMS(intent: SettlementIntent): Promise<boolean> {
+    if (Capacitor.getPlatform() !== 'android') return false;
+    
+    // 🛡️ [RULE_3] Idempotency Lock
+    const db = getDB();
+    if (db) {
+        const res = await db.query(`SELECT status, metadata FROM settlement_intents WHERE id = ?`, [intent.id]);
+        const current = res.values?.[0];
+        if (current && (current.status === 'success' || current.status === 'VERIFIED')) {
+            console.log(`[SMS_MATCH_IDEMPOTENT] Intent ${intent.id} is already verified/committed. STOP.`);
+            return true;
+        }
+    } else if (intent.status === 'success' || intent.status === 'VERIFIED') {
+        return true;
+    }
+
+    try {
+        const { getNativeTransactions } = await import('@/integrations/smsBridge');
+        const res = await getNativeTransactions(intent.sender_id);
+        const txs = res.transactions || [];
+
+        const intentTime = intent.metadata?.intent_launched_at ? new Date(intent.metadata.intent_launched_at).getTime() : new Date().getTime();
+        const FIVE_MINUTES_MS = 5 * 60 * 1000;
+
+        const match = txs.find(tx => {
+            const txTime = typeof tx.timestamp === 'number' ? tx.timestamp : new Date(tx.timestamp || 0).getTime();
+            const timeDiff = Math.abs(txTime - intentTime);
+
+            // 🛡️ [RULE_2] Auto verification MUST require ALL conditions
+            const isAmountMatch = Number(tx.amount) === intent.amount / 100; // SMS amount in Rupees, Intent in Paisa
+            const isDirectionMatch = tx.type === 'debit'; // The payer checks their SMS, so it's a debit
+            const isTimeMatch = timeDiff <= FIVE_MINUTES_MS;
+            
+            // Reference Match (if available)
+            const expectedRef = intent.metadata?.sms_reference || intent.metadata?.upi_reference;
+            const isRefMatch = expectedRef && tx.reference ? tx.reference.includes(expectedRef) : true;
+            
+            // UPI Handle / Sender Match (if available)
+            const expectedUpi = intent.metadata?.receiver_upi_id;
+            const isUpiMatch = expectedUpi && tx.sender ? (tx.sender.includes(expectedUpi) || (tx.description || "").includes(expectedUpi)) : true;
+
+            return isAmountMatch && isDirectionMatch && isTimeMatch && isRefMatch && isUpiMatch;
+        });
+
+        if (match) {
+            console.log(`[SMS_MATCH_SUCCESS] Intent: ${intent.id}, Ref: ${match.reference}`);
+            
+            // 🛡️ [RULE_5] & [RULE_7] Preserve metadata and transition to VERIFIED
+            await this.updateStatus(intent.id, 'SMS_VERIFIED', { 
+                sms_reference: match.reference,
+                sms_timestamp: match.timestamp,
+                verification_source: 'sms_bridge',
+                verified_by: 'system',
+                verified_at: new Date().toISOString()
+            });
+            
+            await this.updateStatus(intent.id, 'VERIFIED');
+            
+            // 🛡️ [RULE_5] Commit Ledger Updates
+            await this.commitLedgerForVerifiedIntent(intent);
+            
+            return true;
+        } else {
+            console.log(`[SMS_MATCH_FAILED] No match for Intent: ${intent.id}`);
+            // Remains PENDING_VERIFICATION
+        }
+    } catch (err) {
+        console.warn("[SMS_VERIFY_FAIL]", err);
+    }
+    return false;
+  }
+
+  /**
+   * 🛡️ [RULE_5] Commits ledger update when status is VERIFIED
+   */
+  private async commitLedgerForVerifiedIntent(intent: SettlementIntent) {
+      try {
+          const { saveAndSync } = await import('@/integrations/sqliteService');
+          
+          const receiverName = intent.metadata?.receiver_name || "Member";
+          const senderName = intent.metadata?.sender_name || "User";
+          
+          const rpcPayload = {
+              p_group_id: intent.group_id,
+              p_user_id: intent.metadata?.admin_id || intent.metadata?.user_id || 'system',
+              p_title: `Settlement: ${senderName} -> ${receiverName}`,
+              p_amount: intent.amount,
+              p_paid_by_member_id: intent.sender_id,
+              p_split_type: 'unequal',
+              p_splits: [{ member_id: intent.receiver_id, user_id: intent.metadata?.receiver_user_id || null, share_amount: intent.amount }],
+              p_idempotency_key: intent.idempotency_key,
+              p_notes: `Auto-verified via SMS Bridge. Ref: ${intent.metadata?.sms_reference || ''}`,
+              p_date: new Date().toISOString()
+          };
+
+          const expenseId = crypto.randomUUID();
+          const finalRpcPayload = { ...rpcPayload, p_id: expenseId };
+
+          console.log(`[LEDGER_COMMIT] Syncing verified settlement ${intent.id} to ledger.`);
+          await saveAndSync("insert_group_expense_with_split", finalRpcPayload, "RPC");
+      } catch (err) {
+          console.error(`[LEDGER_COMMIT_ERROR] Failed to commit intent ${intent.id}:`, err);
+      }
   }
 
   /**
@@ -151,8 +270,8 @@ class PaymentOrchestrator {
   /**
    * 🔄 UPDATE STATUS (With Audit Trail)
    */
-  async updateStatus(intentId: string, status: SettlementStatus) {
-    if (this.isProcessing) return;
+  async updateStatus(intentId: string, status: SettlementStatus, additionalMetadata: any = {}): Promise<boolean> {
+    if (this.isProcessing) return false;
     this.isProcessing = true;
 
     // 🛡️ [PHASE_3_HYBRID_MAPPING]
@@ -172,7 +291,7 @@ class PaymentOrchestrator {
             if (currentStatus === 'success' || currentStatus === 'failed') {
                 console.warn(`[SETTLEMENT_DUPLICATE_BLOCK] Blocked status update to ${status}. Intent ${intentId} is in terminal state ${currentStatus}.`);
                 this.isProcessing = false;
-                return;
+                return false;
             }
             try { currentMetadata = JSON.parse(current.metadata); } catch(e) {}
         }
@@ -181,7 +300,7 @@ class PaymentOrchestrator {
       // Record Event
       const events = Array.isArray(currentMetadata.events) ? currentMetadata.events : [];
       events.push({ status, dbStatus, time: new Date().toISOString() });
-      const updatedMetadata = { ...currentMetadata, events };
+      const updatedMetadata = { ...currentMetadata, ...additionalMetadata, events };
 
       if (db) {
         await db.run(`UPDATE settlement_intents SET status = ?, metadata = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [dbStatus, JSON.stringify(updatedMetadata), intentId]);
@@ -209,8 +328,10 @@ class PaymentOrchestrator {
         localStorage.removeItem('bk_active_payment_intent');
         this.activeIntentId = null;
       }
+      return true;
     } catch (err) {
       console.error(`❌ [PaymentOrchestrator] Status update failed (${status}):`, err);
+      return false;
     } finally {
       this.isProcessing = false;
     }

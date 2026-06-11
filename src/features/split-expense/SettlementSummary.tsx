@@ -141,10 +141,15 @@ const SettlementSummary: React.FC<SettlementSummaryProps> = React.memo(({
       const toName = memberMap[intent.receiver_id] || "Me";
       
       // 1. Commit to terminal state
-      await paymentOrchestrator.updateStatus(intent.id, 'VERIFIED');
+      // 🛡️ [RULE_3] Idempotency: Check if updateStatus succeeds (it returns false if already success/VERIFIED)
+      const success = await paymentOrchestrator.updateStatus(intent.id, 'ADMIN_VERIFIED', { verified_by: currentUserId });
       
-      // 2. Trigger ledger update (Handled by onSettle which is append-only)
-      await onSettle(fromName, toName, intent.amount, intent.idempotency_key);
+      if (success) {
+          // 2. Trigger ledger update (Handled by onSettle which is append-only)
+          await onSettle(fromName, toName, intent.amount, intent.idempotency_key);
+      } else {
+          console.warn("[SETTLEMENT_DUPLICATE_BLOCK] Intent was already verified. Skipping ledger update.");
+      }
       
       await refetchIntents();
     } catch (e) {
@@ -245,9 +250,10 @@ const SettlementSummary: React.FC<SettlementSummaryProps> = React.memo(({
     if (success && target.type === 'p2p') {
       setIsProcessing(true);
       try {
-        const fromName = memberMap[target.metadata.from] || "Sender";
-        const toName = target.name;
-        await onSettle(fromName, toName, target.amount, idempotencyKey);
+        // 🛡️ [RULE_4] "I have Paid" translates to USER_CONFIRMED.
+        // It MUST NOT update ledger, mark VERIFIED, or trigger settlement completion.
+        // We only show a toast and wait for receiver confirmation or SMS auto-verify.
+        console.log(`[P2P_PAYMENT_RETURN] Payment intent launched/confirmed. Awaiting receiver verification.`);
       } finally {
         setIsProcessing(false);
       }

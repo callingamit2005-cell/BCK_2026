@@ -348,7 +348,23 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
     const upiId = target.upiId ? normalizeUPI(target.upiId) : "";
     const sanitizedPn = target.name.replace(/[^\w\s]/gi, "").substring(0, 20).trim() || "Recipient";
     const noteRaw = "Settlement Payment";
-    const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(sanitizedPn)}&am=${normalizedRupees}&cu=INR&tr=${intentId}&tn=${encodeURIComponent(noteRaw)}`;
+    
+    // 🛡️ [SECURITY_FIX] P2P Context Optimization
+    // Removed 'tr' (Transaction Reference) to comply with NPCI 35-char limit (UUID was 36).
+    // P2P settlements do not require 'tr', 'mc', or 'mode' for standard transport.
+    const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(sanitizedPn)}&am=${normalizedRupees}&cu=INR&tn=${encodeURIComponent(noteRaw)}`;
+    
+    console.log("========== UPI RUNTIME ==========");
+    console.log("UPI_URI =", link);
+    console.log("URI_LENGTH =", link.length);
+    console.log("PA =", upiId);
+    console.log("PN =", sanitizedPn);
+    console.log("AM =", normalizedRupees);
+    console.log("TN =", noteRaw);
+    console.log("PLATFORM =", Capacitor.getPlatform());
+    console.log("APP_LAUNCHER =", "AppLauncher.openUrl");
+    console.log("===============================");
+
     try {
         if (Capacitor.getPlatform() === 'android') {
             const { completed } = await AppLauncher.openUrl({ url: link });
@@ -387,7 +403,8 @@ export const SmartPaySheet: React.FC<SmartPaySheetProps> = React.memo(({
   const handleFinalVerification = async (success: boolean) => {
     if (!selectedTarget) return;
     if (activeIntent) {
-        const finalStatus = success ? 'AWAITING_RECEIVER' : 'PENDING';
+        // 🛡️ [RULE_4] "I have Paid" translates strictly to USER_CONFIRMED.
+        const finalStatus = success ? 'USER_CONFIRMED' : 'PENDING';
         await paymentOrchestrator.updateStatus(activeIntent.id, finalStatus);
     }
     onPaymentReturn(success, selectedTarget, activeIntent?.idempotency_key);
